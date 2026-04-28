@@ -6,48 +6,18 @@
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
+import {
+  createChildSchema,
+  loginChildSchema,
+  loginParentSchema,
+  registerParentSchema,
+} from '@/lib/validation/auth'
 import { hashPassword } from '@/server/auth/password'
 import { signIn } from '@/server/auth/index'
 import { requireParent } from '@/server/auth/guards'
 import { ru } from '@/i18n/ru'
 
 const { auth: t } = ru
-
-// ---------------------------------------------------------------------------
-// Zod schemas (exported so UI can reuse them for client-side validation)
-// ---------------------------------------------------------------------------
-
-export const registerParentSchema = z.object({
-  email: z.string().email(t.errors.emailInvalid),
-  displayName: z
-    .string()
-    .min(2, t.errors.displayNameTooShort)
-    .max(50, t.errors.displayNameTooLong),
-  password: z.string().min(6, t.errors.passwordTooShort),
-})
-
-export const loginParentSchema = z.object({
-  email: z.string().email(t.errors.emailInvalid),
-  password: z.string().min(1, t.errors.passwordRequired),
-})
-
-export const loginChildSchema = z.object({
-  username: z.string().min(1, t.errors.usernameRequired),
-  password: z.string().min(1, t.errors.passwordRequired),
-})
-
-export const createChildSchema = z.object({
-  username: z
-    .string()
-    .min(3, t.errors.usernameTooShort)
-    .max(20, t.errors.usernameTooLong)
-    .regex(/^[a-z0-9_]+$/, t.errors.usernameInvalid),
-  displayName: z
-    .string()
-    .min(2, t.errors.displayNameTooShort)
-    .max(50, t.errors.displayNameTooLong),
-  password: z.string().min(6, t.errors.passwordTooShort),
-})
 
 // ---------------------------------------------------------------------------
 // Action result type
@@ -71,23 +41,27 @@ export async function registerParent(
 
   const { email, displayName, password } = parsed.data
 
-  const existing = await prisma.parent.findUnique({ where: { email } })
-  if (existing) {
-    return { ok: false, error: t.errors.emailTaken }
+  try {
+    const existing = await prisma.parent.findUnique({ where: { email } })
+    if (existing) {
+      return { ok: false, error: t.errors.emailTaken }
+    }
+
+    const passwordHash = await hashPassword(password)
+    await prisma.parent.create({
+      data: { email, displayName, passwordHash },
+    })
+
+    // Auto sign-in after registration
+    await signIn('credentials', {
+      role: 'parent',
+      identifier: email,
+      password,
+      redirect: false,
+    })
+  } catch {
+    return { ok: false, error: t.errors.unexpected }
   }
-
-  const passwordHash = await hashPassword(password)
-  await prisma.parent.create({
-    data: { email, displayName, passwordHash },
-  })
-
-  // Auto sign-in after registration
-  await signIn('credentials', {
-    role: 'parent',
-    identifier: email,
-    password,
-    redirect: false,
-  })
 
   redirect('/parent')
 }

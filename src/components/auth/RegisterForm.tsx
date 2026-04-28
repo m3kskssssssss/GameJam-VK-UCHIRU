@@ -14,7 +14,8 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { registerParent, registerParentSchema } from '@/server/actions/auth'
+import { registerParent } from '@/server/actions/auth'
+import { registerParentSchema } from '@/lib/validation/auth'
 import { ru } from '@/i18n/ru'
 
 const { auth: t } = ru
@@ -33,10 +34,14 @@ export function RegisterForm() {
   function onSubmit(values: FormValues) {
     setServerError(null)
     startTransition(async () => {
-      const result = await registerParent(values)
-      // If we reach here, redirect did not fire (error case)
-      if (result && !result.ok) {
-        setServerError(result.error)
+      try {
+        const result = await registerParent(values)
+        // If we reach here, redirect did not fire (error case)
+        if (result && !result.ok) {
+          setServerError(result.error)
+        }
+      } catch {
+        setServerError(t.errors.unexpected)
       }
     })
   }

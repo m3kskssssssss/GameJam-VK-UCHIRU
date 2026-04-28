@@ -14,7 +14,8 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { loginAction, loginChildSchema } from '@/server/actions/auth'
+import { loginAction } from '@/server/actions/auth'
+import { loginChildSchema } from '@/lib/validation/auth'
 import { ru } from '@/i18n/ru'
 
 const { auth: t } = ru

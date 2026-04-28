@@ -16,7 +16,8 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { createChild, createChildSchema } from '@/server/actions/auth'
+import { createChild } from '@/server/actions/auth'
+import { createChildSchema } from '@/lib/validation/auth'
 import { ru } from '@/i18n/ru'
 
 const { auth: t, parent: p } = ru
