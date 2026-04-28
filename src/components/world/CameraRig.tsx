@@ -35,7 +35,7 @@ export function CameraRig() {
       const ortho = camera as THREE.OrthographicCamera
       const isMobile = size.width < 768
       // Narrower zoom on mobile so the world feels bigger relative to screen
-      const zoom = isMobile ? 28 : 38
+      const zoom = isMobile ? 8 : 18
       const aspect = size.width / size.height
       ortho.left = -zoom * aspect
       ortho.right = zoom * aspect
