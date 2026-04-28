@@ -13,24 +13,34 @@ const middlewareConfig: NextAuthConfig = {
   callbacks: {
     authorized({ auth, request }) {
       const { pathname } = request.nextUrl
+      const role = auth?.user?.role
 
       // Active session + auth pages → redirect to the appropriate home
       if (pathname.startsWith('/auth/')) {
         if (auth?.user) {
-          const home = auth.user.role === 'PARENT' ? '/parent' : '/play'
-          return Response.redirect(new URL(home, request.url))
+          if (role === 'PARENT') {
+            return Response.redirect(new URL('/parent', request.url))
+          }
+          if (role === 'CHILD') {
+            return Response.redirect(new URL('/play', request.url))
+          }
+          // If role is temporarily unavailable in middleware session shape,
+          // do not force-redirect and avoid redirect loops.
+          return true
         }
         return true
       }
 
       // Parent-only area
       if (pathname.startsWith('/parent')) {
-        return auth?.user?.role === 'PARENT'
+        if (!auth?.user) return false
+        return role ? role === 'PARENT' : true
       }
 
       // Child-only area
       if (pathname.startsWith('/play')) {
-        return auth?.user?.role === 'CHILD'
+        if (!auth?.user) return false
+        return role ? role === 'CHILD' : true
       }
 
       return true
