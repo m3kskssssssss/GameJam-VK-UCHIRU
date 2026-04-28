@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(DATABASE_URL=\"file:C:\\\\\\\\Users\\\\\\\\misha\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\kid-quest\\\\\\\\prisma\\\\\\\\dev.db\" AUTH_SECRET=\"smoke-test-secret\" pnpm tsx *)"
+    ]
+  }
+}

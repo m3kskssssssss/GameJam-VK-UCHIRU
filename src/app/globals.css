@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+@theme {
+  /* Palette */
+  --color-background: #FFF9F0;
+  --color-foreground: #1F2937;
+  --color-primary: #4DA8DA;
+  --color-primary-foreground: #FFFFFF;
+  --color-accent: #FFB347;
+  --color-success: #6BCB77;
+  --color-danger: #FF6B6B;
+  --color-muted: #F1ECE2;
+  --color-border: #E5DFD2;
+
+  /* Radii */
+  --radius-card: 1rem;
+  --radius-button: 0.75rem;
+
+  /* Shadows */
+  --shadow-card: 0 6px 20px rgba(31, 41, 55, 0.08);
+
+  /* Font */
+  --font-sans: "Nunito", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* shadcn/ui semantic tokens — mapped to our palette */
+@layer base {
+  :root {
+    --background: 43 100% 97%;
+    --foreground: 220 25% 18%;
+    --card: 43 50% 95%;
+    --card-foreground: 220 25% 18%;
+    --popover: 43 100% 97%;
+    --popover-foreground: 220 25% 18%;
+    --primary: 204 63% 58%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 43 30% 92%;
+    --secondary-foreground: 220 25% 18%;
+    --muted: 40 33% 93%;
+    --muted-foreground: 220 10% 46%;
+    --accent: 33 100% 65%;
+    --accent-foreground: 220 25% 18%;
+    --destructive: 0 100% 71%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 38 26% 87%;
+    --input: 38 26% 87%;
+    --ring: 204 63% 58%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 220 25% 10%;
+    --foreground: 43 50% 95%;
+    --card: 220 25% 14%;
+    --card-foreground: 43 50% 95%;
+    --popover: 220 25% 10%;
+    --popover-foreground: 43 50% 95%;
+    --primary: 204 63% 58%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 20% 20%;
+    --secondary-foreground: 43 50% 95%;
+    --muted: 220 20% 20%;
+    --muted-foreground: 220 10% 60%;
+    --accent: 33 100% 65%;
+    --accent-foreground: 220 25% 18%;
+    --destructive: 0 100% 71%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 20% 25%;
+    --input: 220 20% 25%;
+    --ring: 204 63% 58%;
+  }
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+}
+
+/* Pet sprite idle animation */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+
+@theme {
+  --animate-float: float 2s ease-in-out infinite;
+}

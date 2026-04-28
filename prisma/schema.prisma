@@ -1,0 +1,236 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+// NOTE: SQLite for local dev. Production = Vercel Postgres (change provider before deploy).
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+// SQLite has no native enum type; Prisma maps these to TEXT columns.
+
+enum Role {
+  PARENT
+  CHILD
+}
+
+enum Subject {
+  MATH
+  READING
+  ENGLISH
+  PE
+}
+
+enum ItemCategory {
+  FURNITURE
+  OUTFIT_HAIR
+  OUTFIT_TOP
+  OUTFIT_BOTTOM
+  PET
+}
+
+// ---------------------------------------------------------------------------
+// Models
+// ---------------------------------------------------------------------------
+
+model Parent {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  displayName  String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  children Child[]
+}
+
+model Child {
+  id           String @id @default(cuid())
+  username     String @unique
+  passwordHash String
+  displayName  String
+  parentId     String
+  parent       Parent @relation(fields: [parentId], references: [id], onDelete: Cascade)
+
+  coins     Int @default(0)
+  energy    Int @default(100)
+  homeLevel Int @default(1)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  progress   SubjectProgress[]
+  attempts   TaskAttempt[]
+  peSessions PESession[]
+  inventory  InventoryItem[]
+  rooms      Room[]
+  appearance CharacterAppearance?
+
+  // Index reason: parentId is used in WHERE when a parent loads their children list.
+  @@index([parentId])
+}
+
+model SubjectProgress {
+  id              String  @id @default(cuid())
+  childId         String
+  subject         Subject
+  level           Int     @default(1) // current unlocked level
+  completedLevels Int     @default(0) // how many levels finished
+  totalXp         Int     @default(0)
+  child           Child   @relation(fields: [childId], references: [id], onDelete: Cascade)
+
+  // Unique reason: each child has exactly one progress record per subject.
+  @@unique([childId, subject])
+}
+
+model TaskAttempt {
+  id           String   @id @default(cuid())
+  childId      String
+  subject      Subject
+  level        Int
+  correctCount Int
+  totalCount   Int
+  passed       Boolean
+  coinsEarned  Int      @default(0)
+  energyEarned Int      @default(0)
+  xpEarned     Int      @default(0)
+  durationMs   Int      @default(0)
+  createdAt    DateTime @default(now())
+  child        Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
+
+  // Index reason: filtered by childId+subject ordered by createdAt in progress history queries.
+  @@index([childId, subject, createdAt])
+}
+
+model PESession {
+  id           String   @id @default(cuid())
+  childId      String
+  exerciseKey  String // key from PE catalog ('squats', 'jumps', ...)
+  exerciseName String // snapshot of name in case catalog changes
+  photo10sUrl  String? // full URL in Vercel Blob
+  photo10sKey  String? // blob object key (for deletion)
+  photo60sUrl  String?
+  photo60sKey  String?
+  completed    Boolean  @default(false)
+  coinsEarned  Int      @default(0)
+  energyEarned Int      @default(0)
+  createdAt    DateTime @default(now())
+  child        Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
+
+  // Index reason: parent dashboard loads PE sessions for a child ordered by date.
+  @@index([childId, createdAt])
+}
+
+model Room {
+  id       String @id @default(cuid())
+  childId  String
+  index    Int // 0 = first room, 1 = second room
+  unlocked Boolean @default(false)
+  child    Child   @relation(fields: [childId], references: [id], onDelete: Cascade)
+
+  placements RoomPlacement[]
+
+  // Unique reason: each child has at most one Room record per room index slot.
+  @@unique([childId, index])
+}
+
+model RoomPlacement {
+  id       String @id @default(cuid())
+  roomId   String
+  itemId   String // references InventoryItem
+  x        Int // grid x-coordinate
+  y        Int // grid y-coordinate
+  rotation Int           @default(0)
+  room     Room          @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  item     InventoryItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  // Unique reason: one inventory item can occupy only one placement slot.
+  // Index reason: roomId is used in WHERE when loading all placements for a room.
+  @@unique([itemId])
+  @@index([roomId])
+}
+
+model InventoryItem {
+  id         String       @id @default(cuid())
+  childId    String
+  catalogKey String // 'chair_red', 'lamp_classic', ...
+  category   ItemCategory
+  ownedAt    DateTime     @default(now())
+  child      Child        @relation(fields: [childId], references: [id], onDelete: Cascade)
+
+  placement RoomPlacement?
+
+  // Index reason: childId+category used in WHERE when filtering inventory by type (furniture tab, outfits tab, etc.).
+  @@index([childId, category])
+}
+
+model CharacterAppearance {
+  id      String  @id @default(cuid())
+  childId String  @unique
+  hair    String  @default("hair_default")
+  top     String  @default("top_default")
+  bottom  String  @default("bottom_default")
+  petKey  String? // set when a pet is purchased
+  child   Child   @relation(fields: [childId], references: [id], onDelete: Cascade)
+}
+
+// ---------------------------------------------------------------------------
+// Lobby / Multiplayer (Phase 7) — tile-stomp mini-game
+// ---------------------------------------------------------------------------
+
+model LobbyMatch {
+  id          String    @id @default(cuid())
+  status      String    @default("WAITING") // WAITING | ACTIVE | FINISHED
+  startedAt   DateTime?
+  endsAt      DateTime?
+  lastSpawnAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  players LobbyPlayer[]
+  tiles   LobbyTile[]
+
+  // Index reason: lobby-page lookup is "find latest WAITING match" → status + createdAt.
+  @@index([status, createdAt])
+}
+
+model LobbyPlayer {
+  id          String   @id @default(cuid())
+  matchId     String
+  childId     String
+  displayName String
+  x           Int      @default(6)
+  y           Int      @default(4)
+  score       Int      @default(0)
+  lastMoveAt  DateTime @default(now())
+  joinedAt    DateTime @default(now())
+
+  match LobbyMatch @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  // Unique reason: a child can only be in one match at a time per LobbyMatch row.
+  // Index reason: getMatchState fetches all players for a match.
+  @@unique([matchId, childId])
+  @@index([matchId])
+}
+
+model LobbyTile {
+  id          String    @id @default(cuid())
+  matchId     String
+  x           Int
+  y           Int
+  stompedById String?   // childId of player who claimed it (null = unclaimed)
+  spawnedAt   DateTime  @default(now())
+  stompedAt   DateTime?
+
+  match LobbyMatch @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  // Unique reason: at most one tile per (match, x, y) coordinate.
+  // Index reason: getMatchState filters by matchId; movePlayer queries tile by (match,x,y).
+  @@unique([matchId, x, y])
+  @@index([matchId, stompedById])
+}

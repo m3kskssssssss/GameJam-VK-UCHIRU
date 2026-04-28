@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Body -->
+  <ellipse cx="32" cy="45" rx="15" ry="12" fill="#a0522d"/>
+  <!-- Head -->
+  <circle cx="32" cy="26" r="13" fill="#a0522d"/>
+  <!-- Left floppy ear -->
+  <ellipse cx="18" cy="28" rx="6" ry="10" fill="#7b3e1c" transform="rotate(-15,18,28)"/>
+  <!-- Right floppy ear -->
+  <ellipse cx="46" cy="28" rx="6" ry="10" fill="#7b3e1c" transform="rotate(15,46,28)"/>
+  <!-- Face lighter patch -->
+  <ellipse cx="32" cy="29" rx="9" ry="8" fill="#c68642"/>
+  <!-- Eyes -->
+  <circle cx="27.5" cy="24" r="3" fill="#2d2d2d"/>
+  <circle cx="36.5" cy="24" r="3" fill="#2d2d2d"/>
+  <circle cx="28.5" cy="23" r="1" fill="white"/>
+  <circle cx="37.5" cy="23" r="1" fill="white"/>
+  <!-- Nose -->
+  <ellipse cx="32" cy="30" rx="3" ry="2" fill="#2d2d2d"/>
+  <!-- Nostrils -->
+  <circle cx="30.5" cy="30" r="0.7" fill="#1a1a1a"/>
+  <circle cx="33.5" cy="30" r="0.7" fill="#1a1a1a"/>
+  <!-- Mouth -->
+  <path d="M29,32 Q32,35 35,32" fill="none" stroke="#2d2d2d" stroke-width="1.2" stroke-linecap="round"/>
+  <!-- Tongue -->
+  <ellipse cx="32" cy="35" rx="2.5" ry="2" fill="#e74c3c"/>
+  <!-- Tail -->
+  <path d="M47,46 Q58,38 56,32" fill="none" stroke="#a0522d" stroke-width="4" stroke-linecap="round"/>
+  <!-- Paws -->
+  <ellipse cx="22" cy="56" rx="5" ry="4" fill="#a0522d"/>
+  <ellipse cx="42" cy="56" rx="5" ry="4" fill="#a0522d"/>
+</svg>
