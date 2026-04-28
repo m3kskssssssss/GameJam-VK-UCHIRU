@@ -38,7 +38,14 @@ export function RegisterForm() {
         const result = await registerParent(values)
         // If we reach here, redirect did not fire (error case)
         if (result && !result.ok) {
-          setServerError(result.error)
+          const messageByCode: Record<string, string> = {
+            DB_LOOKUP_FAILED: t.errors.registrationDb,
+            DB_CREATE_FAILED: t.errors.registrationDb,
+            DB_MIGRATION_REQUIRED: t.errors.registrationDbMigrations,
+            DB_EMAIL_CONFLICT: t.errors.emailTaken,
+            AUTH_SIGNIN_FAILED: t.errors.registrationAuth,
+          }
+          setServerError(result.code ? (messageByCode[result.code] ?? result.error) : result.error)
         }
       } catch {
         setServerError(t.errors.unexpected)

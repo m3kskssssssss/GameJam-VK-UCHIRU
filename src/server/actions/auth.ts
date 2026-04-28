@@ -4,12 +4,11 @@
 // Passwords are hashed; hashes are never returned.
 
 import { redirect } from 'next/navigation'
+import { Prisma } from '@prisma/client'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import {
   createChildSchema,
-  loginChildSchema,
-  loginParentSchema,
   registerParentSchema,
 } from '@/lib/validation/auth'
 import { hashPassword } from '@/server/auth/password'
@@ -25,7 +24,39 @@ const { auth: t } = ru
 
 type ActionResult<T = void> =
   | { ok: true; data: T }
-  | { ok: false; error: string }
+  | { ok: false; error: string; code?: string }
+
+type RegisterStep = 'findExistingParent' | 'createParent' | 'signInParent'
+
+function logRegisterError(step: RegisterStep, email: string, error: unknown) {
+  const normalized =
+    error instanceof Error
+      ? {
+          name: error.name,
+          message: error.message,
+          stack: error.stack,
+        }
+      : { value: String(error) }
+
+  console.error('[auth.registerParent] failed', {
+    step,
+    email,
+    error: normalized,
+  })
+}
+
+function mapDbRegisterError(error: unknown): { message: string; code: string } {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error.code === 'P2002') {
+      return { message: t.errors.emailTaken, code: 'DB_EMAIL_CONFLICT' }
+    }
+    if (error.code === 'P2021' || error.code === 'P2022') {
+      return { message: t.errors.registrationDbMigrations, code: 'DB_MIGRATION_REQUIRED' }
+    }
+  }
+
+  return { message: t.errors.registrationDb, code: 'DB_CREATE_FAILED' }
+}
 
 // ---------------------------------------------------------------------------
 // registerParent
@@ -46,12 +77,23 @@ export async function registerParent(
     if (existing) {
       return { ok: false, error: t.errors.emailTaken }
     }
+  } catch (error) {
+    logRegisterError('findExistingParent', email, error)
+    return { ok: false, error: t.errors.registrationDb, code: 'DB_LOOKUP_FAILED' }
+  }
 
+  try {
     const passwordHash = await hashPassword(password)
     await prisma.parent.create({
       data: { email, displayName, passwordHash },
     })
+  } catch (error) {
+    logRegisterError('createParent', email, error)
+    const mapped = mapDbRegisterError(error)
+    return { ok: false, error: mapped.message, code: mapped.code }
+  }
 
+  try {
     // Auto sign-in after registration
     await signIn('credentials', {
       role: 'parent',
@@ -59,8 +101,9 @@ export async function registerParent(
       password,
       redirect: false,
     })
-  } catch {
-    return { ok: false, error: t.errors.unexpected }
+  } catch (error) {
+    logRegisterError('signInParent', email, error)
+    return { ok: false, error: t.errors.registrationAuth, code: 'AUTH_SIGNIN_FAILED' }
   }
 
   redirect('/parent')
