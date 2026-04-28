@@ -1,11 +1,20 @@
+-- CreateEnum
+CREATE TYPE "Role" AS ENUM ('PARENT', 'CHILD');
+
+-- CreateEnum
+CREATE TYPE "Subject" AS ENUM ('MATH', 'READING', 'ENGLISH', 'PE');
+
+-- CreateEnum
+CREATE TYPE "ItemCategory" AS ENUM ('FURNITURE', 'OUTFIT_HAIR', 'OUTFIT_TOP', 'OUTFIT_BOTTOM', 'PET');
+
 -- CreateTable
 CREATE TABLE "Parent" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "email" TEXT NOT NULL,
     "passwordHash" TEXT NOT NULL,
     "displayName" TEXT NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateTable
@@ -18,8 +27,8 @@ CREATE TABLE "Child" (
     "coins" INTEGER NOT NULL DEFAULT 0,
     "energy" INTEGER NOT NULL DEFAULT 100,
     "homeLevel" INTEGER NOT NULL DEFAULT 1,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
     CONSTRAINT "Child_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "Parent" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -27,7 +36,7 @@ CREATE TABLE "Child" (
 CREATE TABLE "SubjectProgress" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "childId" TEXT NOT NULL,
-    "subject" TEXT NOT NULL,
+    "subject" "Subject" NOT NULL,
     "level" INTEGER NOT NULL DEFAULT 1,
     "completedLevels" INTEGER NOT NULL DEFAULT 0,
     "totalXp" INTEGER NOT NULL DEFAULT 0,
@@ -38,7 +47,7 @@ CREATE TABLE "SubjectProgress" (
 CREATE TABLE "TaskAttempt" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "childId" TEXT NOT NULL,
-    "subject" TEXT NOT NULL,
+    "subject" "Subject" NOT NULL,
     "level" INTEGER NOT NULL,
     "correctCount" INTEGER NOT NULL,
     "totalCount" INTEGER NOT NULL,
@@ -47,7 +56,7 @@ CREATE TABLE "TaskAttempt" (
     "energyEarned" INTEGER NOT NULL DEFAULT 0,
     "xpEarned" INTEGER NOT NULL DEFAULT 0,
     "durationMs" INTEGER NOT NULL DEFAULT 0,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "TaskAttempt_childId_fkey" FOREIGN KEY ("childId") REFERENCES "Child" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -64,7 +73,7 @@ CREATE TABLE "PESession" (
     "completed" BOOLEAN NOT NULL DEFAULT false,
     "coinsEarned" INTEGER NOT NULL DEFAULT 0,
     "energyEarned" INTEGER NOT NULL DEFAULT 0,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "PESession_childId_fkey" FOREIGN KEY ("childId") REFERENCES "Child" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -94,8 +103,8 @@ CREATE TABLE "InventoryItem" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "childId" TEXT NOT NULL,
     "catalogKey" TEXT NOT NULL,
-    "category" TEXT NOT NULL,
-    "ownedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "category" "ItemCategory" NOT NULL,
+    "ownedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "InventoryItem_childId_fkey" FOREIGN KEY ("childId") REFERENCES "Child" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
