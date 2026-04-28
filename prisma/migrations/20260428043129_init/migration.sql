@@ -94,8 +94,7 @@ CREATE TABLE "RoomPlacement" (
     "x" INTEGER NOT NULL,
     "y" INTEGER NOT NULL,
     "rotation" INTEGER NOT NULL DEFAULT 0,
-    CONSTRAINT "RoomPlacement_roomId_fkey" FOREIGN KEY ("roomId") REFERENCES "Room" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "RoomPlacement_itemId_fkey" FOREIGN KEY ("itemId") REFERENCES "InventoryItem" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT "RoomPlacement_roomId_fkey" FOREIGN KEY ("roomId") REFERENCES "Room" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -107,6 +106,11 @@ CREATE TABLE "InventoryItem" (
     "ownedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "InventoryItem_childId_fkey" FOREIGN KEY ("childId") REFERENCES "Child" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
+
+-- AddForeignKey
+ALTER TABLE "RoomPlacement"
+ADD CONSTRAINT "RoomPlacement_itemId_fkey"
+FOREIGN KEY ("itemId") REFERENCES "InventoryItem" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- CreateTable
 CREATE TABLE "CharacterAppearance" (
