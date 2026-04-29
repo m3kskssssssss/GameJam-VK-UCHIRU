@@ -36,7 +36,7 @@ export function AddChildForm({ onSuccess }: AddChildFormProps) {
 
   const form = useForm<FormValues>({
     resolver: zodResolver(createChildSchema),
-    defaultValues: { username: '', displayName: '', password: '' },
+    defaultValues: { username: '', displayName: '', password: '', gender: 'BOY' },
   })
 
   function onSubmit(values: FormValues) {
@@ -102,6 +102,41 @@ export function AddChildForm({ onSuccess }: AddChildFormProps) {
                   autoComplete="new-password"
                   {...field}
                 />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="gender"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t.labelGender}</FormLabel>
+              <FormControl>
+                <div className="flex gap-3">
+                  <label className={`flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-md border px-4 py-2 ${field.value === 'BOY' ? 'border-primary bg-primary/10' : 'border-border'}`}>
+                    <input
+                      type="radio"
+                      className="sr-only"
+                      value="BOY"
+                      checked={field.value === 'BOY'}
+                      onChange={() => field.onChange('BOY')}
+                    />
+                    <span>{t.optionGenderBoy}</span>
+                  </label>
+                  <label className={`flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-md border px-4 py-2 ${field.value === 'GIRL' ? 'border-primary bg-primary/10' : 'border-border'}`}>
+                    <input
+                      type="radio"
+                      className="sr-only"
+                      value="GIRL"
+                      checked={field.value === 'GIRL'}
+                      onChange={() => field.onChange('GIRL')}
+                    />
+                    <span>{t.optionGenderGirl}</span>
+                  </label>
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>

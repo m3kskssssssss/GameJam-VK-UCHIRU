@@ -19,6 +19,11 @@ enum Role {
   CHILD
 }
 
+enum Gender {
+  BOY
+  GIRL
+}
+
 enum Subject {
   MATH
   READING
@@ -57,9 +62,10 @@ model Child {
   parentId     String
   parent       Parent @relation(fields: [parentId], references: [id], onDelete: Cascade)
 
-  coins     Int @default(0)
-  energy    Int @default(100)
-  homeLevel Int @default(1)
+  coins     Int    @default(0)
+  energy    Int    @default(100)
+  homeLevel Int    @default(1)
+  gender    Gender @default(BOY)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

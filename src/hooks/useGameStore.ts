@@ -7,7 +7,11 @@ import { create } from 'zustand'
 export type HouseSubject = 'math' | 'reading' | 'english' | 'pe' | 'home'
 export type FacingDirection = 'down' | 'up' | 'left' | 'right'
 
-const SPEED = 4 // units per second
+const SPEED = 4 // walk units per second
+const RUN_MULTIPLIER = 2
+
+const GRAVITY = 18 // m/s^2
+const JUMP_IMPULSE = 6.5 // m/s — gives ~1.2m apex
 
 const PITCH_MIN = 0.45
 const PITCH_MAX = 1.05
@@ -26,6 +30,9 @@ function wrapAngle(a: number): number {
 interface GameState {
   position: [number, number, number]
   velocity: [number, number]
+  velocityY: number
+  isGrounded: boolean
+  isRunning: boolean
   facing: FacingDirection
   nearHouse: HouseSubject | null
   halfX: number
@@ -50,11 +57,16 @@ interface GameState {
   addCameraYaw: (delta: number) => void
   setCameraPitch: (pitch: number) => void
   setCameraDistance: (d: number) => void
+  jump: () => void
+  setRunning: (on: boolean) => void
 }
 
 export const useGameStore = create<GameState>()((set) => ({
   position: [0, 0, 4],
   velocity: [0, 0],
+  velocityY: 0,
+  isGrounded: true,
+  isRunning: false,
   facing: 'down',
   nearHouse: null,
   halfX: 14,
@@ -87,30 +99,64 @@ export const useGameStore = create<GameState>()((set) => ({
   applyMovement: (dt) => {
     set((state) => {
       const [vx, vz] = state.velocity
-      if (vx === 0 && vz === 0) return state
 
-      // Camera-relative movement.
-      // Input convention: vz<0 = forward (away from camera), vx>0 = strafe right.
-      // Forward unit (XZ): (-sin(yaw), -cos(yaw)) so that yaw=0 → -Z forward.
-      // Right unit (XZ):   ( cos(yaw), -sin(yaw))
-      const yaw = state.cameraYaw
-      const sy = Math.sin(yaw)
-      const cy = Math.cos(yaw)
-      const forwardInput = -vz
-      const rightInput = vx
-      const dx = -sy * forwardInput + cy * rightInput
-      const dz = -cy * forwardInput - sy * rightInput
+      // Horizontal movement (camera-relative).
+      let nx = state.position[0]
+      let nz = state.position[2]
+      if (vx !== 0 || vz !== 0) {
+        const yaw = state.cameraYaw
+        const sy = Math.sin(yaw)
+        const cy = Math.cos(yaw)
+        const forwardInput = -vz
+        const rightInput = vx
+        const dx = -sy * forwardInput + cy * rightInput
+        const dz = -cy * forwardInput - sy * rightInput
+        const speed = state.isRunning ? SPEED * RUN_MULTIPLIER : SPEED
+        nx = clamp(nx + dx * speed * dt, -state.halfX, state.halfX)
+        nz = clamp(nz + dz * speed * dt, -state.halfZ, state.halfZ)
+      }
 
-      const [px, py, pz] = state.position
-      const nx = clamp(px + dx * SPEED * dt, -state.halfX, state.halfX)
-      const nz = clamp(pz + dz * SPEED * dt, -state.halfZ, state.halfZ)
-      return { position: [nx, py, nz] }
+      // Vertical (gravity + jump).
+      let ny = state.position[1]
+      let nvy = state.velocityY
+      let grounded = state.isGrounded
+      if (!grounded) {
+        nvy -= GRAVITY * dt
+        ny += nvy * dt
+        if (ny <= 0) {
+          ny = 0
+          nvy = 0
+          grounded = true
+        }
+      }
+
+      if (
+        nx === state.position[0] &&
+        ny === state.position[1] &&
+        nz === state.position[2] &&
+        nvy === state.velocityY &&
+        grounded === state.isGrounded
+      ) {
+        return state
+      }
+
+      return {
+        position: [nx, ny, nz],
+        velocityY: nvy,
+        isGrounded: grounded,
+      }
     })
   },
 
   setSummary: ({ coins, energy, homeLevel }) => set({ coins, energy, homeLevel }),
 
-  setPosition: (x, y, z) => set({ position: [x, y, z], velocity: [0, 0] }),
+  setPosition: (x, y, z) =>
+    set({
+      position: [x, y, z],
+      velocity: [0, 0],
+      velocityY: 0,
+      isGrounded: y <= 0,
+    }),
 
   setBounds: (halfX, halfZ) => set({ halfX, halfZ }),
 
@@ -123,4 +169,12 @@ export const useGameStore = create<GameState>()((set) => ({
     set({ cameraPitch: clamp(pitch, PITCH_MIN, PITCH_MAX) }),
 
   setCameraDistance: (d) => set({ cameraDistance: clamp(d, 4, 16) }),
+
+  jump: () =>
+    set((s) => {
+      if (!s.isGrounded) return s
+      return { velocityY: JUMP_IMPULSE, isGrounded: false }
+    }),
+
+  setRunning: (on) => set({ isRunning: on }),
 }))

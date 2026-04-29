@@ -33,4 +33,5 @@ export const createChildSchema = z.object({
     .min(2, t.errors.displayNameTooShort)
     .max(50, t.errors.displayNameTooLong),
   password: z.string().min(6, t.errors.passwordTooShort),
+  gender: z.enum(['BOY', 'GIRL']).default('BOY'),
 })

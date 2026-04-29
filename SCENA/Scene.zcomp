@@ -1,0 +1,2604 @@
+{
+	"behaviors": {
+	},
+	"constructorProps": {
+	},
+	"entitiesByLabel": {
+		"Blue_House.glb": {
+			"71439d08d7084a6a9cc0bd4a0fd66084": true
+		},
+		"Blue_House.glb 2": {
+			"6f747f606fc746e7a6a84a71a84a9575": true
+		},
+		"Bush_Classik.glb": {
+			"ef28464b1f23452882774634e55fbed9": true
+		},
+		"Bush_Classik.glb 10": {
+			"04a910c36ea2452a9dde08094d4747ff": true
+		},
+		"Bush_Classik.glb 11": {
+			"ac91c21fbfa34c029d0db9120a4c7fd9": true
+		},
+		"Bush_Classik.glb 12": {
+			"4b1d7bed2bdc4e9dbc96ca74f43ab606": true
+		},
+		"Bush_Classik.glb 13": {
+			"59432a73a69d4337aedfa8b392858a82": true
+		},
+		"Bush_Classik.glb 14": {
+			"622688ce4f1d4abdb7c37dcfe9cf872a": true
+		},
+		"Bush_Classik.glb 2": {
+			"e9b6a59a30aa4f3e9fc280aaadd2d8c1": true
+		},
+		"Bush_Classik.glb 3": {
+			"e673d4c569d74c4dbdc055175d186290": true
+		},
+		"Bush_Classik.glb 4": {
+			"e0d0fe541886434d8082c10d9408b79f": true
+		},
+		"Bush_Classik.glb 5": {
+			"911b7e874c95496bb1fe997de21c4071": true
+		},
+		"Bush_Classik.glb 6": {
+			"13c28889c28748cd8e8217f42a47502a": true
+		},
+		"Bush_Classik.glb 7": {
+			"3ae74923946349e995ddf188c132bcb2": true
+		},
+		"Bush_Classik.glb 8": {
+			"a7146a08f97e443fbc971275711daa2f": true
+		},
+		"Bush_Classik.glb 9": {
+			"ef0d42a87ede4455950ecc700674f52f": true
+		},
+		"DefaultCookieConsent": {
+			"0ba8e27369df45ca897731dcb1e39bcf": true
+		},
+		"DefaultEnvironment": {
+			"a57f5d58e38e4a0b918dcf605ea12736": true
+		},
+		"DefaultLoader": {
+			"52148d8eafe3426085e700e049662c07": true
+		},
+		"Defaults": {
+			"7b6fb4d895774174b5d151eec86b704c": true
+		},
+		"DirectionalLight": {
+			"857f9901b65b42c89a3ff04470d70738": true
+		},
+		"Fence.glb": {
+			"ae31e885afe34dd3b6f999fd15034414": true
+		},
+		"Fence.glb 10": {
+			"b78eece564e940c68d8c1b3e8e7c7490": true
+		},
+		"Fence.glb 11": {
+			"e3a8fa65173046bab1d788c68253d109": true
+		},
+		"Fence.glb 12": {
+			"944966b82da343778d41ad447964fc9d": true
+		},
+		"Fence.glb 13": {
+			"9ea8336ee61443a3b9e2dfef2c6907d5": true
+		},
+		"Fence.glb 14": {
+			"f2ffd56c80914120a174a639a2c926db": true
+		},
+		"Fence.glb 2": {
+			"6b3663ef42a548a187190a793b759c2a": true
+		},
+		"Fence.glb 3": {
+			"53980c841b3a4c488ad0129b7f5a511a": true
+		},
+		"Fence.glb 4": {
+			"12c0b9fd9b7c4f29923bfcec3202dda0": true
+		},
+		"Fence.glb 5": {
+			"bd6a8ab401c54eec8cf3fc4643d528f7": true
+		},
+		"Fence.glb 6": {
+			"e15f091b22e247b9a519be103f0a7b20": true
+		},
+		"Fence.glb 7": {
+			"b08c0d6d62ac43ecbb9973c2c138bb86": true
+		},
+		"Fence.glb 8": {
+			"a9d53d791b5941e7b88ac71862dd22d4": true
+		},
+		"Fence.glb 9": {
+			"7c884cec12634a8ca8c50a7b62095e29": true
+		},
+		"Grass.glb": {
+			"afa5d2ca5cff4979ba2956b22082c6ec": true
+		},
+		"Grass.glb 10": {
+			"a33315312cd249428187ff97996184fb": true
+		},
+		"Grass.glb 11": {
+			"e32ea4ff56ad4f8ba1fe161757d0862a": true
+		},
+		"Grass.glb 12": {
+			"4b1d919301ff4ccb968f703dcaeff127": true
+		},
+		"Grass.glb 13": {
+			"82ccdd95b5384a2eb736bb765210b349": true
+		},
+		"Grass.glb 2": {
+			"2e4dce13792e4b82a89bf86c51517208": true
+		},
+		"Grass.glb 3": {
+			"8937518534414999ad9bba72483bf220": true
+		},
+		"Grass.glb 4": {
+			"ebb9201634494965a80fcc81899fc9d4": true
+		},
+		"Grass.glb 5": {
+			"08b8d79cd26a4072bd759067d94b8b7b": true
+		},
+		"Grass.glb 6": {
+			"1a48305be0ed46a6a7f1afd00bcdedb6": true
+		},
+		"Grass.glb 7": {
+			"023b52df9b4140c888d46010470b5198": true
+		},
+		"Grass.glb 8": {
+			"ce31e8852c2e4a2794d0399f69ba007e": true
+		},
+		"Grass.glb 9": {
+			"29cb53c93a3b4effacd9f0eee18fb64f": true
+		},
+		"Green_House.glb": {
+			"2e850c42d14049d0a118ddaff7848fbc": true
+		},
+		"Green_House.glb 2": {
+			"e2666d9bca7e4b64975ba34ca367cf5f": true
+		},
+		"Group": {
+			"root": true
+		},
+		"Main_House.glb": {
+			"4fdfaffc58bb41b095e7f3af6bdf6192": true
+		},
+		"Main_House.glb 2": {
+			"4019576fcbc9496aa9722363d46b3aec": true
+		},
+		"Ploshadka.glb": {
+			"e53f11114f3144aa980919252dd9276e": true
+		},
+		"Ploshadka.glb 2": {
+			"1b6f1de6cb6a441b97f27be0f3fc7eb9": true
+		},
+		"Red_House.glb": {
+			"5f5c527fbb124f4b905365013fc7f323": true
+		},
+		"Red_House.glb 2": {
+			"86aa5f1422c842a696501df9809e7861": true
+		},
+		"ShadowPlane": {
+			"bf1d127bf7234511b3cdc3d5a98af7b0": true
+		},
+		"Tikvi.glb": {
+			"30dbf9d3bc8c419c91d481145caa4540": true
+		},
+		"Tikvi.glb 2": {
+			"88c3d1ec7d644136848d9b2cc6906028": true
+		},
+		"Tikvi.glb 3": {
+			"57ed2351522d4b85b30a266889a32add": true
+		},
+		"Tikvi.glb 4": {
+			"b06048a29b3941dabf2923e54324e1f1": true
+		},
+		"Tree_Bigger.glb": {
+			"76fd185bcec54a20b0a1dbefe9af016d": true
+		},
+		"Tree_Bigger.glb 2": {
+			"32a2c0be7c1b46fc91e80dd683c520fd": true
+		},
+		"Tree_Bigger.glb 3": {
+			"2bda6ce184c94a6e822189d9a1cbef5a": true
+		},
+		"Tree_Bigger.glb 4": {
+			"7f86f8f930ba435e8a890f07c932cb27": true
+		},
+		"Tree_Bigger.glb 5": {
+			"d2517eb776504fe4a304c7b1a4182540": true
+		},
+		"Tree_Bigger.glb 6": {
+			"18f326a8241e4de593d9c7bf6d75f754": true
+		},
+		"Tree_Bigger.glb 7": {
+			"be33445d5c424e48844c7ab7164dee16": true
+		},
+		"Tree_Bigger.glb 8": {
+			"f58b5353362e4b03bec411ba15ed1a27": true
+		},
+		"Yagodi.glb": {
+			"2392219b01024dc6ba1b8e25bfb6e9cb": true
+		},
+		"Yellow_House.glb": {
+			"e54ea71da7fe467592613d80fd65542f": true
+		},
+		"Yellow_House.glb 2": {
+			"42b4132b95ce407bbdfcf2e8b527028d": true
+		},
+		"Карта.png 3": {
+			"9dab478345564fdabba3eff54317ce9a": true
+		}
+	},
+	"entitiesByScriptName": {
+		"Blue_House_glb": {
+			"71439d08d7084a6a9cc0bd4a0fd66084": true
+		},
+		"Blue_House_glb_2": {
+			"6f747f606fc746e7a6a84a71a84a9575": true
+		},
+		"Bush_Classik_glb": {
+			"ef28464b1f23452882774634e55fbed9": true
+		},
+		"Bush_Classik_glb_10": {
+			"04a910c36ea2452a9dde08094d4747ff": true
+		},
+		"Bush_Classik_glb_11": {
+			"ac91c21fbfa34c029d0db9120a4c7fd9": true
+		},
+		"Bush_Classik_glb_12": {
+			"4b1d7bed2bdc4e9dbc96ca74f43ab606": true
+		},
+		"Bush_Classik_glb_13": {
+			"59432a73a69d4337aedfa8b392858a82": true
+		},
+		"Bush_Classik_glb_14": {
+			"622688ce4f1d4abdb7c37dcfe9cf872a": true
+		},
+		"Bush_Classik_glb_2": {
+			"e9b6a59a30aa4f3e9fc280aaadd2d8c1": true
+		},
+		"Bush_Classik_glb_3": {
+			"e673d4c569d74c4dbdc055175d186290": true
+		},
+		"Bush_Classik_glb_4": {
+			"e0d0fe541886434d8082c10d9408b79f": true
+		},
+		"Bush_Classik_glb_5": {
+			"911b7e874c95496bb1fe997de21c4071": true
+		},
+		"Bush_Classik_glb_6": {
+			"13c28889c28748cd8e8217f42a47502a": true
+		},
+		"Bush_Classik_glb_7": {
+			"3ae74923946349e995ddf188c132bcb2": true
+		},
+		"Bush_Classik_glb_8": {
+			"a7146a08f97e443fbc971275711daa2f": true
+		},
+		"Bush_Classik_glb_9": {
+			"ef0d42a87ede4455950ecc700674f52f": true
+		},
+		"DefaultCookieConsent": {
+			"0ba8e27369df45ca897731dcb1e39bcf": true
+		},
+		"DefaultEnvironment": {
+			"a57f5d58e38e4a0b918dcf605ea12736": true
+		},
+		"DefaultLoader": {
+			"52148d8eafe3426085e700e049662c07": true
+		},
+		"Defaults": {
+			"7b6fb4d895774174b5d151eec86b704c": true
+		},
+		"DirectionalLight": {
+			"857f9901b65b42c89a3ff04470d70738": true
+		},
+		"Fence_glb": {
+			"ae31e885afe34dd3b6f999fd15034414": true
+		},
+		"Fence_glb_10": {
+			"b78eece564e940c68d8c1b3e8e7c7490": true
+		},
+		"Fence_glb_11": {
+			"e3a8fa65173046bab1d788c68253d109": true
+		},
+		"Fence_glb_12": {
+			"944966b82da343778d41ad447964fc9d": true
+		},
+		"Fence_glb_13": {
+			"9ea8336ee61443a3b9e2dfef2c6907d5": true
+		},
+		"Fence_glb_14": {
+			"f2ffd56c80914120a174a639a2c926db": true
+		},
+		"Fence_glb_2": {
+			"6b3663ef42a548a187190a793b759c2a": true
+		},
+		"Fence_glb_3": {
+			"53980c841b3a4c488ad0129b7f5a511a": true
+		},
+		"Fence_glb_4": {
+			"12c0b9fd9b7c4f29923bfcec3202dda0": true
+		},
+		"Fence_glb_5": {
+			"bd6a8ab401c54eec8cf3fc4643d528f7": true
+		},
+		"Fence_glb_6": {
+			"e15f091b22e247b9a519be103f0a7b20": true
+		},
+		"Fence_glb_7": {
+			"b08c0d6d62ac43ecbb9973c2c138bb86": true
+		},
+		"Fence_glb_8": {
+			"a9d53d791b5941e7b88ac71862dd22d4": true
+		},
+		"Fence_glb_9": {
+			"7c884cec12634a8ca8c50a7b62095e29": true
+		},
+		"Grass_glb": {
+			"afa5d2ca5cff4979ba2956b22082c6ec": true
+		},
+		"Grass_glb_10": {
+			"a33315312cd249428187ff97996184fb": true
+		},
+		"Grass_glb_11": {
+			"e32ea4ff56ad4f8ba1fe161757d0862a": true
+		},
+		"Grass_glb_12": {
+			"4b1d919301ff4ccb968f703dcaeff127": true
+		},
+		"Grass_glb_13": {
+			"82ccdd95b5384a2eb736bb765210b349": true
+		},
+		"Grass_glb_2": {
+			"2e4dce13792e4b82a89bf86c51517208": true
+		},
+		"Grass_glb_3": {
+			"8937518534414999ad9bba72483bf220": true
+		},
+		"Grass_glb_4": {
+			"ebb9201634494965a80fcc81899fc9d4": true
+		},
+		"Grass_glb_5": {
+			"08b8d79cd26a4072bd759067d94b8b7b": true
+		},
+		"Grass_glb_6": {
+			"1a48305be0ed46a6a7f1afd00bcdedb6": true
+		},
+		"Grass_glb_7": {
+			"023b52df9b4140c888d46010470b5198": true
+		},
+		"Grass_glb_8": {
+			"ce31e8852c2e4a2794d0399f69ba007e": true
+		},
+		"Grass_glb_9": {
+			"29cb53c93a3b4effacd9f0eee18fb64f": true
+		},
+		"Green_House_glb": {
+			"2e850c42d14049d0a118ddaff7848fbc": true
+		},
+		"Green_House_glb_2": {
+			"e2666d9bca7e4b64975ba34ca367cf5f": true
+		},
+		"Main_House_glb": {
+			"4fdfaffc58bb41b095e7f3af6bdf6192": true
+		},
+		"Main_House_glb_2": {
+			"4019576fcbc9496aa9722363d46b3aec": true
+		},
+		"Ploshadka_glb": {
+			"e53f11114f3144aa980919252dd9276e": true
+		},
+		"Ploshadka_glb_2": {
+			"1b6f1de6cb6a441b97f27be0f3fc7eb9": true
+		},
+		"Red_House_glb": {
+			"5f5c527fbb124f4b905365013fc7f323": true
+		},
+		"Red_House_glb_2": {
+			"86aa5f1422c842a696501df9809e7861": true
+		},
+		"ShadowPlane": {
+			"bf1d127bf7234511b3cdc3d5a98af7b0": true
+		},
+		"Tikvi_glb": {
+			"30dbf9d3bc8c419c91d481145caa4540": true
+		},
+		"Tikvi_glb_2": {
+			"88c3d1ec7d644136848d9b2cc6906028": true
+		},
+		"Tikvi_glb_3": {
+			"57ed2351522d4b85b30a266889a32add": true
+		},
+		"Tikvi_glb_4": {
+			"b06048a29b3941dabf2923e54324e1f1": true
+		},
+		"Tree_Bigger_glb": {
+			"76fd185bcec54a20b0a1dbefe9af016d": true
+		},
+		"Tree_Bigger_glb_2": {
+			"32a2c0be7c1b46fc91e80dd683c520fd": true
+		},
+		"Tree_Bigger_glb_3": {
+			"2bda6ce184c94a6e822189d9a1cbef5a": true
+		},
+		"Tree_Bigger_glb_4": {
+			"7f86f8f930ba435e8a890f07c932cb27": true
+		},
+		"Tree_Bigger_glb_5": {
+			"d2517eb776504fe4a304c7b1a4182540": true
+		},
+		"Tree_Bigger_glb_6": {
+			"18f326a8241e4de593d9c7bf6d75f754": true
+		},
+		"Tree_Bigger_glb_7": {
+			"be33445d5c424e48844c7ab7164dee16": true
+		},
+		"Tree_Bigger_glb_8": {
+			"f58b5353362e4b03bec411ba15ed1a27": true
+		},
+		"Yagodi_glb": {
+			"2392219b01024dc6ba1b8e25bfb6e9cb": true
+		},
+		"Yellow_House_glb": {
+			"e54ea71da7fe467592613d80fd65542f": true
+		},
+		"Yellow_House_glb_2": {
+			"42b4132b95ce407bbdfcf2e8b527028d": true
+		},
+		"_png_3": {
+			"9dab478345564fdabba3eff54317ce9a": true
+		}
+	},
+	"entityConstructorProps": {
+		"023b52df9b4140c888d46010470b5198": {
+			"source": "file://./Grass.glb"
+		},
+		"04a910c36ea2452a9dde08094d4747ff": {
+			"source": "file://./Bush_Classik.glb"
+		},
+		"08b8d79cd26a4072bd759067d94b8b7b": {
+			"source": "file://./Grass.glb"
+		},
+		"0ba8e27369df45ca897731dcb1e39bcf": {
+		},
+		"12c0b9fd9b7c4f29923bfcec3202dda0": {
+			"source": "file://./Fence.glb"
+		},
+		"13c28889c28748cd8e8217f42a47502a": {
+			"source": "file://./Bush_Classik.glb"
+		},
+		"18f326a8241e4de593d9c7bf6d75f754": {
+			"source": "file://./Tree_Bigger.glb"
+		},
+		"1a48305be0ed46a6a7f1afd00bcdedb6": {
+			"source": "file://./Grass.glb"
+		},
+		"1b6f1de6cb6a441b97f27be0f3fc7eb9": {
+			"source": "file://./Ploshadka.glb"
+		},
+		"2392219b01024dc6ba1b8e25bfb6e9cb": {
+			"source": "file://./Yagodi.glb"
+		},
+		"29cb53c93a3b4effacd9f0eee18fb64f": {
+			"source": "file://./Grass.glb"
+		},
+		"2bda6ce184c94a6e822189d9a1cbef5a": {
+			"source": "file://./Tree_Bigger.glb"
+		},
+		"2e4dce13792e4b82a89bf86c51517208": {
+			"source": "file://./Grass.glb"
+		},
+		"2e850c42d14049d0a118ddaff7848fbc": {
+			"source": "file://./Green_House.glb"
+		},
+		"30dbf9d3bc8c419c91d481145caa4540": {
+			"source": "file://./Tikvi.glb"
+		},
+		"32a2c0be7c1b46fc91e80dd683c520fd": {
+			"source": "file://./Tree_Bigger.glb"
+		},
+		"3ae74923946349e995ddf188c132bcb2": {
+			"source": "file://./Bush_Classik.glb"
+		},
+		"4019576fcbc9496aa9722363d46b3aec": {
+			"source": "file://./Main_House.glb"
+		},
+		"42b4132b95ce407bbdfcf2e8b527028d": {
+			"source": "file://./Yellow_House.glb"
+		},
+		"4b1d7bed2bdc4e9dbc96ca74f43ab606": {
+			"source": "file://./Bush_Classik.glb"
+		},
+		"4b1d919301ff4ccb968f703dcaeff127": {
+			"source": "file://./Grass.glb"
+		},
+		"4fdfaffc58bb41b095e7f3af6bdf6192": {
+			"source": "file://./Main_House.glb"
+		},
+		"52148d8eafe3426085e700e049662c07": {
+		},
+		"53980c841b3a4c488ad0129b7f5a511a": {
+			"source": "file://./Fence.glb"
+		},
+		"57ed2351522d4b85b30a266889a32add": {
+			"source": "file://./Tikvi.glb"
+		},
+		"59432a73a69d4337aedfa8b392858a82": {
+			"source": "file://./Bush_Classik.glb"
+		},
+		"5f5c527fbb124f4b905365013fc7f323": {
+			"source": "file://./Red_House.glb"
+		},
+		"622688ce4f1d4abdb7c37dcfe9cf872a": {
+			"source": "file://./Bush_Classik.glb"
+		},
+		"6b3663ef42a548a187190a793b759c2a": {
+			"source": "file://./Fence.glb"
+		},
+		"6f747f606fc746e7a6a84a71a84a9575": {
+			"source": "file://./Blue_House.glb"
+		},
+		"71439d08d7084a6a9cc0bd4a0fd66084": {
+			"source": "file://./Blue_House.glb"
+		},
+		"76fd185bcec54a20b0a1dbefe9af016d": {
+			"source": "file://./Tree_Bigger.glb"
+		},
+		"7b6fb4d895774174b5d151eec86b704c": {
+		},
+		"7c884cec12634a8ca8c50a7b62095e29": {
+			"source": "file://./Fence.glb"
+		},
+		"7f86f8f930ba435e8a890f07c932cb27": {
+			"source": "file://./Tree_Bigger.glb"
+		},
+		"82ccdd95b5384a2eb736bb765210b349": {
+			"source": "file://./Grass.glb"
+		},
+		"857f9901b65b42c89a3ff04470d70738": {
+		},
+		"86aa5f1422c842a696501df9809e7861": {
+			"source": "file://./Red_House.glb"
+		},
+		"88c3d1ec7d644136848d9b2cc6906028": {
+			"source": "file://./Tikvi.glb"
+		},
+		"8937518534414999ad9bba72483bf220": {
+			"source": "file://./Grass.glb"
+		},
+		"911b7e874c95496bb1fe997de21c4071": {
+			"source": "file://./Bush_Classik.glb"
+		},
+		"944966b82da343778d41ad447964fc9d": {
+			"source": "file://./Fence.glb"
+		},
+		"9dab478345564fdabba3eff54317ce9a": {
+			"source": "file://./КАрта_Новее.png"
+		},
+		"9ea8336ee61443a3b9e2dfef2c6907d5": {
+			"source": "file://./Fence.glb"
+		},
+		"a33315312cd249428187ff97996184fb": {
+			"source": "file://./Grass.glb"
+		},
+		"a57f5d58e38e4a0b918dcf605ea12736": {
+		},
+		"a7146a08f97e443fbc971275711daa2f": {
+			"source": "file://./Bush_Classik.glb"
+		},
+		"a9d53d791b5941e7b88ac71862dd22d4": {
+			"source": "file://./Fence.glb"
+		},
+		"ac91c21fbfa34c029d0db9120a4c7fd9": {
+			"source": "file://./Bush_Classik.glb"
+		},
+		"ae31e885afe34dd3b6f999fd15034414": {
+			"source": "file://./Fence.glb"
+		},
+		"afa5d2ca5cff4979ba2956b22082c6ec": {
+			"source": "file://./Grass.glb"
+		},
+		"b06048a29b3941dabf2923e54324e1f1": {
+			"source": "file://./Tikvi.glb"
+		},
+		"b08c0d6d62ac43ecbb9973c2c138bb86": {
+			"source": "file://./Fence.glb"
+		},
+		"b78eece564e940c68d8c1b3e8e7c7490": {
+			"source": "file://./Fence.glb"
+		},
+		"bd6a8ab401c54eec8cf3fc4643d528f7": {
+			"source": "file://./Fence.glb"
+		},
+		"be33445d5c424e48844c7ab7164dee16": {
+			"source": "file://./Tree_Bigger.glb"
+		},
+		"bf1d127bf7234511b3cdc3d5a98af7b0": {
+		},
+		"ce31e8852c2e4a2794d0399f69ba007e": {
+			"source": "file://./Grass.glb"
+		},
+		"d2517eb776504fe4a304c7b1a4182540": {
+			"source": "file://./Tree_Bigger.glb"
+		},
+		"e0d0fe541886434d8082c10d9408b79f": {
+			"source": "file://./Bush_Classik.glb"
+		},
+		"e15f091b22e247b9a519be103f0a7b20": {
+			"source": "file://./Fence.glb"
+		},
+		"e2666d9bca7e4b64975ba34ca367cf5f": {
+			"source": "file://./Green_House.glb"
+		},
+		"e32ea4ff56ad4f8ba1fe161757d0862a": {
+			"source": "file://./Grass.glb"
+		},
+		"e3a8fa65173046bab1d788c68253d109": {
+			"source": "file://./Fence.glb"
+		},
+		"e53f11114f3144aa980919252dd9276e": {
+			"source": "file://./Ploshadka.glb"
+		},
+		"e54ea71da7fe467592613d80fd65542f": {
+			"source": "file://./Yellow_House.glb"
+		},
+		"e673d4c569d74c4dbdc055175d186290": {
+			"source": "file://./Bush_Classik.glb"
+		},
+		"e9b6a59a30aa4f3e9fc280aaadd2d8c1": {
+			"source": "file://./Bush_Classik.glb"
+		},
+		"ebb9201634494965a80fcc81899fc9d4": {
+			"source": "file://./Grass.glb"
+		},
+		"ef0d42a87ede4455950ecc700674f52f": {
+			"source": "file://./Bush_Classik.glb"
+		},
+		"ef28464b1f23452882774634e55fbed9": {
+			"source": "file://./Bush_Classik.glb"
+		},
+		"f2ffd56c80914120a174a639a2c926db": {
+			"source": "file://./Fence.glb"
+		},
+		"f58b5353362e4b03bec411ba15ed1a27": {
+			"source": "file://./Tree_Bigger.glb"
+		}
+	},
+	"entityPropOverrides": {
+		"componentprop:prop:root:position": {
+			"entityID": "root",
+			"entityPropIsConstructor": false,
+			"entityPropPath": [
+				"position"
+			],
+			"id": "componentprop:prop:root:position",
+			"isConstructorProp": false,
+			"propName": "position",
+			"type": "componentprop"
+		},
+		"componentprop:prop:root:rotation": {
+			"entityID": "root",
+			"entityPropIsConstructor": false,
+			"entityPropPath": [
+				"rotation"
+			],
+			"id": "componentprop:prop:root:rotation",
+			"isConstructorProp": false,
+			"propName": "rotation",
+			"type": "componentprop"
+		},
+		"componentprop:prop:root:scale": {
+			"entityID": "root",
+			"entityPropIsConstructor": false,
+			"entityPropPath": [
+				"scale"
+			],
+			"id": "componentprop:prop:root:scale",
+			"isConstructorProp": false,
+			"propName": "scale",
+			"type": "componentprop"
+		},
+		"componentprop:prop:root:visible": {
+			"entityID": "root",
+			"entityPropIsConstructor": false,
+			"entityPropPath": [
+				"visible"
+			],
+			"id": "componentprop:prop:root:visible",
+			"isConstructorProp": false,
+			"propName": "visible",
+			"type": "componentprop"
+		}
+	},
+	"entityProps": {
+		"023b52df9b4140c888d46010470b5198": {
+			"position": [
+				21.290818028533803,
+				0.43661651426407455,
+				-7.6555758970325325
+			],
+			"rotation": [
+				0,
+				1.4159875227922498,
+				0
+			],
+			"scale": [
+				1,
+				1,
+				1
+			]
+		},
+		"04a910c36ea2452a9dde08094d4747ff": {
+			"position": [
+				11.60756602165131,
+				0.6896694969165127,
+				-19.006101771247344
+			],
+			"rotation": [
+				0,
+				0.06393625229022559,
+				0
+			]
+		},
+		"08b8d79cd26a4072bd759067d94b8b7b": {
+			"position": [
+				-3.571027405314016,
+				0.43661651426407455,
+				6.782570037805839
+			],
+			"rotation": [
+				0,
+				2.824720100944575,
+				0
+			],
+			"scale": [
+				1,
+				1,
+				1
+			]
+		},
+		"0ba8e27369df45ca897731dcb1e39bcf": {
+		},
+		"12c0b9fd9b7c4f29923bfcec3202dda0": {
+			"position": [
+				7.0274090711016814,
+				0.4376666545197052,
+				2.888895361092808
+			],
+			"scale": [
+				3.5,
+				2,
+				2
+			]
+		},
+		"13c28889c28748cd8e8217f42a47502a": {
+			"position": [
+				-13.398005986780873,
+				0.6896694969165127,
+				21.26968893289215
+			],
+			"rotation": [
+				0,
+				-0.7073986478954442,
+				0
+			]
+		},
+		"18f326a8241e4de593d9c7bf6d75f754": {
+			"position": [
+				12.73439906503215,
+				3.925488132759435,
+				4.120582579337402
+			],
+			"rotation": [
+				0,
+				-1.0774841744175785,
+				0
+			],
+			"scale": [
+				4,
+				4,
+				4
+			]
+		},
+		"1a48305be0ed46a6a7f1afd00bcdedb6": {
+			"position": [
+				6.942277996104068,
+				0.43661651426407455,
+				4.281904998228506
+			],
+			"rotation": [
+				0,
+				0,
+				0
+			],
+			"scale": [
+				1,
+				1,
+				1
+			]
+		},
+		"1b6f1de6cb6a441b97f27be0f3fc7eb9": {
+			"position": [
+				-7.182575999789007,
+				1.6228925224869375,
+				-7.250595302276662
+			],
+			"scale": [
+				4,
+				4,
+				4
+			]
+		},
+		"2392219b01024dc6ba1b8e25bfb6e9cb": {
+			"position": [
+				-17.22906252258909,
+				0.9203579313047794,
+				17.60330868023899
+			],
+			"scale": [
+				5,
+				5,
+				5
+			]
+		},
+		"29cb53c93a3b4effacd9f0eee18fb64f": {
+			"position": [
+				18.015311016202908,
+				0.43661651426407455,
+				-3.8515876061821657
+			],
+			"rotation": [
+				0,
+				2.521923630024669,
+				0
+			],
+			"scale": [
+				1,
+				1,
+				1
+			]
+		},
+		"2bda6ce184c94a6e822189d9a1cbef5a": {
+			"position": [
+				21.179686904373533,
+				3.925488132759435,
+				-10.215812260428674
+			],
+			"rotation": [
+				0,
+				-0.07132406610941994,
+				0
+			],
+			"scale": [
+				4,
+				4,
+				4
+			]
+		},
+		"2e4dce13792e4b82a89bf86c51517208": {
+			"position": [
+				16.31680080364546,
+				0.43661651426407455,
+				-6.4320845446458055
+			],
+			"rotation": [
+				0,
+				3.985358110175877,
+				0
+			],
+			"scale": [
+				1,
+				1,
+				1
+			]
+		},
+		"2e850c42d14049d0a118ddaff7848fbc": {
+			"position": [
+				7.139522368563224,
+				2.708943341962177,
+				19.646149509687653
+			],
+			"scale": [
+				4,
+				4,
+				4
+			]
+		},
+		"30dbf9d3bc8c419c91d481145caa4540": {
+			"position": [
+				-17.972118420414567,
+				0.5707671851778251,
+				-16.267155853957995
+			],
+			"rotation": [
+				0,
+				3.1462442335688934,
+				0
+			],
+			"scale": [
+				4,
+				4,
+				4
+			]
+		},
+		"32a2c0be7c1b46fc91e80dd683c520fd": {
+			"position": [
+				-4.7501235854970165,
+				3.9050692190202243,
+				-12.845526463325754
+			],
+			"rotation": [
+				0,
+				1.153016556887044,
+				0
+			],
+			"scale": [
+				4,
+				4,
+				4
+			]
+		},
+		"3ae74923946349e995ddf188c132bcb2": {
+			"position": [
+				13.302682846222119,
+				0.6896694969165127,
+				5.8724206124960325
+			],
+			"rotation": [
+				0,
+				-0.7073986478954442,
+				0
+			]
+		},
+		"4019576fcbc9496aa9722363d46b3aec": {
+			"position": [
+				-19.02004554947885,
+				3.2117905221975374,
+				8.78956420636443
+			],
+			"rotation": [
+				0,
+				1.5736906747184325,
+				0
+			],
+			"scale": [
+				4,
+				4,
+				4
+			]
+		},
+		"42b4132b95ce407bbdfcf2e8b527028d": {
+			"position": [
+				6.723217356303055,
+				2.9897049266338978,
+				8.90681049616679
+			],
+			"scale": [
+				4,
+				4,
+				4
+			]
+		},
+		"4b1d7bed2bdc4e9dbc96ca74f43ab606": {
+			"position": [
+				-15.37635618569277,
+				0.6896694969165127,
+				-19.913074218840134
+			],
+			"rotation": [
+				0,
+				0.12870681853224675,
+				0
+			]
+		},
+		"4b1d919301ff4ccb968f703dcaeff127": {
+			"position": [
+				-20.413177307818003,
+				0.43661651426407455,
+				19.228769774723293
+			],
+			"rotation": [
+				0,
+				4.018456008528652,
+				0
+			],
+			"scale": [
+				1,
+				1,
+				1
+			]
+		},
+		"4fdfaffc58bb41b095e7f3af6bdf6192": {
+			"position": [
+				19.26421574551526,
+				3.2117905221975374,
+				7.439396989275531
+			],
+			"rotation": [
+				0,
+				1.5736906747184325,
+				0
+			],
+			"scale": [
+				4,
+				4,
+				4
+			]
+		},
+		"52148d8eafe3426085e700e049662c07": {
+		},
+		"53980c841b3a4c488ad0129b7f5a511a": {
+			"position": [
+				-12.062025195707642,
+				0.4376666545197052,
+				9.75109694165847
+			],
+			"rotation": [
+				0,
+				-1.5755132729433021,
+				0
+			],
+			"scale": [
+				2.5,
+				2,
+				2
+			]
+		},
+		"57ed2351522d4b85b30a266889a32add": {
+			"position": [
+				-17.95418799182343,
+				0.5707671851778251,
+				-11.955535776091025
+			],
+			"scale": [
+				4,
+				4,
+				4
+			]
+		},
+		"59432a73a69d4337aedfa8b392858a82": {
+			"position": [
+				-21.301886893580203,
+				0.6896694969165127,
+				-21.42946646204384
+			],
+			"rotation": [
+				0,
+				0.5807676049471368,
+				0
+			]
+		},
+		"5f5c527fbb124f4b905365013fc7f323": {
+			"position": [
+				-18.028196745002983,
+				2.4504706072306246,
+				-5.5247709493036785
+			],
+			"rotation": [
+				0,
+				1.5793114856631592,
+				0
+			],
+			"scale": [
+				4,
+				4,
+				4
+			]
+		},
+		"622688ce4f1d4abdb7c37dcfe9cf872a": {
+			"position": [
+				-3.611276920934594,
+				0.6896694969165127,
+				-20.793809729083996
+			],
+			"rotation": [
+				0,
+				0.06393625229022559,
+				0
+			]
+		},
+		"6b3663ef42a548a187190a793b759c2a": {
+			"position": [
+				3.2808362089061003,
+				0.4376666545197052,
+				3.8852022306835217
+			],
+			"rotation": [
+				0,
+				1.307163404208103,
+				0
+			],
+			"scale": [
+				1,
+				2,
+				2
+			]
+		},
+		"6f747f606fc746e7a6a84a71a84a9575": {
+			"position": [
+				19.120305071225065,
+				2.066764397660915,
+				-18.343700937428814
+			],
+			"scale": [
+				4,
+				4,
+				4
+			]
+		},
+		"71439d08d7084a6a9cc0bd4a0fd66084": {
+			"position": [
+				-7.932974889764878,
+				2.066764397660915,
+				7.653814199940591
+			],
+			"scale": [
+				4,
+				4,
+				4
+			]
+		},
+		"76fd185bcec54a20b0a1dbefe9af016d": {
+			"position": [
+				-21.117517728082838,
+				3.925488132759435,
+				21.15481278629799
+			],
+			"rotation": [
+				0,
+				4.3400541732128035,
+				0
+			],
+			"scale": [
+				4,
+				4,
+				4
+			]
+		},
+		"7b6fb4d895774174b5d151eec86b704c": {
+		},
+		"7c884cec12634a8ca8c50a7b62095e29": {
+			"position": [
+				12.985750509650904,
+				0.4376666545197052,
+				-13.585034457138649
+			],
+			"scale": [
+				2.5,
+				2,
+				2
+			]
+		},
+		"7f86f8f930ba435e8a890f07c932cb27": {
+			"position": [
+				12.982673517784047,
+				3.925488132759435,
+				-20.116569828840657
+			],
+			"rotation": [
+				0,
+				2.08333055513511,
+				0
+			],
+			"scale": [
+				4,
+				4,
+				4
+			]
+		},
+		"82ccdd95b5384a2eb736bb765210b349": {
+			"position": [
+				-10.571016168809507,
+				0.43661651426407455,
+				-12.412220800530374
+			],
+			"rotation": [
+				0,
+				4.018456008528652,
+				0
+			],
+			"scale": [
+				1,
+				1,
+				1
+			]
+		},
+		"857f9901b65b42c89a3ff04470d70738": {
+			"castShadow": true,
+			"position": [
+				0,
+				3.822578351542651,
+				0
+			]
+		},
+		"86aa5f1422c842a696501df9809e7861": {
+			"position": [
+				17.77138140647537,
+				2.4504706072306246,
+				17.74613249103341
+			],
+			"scale": [
+				4,
+				4,
+				4
+			]
+		},
+		"88c3d1ec7d644136848d9b2cc6906028": {
+			"position": [
+				13.00085890453955,
+				0.5707671851778251,
+				19.20076792007504
+			],
+			"rotation": [
+				0,
+				1.545391109218449,
+				0
+			],
+			"scale": [
+				3,
+				3,
+				3
+			]
+		},
+		"8937518534414999ad9bba72483bf220": {
+			"position": [
+				-3.576845607543914,
+				0.43661651426407455,
+				10.88626339353711
+			],
+			"rotation": [
+				0,
+				1.4498165139435746,
+				0
+			],
+			"scale": [
+				1,
+				1,
+				1
+			]
+		},
+		"911b7e874c95496bb1fe997de21c4071": {
+			"position": [
+				21.63531985775409,
+				0.6896694969165127,
+				-12.387800010851802
+			],
+			"rotation": [
+				0,
+				-0.7073986478954442,
+				0
+			]
+		},
+		"944966b82da343778d41ad447964fc9d": {
+			"position": [
+				15.610354531569799,
+				0.4376666545197052,
+				-11.275987483201613
+			],
+			"rotation": [
+				0,
+				1.604725128945909,
+				0
+			],
+			"scale": [
+				2.5,
+				2,
+				2
+			]
+		},
+		"9dab478345564fdabba3eff54317ce9a": {
+			"position": [
+				0,
+				0,
+				0
+			],
+			"rotation": [
+				-1.5707963267948966,
+				0,
+				0
+			],
+			"scale": [
+				50,
+				50,
+				1
+			]
+		},
+		"9ea8336ee61443a3b9e2dfef2c6907d5": {
+			"position": [
+				10.482196581874362,
+				0.4376666545197052,
+				-4.7419194969347815
+			],
+			"rotation": [
+				0,
+				1.604725128945909,
+				0
+			],
+			"scale": [
+				2.5,
+				2,
+				2
+			]
+		},
+		"a33315312cd249428187ff97996184fb": {
+			"position": [
+				4.042004277092029,
+				0.43661651426407455,
+				-6.832135038029077
+			],
+			"rotation": [
+				0,
+				3.0967792725920273,
+				0
+			],
+			"scale": [
+				1,
+				1,
+				1
+			]
+		},
+		"a57f5d58e38e4a0b918dcf605ea12736": {
+		},
+		"a7146a08f97e443fbc971275711daa2f": {
+			"position": [
+				-3.4965891988768836,
+				0.6896694969165127,
+				-17.993476791477843
+			],
+			"rotation": [
+				0,
+				0.9568320897133281,
+				0
+			]
+		},
+		"a9d53d791b5941e7b88ac71862dd22d4": {
+			"position": [
+				13.315636154477218,
+				0.4376666545197052,
+				-2.2420943956914483
+			],
+			"scale": [
+				3,
+				2,
+				2
+			]
+		},
+		"ac91c21fbfa34c029d0db9120a4c7fd9": {
+			"position": [
+				-9.342811576866577,
+				0.6896694969165127,
+				-14.058317792311225
+			],
+			"rotation": [
+				0,
+				-0.7073986478954442,
+				0
+			]
+		},
+		"ae31e885afe34dd3b6f999fd15034414": {
+			"position": [
+				-8.692225501432556,
+				0.4376666545197052,
+				12.259115808319946
+			],
+			"scale": [
+				3.5,
+				2,
+				2
+			]
+		},
+		"afa5d2ca5cff4979ba2956b22082c6ec": {
+			"position": [
+				-3.5232849322981887,
+				0.43661651426407455,
+				4.705988138427694
+			],
+			"rotation": [
+				0,
+				6.370328566254488,
+				0
+			],
+			"scale": [
+				1,
+				1,
+				1
+			]
+		},
+		"b06048a29b3941dabf2923e54324e1f1": {
+			"position": [
+				12.95385135023596,
+				0.5707671851778251,
+				-8.381372094844826
+			],
+			"rotation": [
+				0,
+				1.545391109218449,
+				0
+			],
+			"scale": [
+				4,
+				4,
+				4
+			]
+		},
+		"b08c0d6d62ac43ecbb9973c2c138bb86": {
+			"position": [
+				19.238824502830013,
+				0.4376666545197052,
+				-8.969797819237753
+			],
+			"rotation": [
+				0,
+				0,
+				0
+			],
+			"scale": [
+				3.5,
+				2,
+				2
+			]
+		},
+		"b78eece564e940c68d8c1b3e8e7c7490": {
+			"position": [
+				-12.059395998944112,
+				0.4376666545197052,
+				5.454421662036191
+			],
+			"rotation": [
+				0,
+				-1.5755132729433021,
+				0
+			],
+			"scale": [
+				2.5,
+				2,
+				2
+			]
+		},
+		"bd6a8ab401c54eec8cf3fc4643d528f7": {
+			"position": [
+				22.684779797823282,
+				0.4376666545197052,
+				-5.605398841717563
+			],
+			"rotation": [
+				0,
+				-1.5721695750390554,
+				0
+			],
+			"scale": [
+				3.5,
+				2,
+				2
+			]
+		},
+		"be33445d5c424e48844c7ab7164dee16": {
+			"position": [
+				-11.283025051889844,
+				3.9050692190202243,
+				-14.157555982310585
+			],
+			"scale": [
+				4,
+				4,
+				4
+			]
+		},
+		"bf1d127bf7234511b3cdc3d5a98af7b0": {
+		},
+		"ce31e8852c2e4a2794d0399f69ba007e": {
+			"position": [
+				8.518492555651807,
+				0.43661651426407455,
+				14.57610560677924
+			],
+			"rotation": [
+				0,
+				4.018456008528652,
+				0
+			],
+			"scale": [
+				1,
+				1,
+				1
+			]
+		},
+		"d2517eb776504fe4a304c7b1a4182540": {
+			"position": [
+				12.857120887057805,
+				3.925488132759435,
+				14.871439217730465
+			],
+			"rotation": [
+				0,
+				-1.8471142048634237,
+				0
+			],
+			"scale": [
+				4,
+				4,
+				4
+			]
+		},
+		"e0d0fe541886434d8082c10d9408b79f": {
+			"position": [
+				18.44477989037844,
+				0.6896694969165127,
+				-7.6157947133683574
+			],
+			"rotation": [
+				0,
+				0.40859939641490367,
+				0
+			]
+		},
+		"e15f091b22e247b9a519be103f0a7b20": {
+			"position": [
+				19.246553015536357,
+				0.4376666545197052,
+				-2.256798544224554
+			],
+			"scale": [
+				3.5,
+				2,
+				2
+			]
+		},
+		"e2666d9bca7e4b64975ba34ca367cf5f": {
+			"position": [
+				-8.555712609820871,
+				2.708943341962177,
+				-19.382858862334984
+			],
+			"scale": [
+				4,
+				4,
+				4
+			]
+		},
+		"e32ea4ff56ad4f8ba1fe161757d0862a": {
+			"position": [
+				-17.43755637790132,
+				0.43661651426407455,
+				-21.134380765486675
+			],
+			"rotation": [
+				0,
+				4.018456008528652,
+				0
+			],
+			"scale": [
+				1,
+				1,
+				1
+			]
+		},
+		"e3a8fa65173046bab1d788c68253d109": {
+			"position": [
+				-8.693129641739327,
+				0.4376666545197052,
+				3.073953465907482
+			],
+			"scale": [
+				3.5,
+				2,
+				2
+			]
+		},
+		"e53f11114f3144aa980919252dd9276e": {
+			"position": [
+				-7.143956558372677,
+				1.6228925224869375,
+				17.947652832009467
+			],
+			"rotation": [
+				0,
+				1.2716407964849528,
+				0
+			],
+			"scale": [
+				4,
+				4,
+				4
+			]
+		},
+		"e54ea71da7fe467592613d80fd65542f": {
+			"position": [
+				6.739047159943169,
+				2.9897049266338978,
+				-18.04750851572413
+			],
+			"rotation": [
+				0,
+				-1.5646140253439922,
+				0
+			],
+			"scale": [
+				4,
+				4,
+				4
+			]
+		},
+		"e673d4c569d74c4dbdc055175d186290": {
+			"position": [
+				9.123483197820594,
+				0.6896694969165127,
+				4.100161640172266
+			]
+		},
+		"e9b6a59a30aa4f3e9fc280aaadd2d8c1": {
+			"position": [
+				11.137118315171103,
+				0.6896694969165127,
+				14.23541828973578
+			],
+			"rotation": [
+				0,
+				-0.7073986478954442,
+				0
+			]
+		},
+		"ebb9201634494965a80fcc81899fc9d4": {
+			"position": [
+				-3.68382639390042,
+				0.43661651426407455,
+				8.822674225744526
+			],
+			"rotation": [
+				0,
+				4.5865989401454845,
+				0
+			],
+			"scale": [
+				1,
+				1,
+				1
+			]
+		},
+		"ef0d42a87ede4455950ecc700674f52f": {
+			"position": [
+				-20.288906996830317,
+				0.6896694969165127,
+				-19.567908231494354
+			],
+			"rotation": [
+				0,
+				0.5807676049471368,
+				0
+			]
+		},
+		"ef28464b1f23452882774634e55fbed9": {
+			"position": [
+				4.758839130219003,
+				0.6896694969165127,
+				4.165888084643658
+			],
+			"rotation": [
+				0,
+				1.6156521641064105,
+				0
+			]
+		},
+		"f2ffd56c80914120a174a639a2c926db": {
+			"position": [
+				10.547709184289099,
+				0.4376666545197052,
+				4.047987629581768
+			],
+			"rotation": [
+				0,
+				1.604725128945909,
+				0
+			],
+			"scale": [
+				1,
+				2,
+				2
+			]
+		},
+		"f58b5353362e4b03bec411ba15ed1a27": {
+			"position": [
+				4.3784977978262996,
+				3.925488132759435,
+				-4.81397161544044
+			],
+			"rotation": [
+				0,
+				1.2400965319638795,
+				0
+			],
+			"scale": [
+				4,
+				4,
+				4
+			]
+		}
+	},
+	"id": "5d4513e843574c04847bf1474912090f",
+	"nodes": {
+		"023b52df9b4140c888d46010470b5198": {
+			"id": "023b52df9b4140c888d46010470b5198",
+			"label": "Grass.glb 7",
+			"parent": {
+				"id": "root",
+				"order": "Zpd"
+			},
+			"scriptName": "Grass_glb_7",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"04a910c36ea2452a9dde08094d4747ff": {
+			"id": "04a910c36ea2452a9dde08094d4747ff",
+			"label": "Bush_Classik.glb 10",
+			"parent": {
+				"id": "root",
+				"order": "ZmXB"
+			},
+			"scriptName": "Bush_Classik_glb_10",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"08b8d79cd26a4072bd759067d94b8b7b": {
+			"id": "08b8d79cd26a4072bd759067d94b8b7b",
+			"label": "Grass.glb 5",
+			"parent": {
+				"id": "root",
+				"order": "Zp2"
+			},
+			"scriptName": "Grass_glb_5",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"0ba8e27369df45ca897731dcb1e39bcf": {
+			"id": "0ba8e27369df45ca897731dcb1e39bcf",
+			"label": "DefaultCookieConsent",
+			"parent": {
+				"id": "7b6fb4d895774174b5d151eec86b704c",
+				"order": "a4"
+			},
+			"scriptName": "DefaultCookieConsent",
+			"type": "@zcomponent/core/lib/components/DefaultCookieConsent#DefaultCookieConsent"
+		},
+		"12c0b9fd9b7c4f29923bfcec3202dda0": {
+			"id": "12c0b9fd9b7c4f29923bfcec3202dda0",
+			"label": "Fence.glb 4",
+			"parent": {
+				"id": "root",
+				"order": "Znl"
+			},
+			"scriptName": "Fence_glb_4",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"13c28889c28748cd8e8217f42a47502a": {
+			"id": "13c28889c28748cd8e8217f42a47502a",
+			"label": "Bush_Classik.glb 6",
+			"parent": {
+				"id": "root",
+				"order": "ZmX"
+			},
+			"scriptName": "Bush_Classik_glb_6",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"18f326a8241e4de593d9c7bf6d75f754": {
+			"id": "18f326a8241e4de593d9c7bf6d75f754",
+			"label": "Tree_Bigger.glb 6",
+			"parent": {
+				"id": "root",
+				"order": "Zqp"
+			},
+			"scriptName": "Tree_Bigger_glb_6",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"1a48305be0ed46a6a7f1afd00bcdedb6": {
+			"id": "1a48305be0ed46a6a7f1afd00bcdedb6",
+			"label": "Grass.glb 6",
+			"parent": {
+				"id": "root",
+				"order": "Zpl"
+			},
+			"scriptName": "Grass_glb_6",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"1b6f1de6cb6a441b97f27be0f3fc7eb9": {
+			"id": "1b6f1de6cb6a441b97f27be0f3fc7eb9",
+			"label": "Ploshadka.glb 2",
+			"parent": {
+				"id": "root",
+				"order": "ZiV"
+			},
+			"scriptName": "Ploshadka_glb_2",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"2392219b01024dc6ba1b8e25bfb6e9cb": {
+			"id": "2392219b01024dc6ba1b8e25bfb6e9cb",
+			"label": "Yagodi.glb",
+			"parent": {
+				"id": "root",
+				"order": "Zk"
+			},
+			"scriptName": "Yagodi_glb",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"29cb53c93a3b4effacd9f0eee18fb64f": {
+			"id": "29cb53c93a3b4effacd9f0eee18fb64f",
+			"label": "Grass.glb 9",
+			"parent": {
+				"id": "root",
+				"order": "Zpa"
+			},
+			"scriptName": "Grass_glb_9",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"2bda6ce184c94a6e822189d9a1cbef5a": {
+			"id": "2bda6ce184c94a6e822189d9a1cbef5a",
+			"label": "Tree_Bigger.glb 3",
+			"parent": {
+				"id": "root",
+				"order": "ZqV"
+			},
+			"scriptName": "Tree_Bigger_glb_3",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"2e4dce13792e4b82a89bf86c51517208": {
+			"id": "2e4dce13792e4b82a89bf86c51517208",
+			"label": "Grass.glb 2",
+			"parent": {
+				"id": "root",
+				"order": "ZpV"
+			},
+			"scriptName": "Grass_glb_2",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"2e850c42d14049d0a118ddaff7848fbc": {
+			"id": "2e850c42d14049d0a118ddaff7848fbc",
+			"label": "Green_House.glb",
+			"parent": {
+				"id": "root",
+				"order": "Zt"
+			},
+			"scriptName": "Green_House_glb",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"30dbf9d3bc8c419c91d481145caa4540": {
+			"id": "30dbf9d3bc8c419c91d481145caa4540",
+			"label": "Tikvi.glb",
+			"parent": {
+				"id": "root",
+				"order": "Zj"
+			},
+			"scriptName": "Tikvi_glb",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"32a2c0be7c1b46fc91e80dd683c520fd": {
+			"id": "32a2c0be7c1b46fc91e80dd683c520fd",
+			"label": "Tree_Bigger.glb 2",
+			"parent": {
+				"id": "root",
+				"order": "Zo"
+			},
+			"scriptName": "Tree_Bigger_glb_2",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"3ae74923946349e995ddf188c132bcb2": {
+			"id": "3ae74923946349e995ddf188c132bcb2",
+			"label": "Bush_Classik.glb 7",
+			"parent": {
+				"id": "root",
+				"order": "ZmXV"
+			},
+			"scriptName": "Bush_Classik_glb_7",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"4019576fcbc9496aa9722363d46b3aec": {
+			"id": "4019576fcbc9496aa9722363d46b3aec",
+			"label": "Main_House.glb 2",
+			"parent": {
+				"id": "root",
+				"order": "ZuV"
+			},
+			"scriptName": "Main_House_glb_2",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"42b4132b95ce407bbdfcf2e8b527028d": {
+			"id": "42b4132b95ce407bbdfcf2e8b527028d",
+			"label": "Yellow_House.glb 2",
+			"parent": {
+				"id": "root",
+				"order": "Zy"
+			},
+			"scriptName": "Yellow_House_glb_2",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"4b1d7bed2bdc4e9dbc96ca74f43ab606": {
+			"id": "4b1d7bed2bdc4e9dbc96ca74f43ab606",
+			"label": "Bush_Classik.glb 12",
+			"parent": {
+				"id": "root",
+				"order": "ZmXJ"
+			},
+			"scriptName": "Bush_Classik_glb_12",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"4b1d919301ff4ccb968f703dcaeff127": {
+			"id": "4b1d919301ff4ccb968f703dcaeff127",
+			"label": "Grass.glb 12",
+			"parent": {
+				"id": "root",
+				"order": "ZpXG"
+			},
+			"scriptName": "Grass_glb_12",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"4fdfaffc58bb41b095e7f3af6bdf6192": {
+			"id": "4fdfaffc58bb41b095e7f3af6bdf6192",
+			"label": "Main_House.glb",
+			"parent": {
+				"id": "root",
+				"order": "Zu"
+			},
+			"scriptName": "Main_House_glb",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"52148d8eafe3426085e700e049662c07": {
+			"id": "52148d8eafe3426085e700e049662c07",
+			"label": "DefaultLoader",
+			"parent": {
+				"id": "7b6fb4d895774174b5d151eec86b704c",
+				"order": "a3"
+			},
+			"scriptName": "DefaultLoader",
+			"type": "@zcomponent/core/lib/components/DefaultLoader#DefaultLoader"
+		},
+		"53980c841b3a4c488ad0129b7f5a511a": {
+			"id": "53980c841b3a4c488ad0129b7f5a511a",
+			"label": "Fence.glb 3",
+			"parent": {
+				"id": "root",
+				"order": "Zl"
+			},
+			"scriptName": "Fence_glb_3",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"57ed2351522d4b85b30a266889a32add": {
+			"id": "57ed2351522d4b85b30a266889a32add",
+			"label": "Tikvi.glb 3",
+			"parent": {
+				"id": "root",
+				"order": "Zjd"
+			},
+			"scriptName": "Tikvi_glb_3",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"59432a73a69d4337aedfa8b392858a82": {
+			"id": "59432a73a69d4337aedfa8b392858a82",
+			"label": "Bush_Classik.glb 13",
+			"parent": {
+				"id": "root",
+				"order": "ZmXH"
+			},
+			"scriptName": "Bush_Classik_glb_13",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"5f5c527fbb124f4b905365013fc7f323": {
+			"id": "5f5c527fbb124f4b905365013fc7f323",
+			"label": "Red_House.glb",
+			"parent": {
+				"id": "root",
+				"order": "Zv"
+			},
+			"scriptName": "Red_House_glb",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"622688ce4f1d4abdb7c37dcfe9cf872a": {
+			"id": "622688ce4f1d4abdb7c37dcfe9cf872a",
+			"label": "Bush_Classik.glb 14",
+			"parent": {
+				"id": "root",
+				"order": "ZmXC"
+			},
+			"scriptName": "Bush_Classik_glb_14",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"6b3663ef42a548a187190a793b759c2a": {
+			"id": "6b3663ef42a548a187190a793b759c2a",
+			"label": "Fence.glb 2",
+			"parent": {
+				"id": "root",
+				"order": "ZnV"
+			},
+			"scriptName": "Fence_glb_2",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"6f747f606fc746e7a6a84a71a84a9575": {
+			"id": "6f747f606fc746e7a6a84a71a84a9575",
+			"label": "Blue_House.glb 2",
+			"parent": {
+				"id": "root",
+				"order": "ZsV"
+			},
+			"scriptName": "Blue_House_glb_2",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"71439d08d7084a6a9cc0bd4a0fd66084": {
+			"id": "71439d08d7084a6a9cc0bd4a0fd66084",
+			"label": "Blue_House.glb",
+			"parent": {
+				"id": "root",
+				"order": "Zs"
+			},
+			"scriptName": "Blue_House_glb",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"76fd185bcec54a20b0a1dbefe9af016d": {
+			"id": "76fd185bcec54a20b0a1dbefe9af016d",
+			"label": "Tree_Bigger.glb",
+			"parent": {
+				"id": "root",
+				"order": "Zq"
+			},
+			"scriptName": "Tree_Bigger_glb",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"7b6fb4d895774174b5d151eec86b704c": {
+			"id": "7b6fb4d895774174b5d151eec86b704c",
+			"label": "Defaults",
+			"parent": {
+				"id": "root",
+				"order": "a0"
+			},
+			"scriptName": "Defaults",
+			"type": "@zcomponent/three/lib/components/Group#Group"
+		},
+		"7c884cec12634a8ca8c50a7b62095e29": {
+			"id": "7c884cec12634a8ca8c50a7b62095e29",
+			"label": "Fence.glb 9",
+			"parent": {
+				"id": "root",
+				"order": "ZnVG"
+			},
+			"scriptName": "Fence_glb_9",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"7f86f8f930ba435e8a890f07c932cb27": {
+			"id": "7f86f8f930ba435e8a890f07c932cb27",
+			"label": "Tree_Bigger.glb 4",
+			"parent": {
+				"id": "root",
+				"order": "Zq8"
+			},
+			"scriptName": "Tree_Bigger_glb_4",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"82ccdd95b5384a2eb736bb765210b349": {
+			"id": "82ccdd95b5384a2eb736bb765210b349",
+			"label": "Grass.glb 13",
+			"parent": {
+				"id": "root",
+				"order": "ZpY"
+			},
+			"scriptName": "Grass_glb_13",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"857f9901b65b42c89a3ff04470d70738": {
+			"id": "857f9901b65b42c89a3ff04470d70738",
+			"label": "DirectionalLight",
+			"parent": {
+				"id": "7b6fb4d895774174b5d151eec86b704c",
+				"order": "a2"
+			},
+			"scriptName": "DirectionalLight",
+			"type": "@zcomponent/three/lib/components/lights/DirectionalLight#DirectionalLight"
+		},
+		"86aa5f1422c842a696501df9809e7861": {
+			"id": "86aa5f1422c842a696501df9809e7861",
+			"label": "Red_House.glb 2",
+			"parent": {
+				"id": "root",
+				"order": "ZvV"
+			},
+			"scriptName": "Red_House_glb_2",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"88c3d1ec7d644136848d9b2cc6906028": {
+			"id": "88c3d1ec7d644136848d9b2cc6906028",
+			"label": "Tikvi.glb 2",
+			"parent": {
+				"id": "root",
+				"order": "ZjG"
+			},
+			"scriptName": "Tikvi_glb_2",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"8937518534414999ad9bba72483bf220": {
+			"id": "8937518534414999ad9bba72483bf220",
+			"label": "Grass.glb 3",
+			"parent": {
+				"id": "root",
+				"order": "ZpG"
+			},
+			"scriptName": "Grass_glb_3",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"911b7e874c95496bb1fe997de21c4071": {
+			"id": "911b7e874c95496bb1fe997de21c4071",
+			"label": "Bush_Classik.glb 5",
+			"parent": {
+				"id": "root",
+				"order": "ZmZ"
+			},
+			"scriptName": "Bush_Classik_glb_5",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"944966b82da343778d41ad447964fc9d": {
+			"id": "944966b82da343778d41ad447964fc9d",
+			"label": "Fence.glb 12",
+			"parent": {
+				"id": "root",
+				"order": "ZnV4"
+			},
+			"scriptName": "Fence_glb_12",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"9dab478345564fdabba3eff54317ce9a": {
+			"id": "9dab478345564fdabba3eff54317ce9a",
+			"label": "Карта.png 3",
+			"parent": {
+				"id": "root",
+				"order": "ZrG"
+			},
+			"scriptName": "_png_3",
+			"type": "@zcomponent/three/lib/components/Image#Image"
+		},
+		"9ea8336ee61443a3b9e2dfef2c6907d5": {
+			"id": "9ea8336ee61443a3b9e2dfef2c6907d5",
+			"label": "Fence.glb 13",
+			"parent": {
+				"id": "root",
+				"order": "ZnV1"
+			},
+			"scriptName": "Fence_glb_13",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"a33315312cd249428187ff97996184fb": {
+			"id": "a33315312cd249428187ff97996184fb",
+			"label": "Grass.glb 10",
+			"parent": {
+				"id": "root",
+				"order": "ZpZ"
+			},
+			"scriptName": "Grass_glb_10",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"a57f5d58e38e4a0b918dcf605ea12736": {
+			"id": "a57f5d58e38e4a0b918dcf605ea12736",
+			"label": "DefaultEnvironment",
+			"parent": {
+				"id": "7b6fb4d895774174b5d151eec86b704c",
+				"order": "a1"
+			},
+			"scriptName": "DefaultEnvironment",
+			"type": "@zcomponent/three/lib/components/environments/DefaultEnvironment#DefaultEnvironment"
+		},
+		"a7146a08f97e443fbc971275711daa2f": {
+			"id": "a7146a08f97e443fbc971275711daa2f",
+			"label": "Bush_Classik.glb 8",
+			"parent": {
+				"id": "root",
+				"order": "ZmX8"
+			},
+			"scriptName": "Bush_Classik_glb_8",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"a9d53d791b5941e7b88ac71862dd22d4": {
+			"id": "a9d53d791b5941e7b88ac71862dd22d4",
+			"label": "Fence.glb 8",
+			"parent": {
+				"id": "root",
+				"order": "ZnW"
+			},
+			"scriptName": "Fence_glb_8",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"ac91c21fbfa34c029d0db9120a4c7fd9": {
+			"id": "ac91c21fbfa34c029d0db9120a4c7fd9",
+			"label": "Bush_Classik.glb 11",
+			"parent": {
+				"id": "root",
+				"order": "ZmXN"
+			},
+			"scriptName": "Bush_Classik_glb_11",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"ae31e885afe34dd3b6f999fd15034414": {
+			"id": "ae31e885afe34dd3b6f999fd15034414",
+			"label": "Fence.glb",
+			"parent": {
+				"id": "root",
+				"order": "Zn"
+			},
+			"scriptName": "Fence_glb",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"afa5d2ca5cff4979ba2956b22082c6ec": {
+			"id": "afa5d2ca5cff4979ba2956b22082c6ec",
+			"label": "Grass.glb",
+			"parent": {
+				"id": "root",
+				"order": "Zp"
+			},
+			"scriptName": "Grass_glb",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"b06048a29b3941dabf2923e54324e1f1": {
+			"id": "b06048a29b3941dabf2923e54324e1f1",
+			"label": "Tikvi.glb 4",
+			"parent": {
+				"id": "root",
+				"order": "ZjM"
+			},
+			"scriptName": "Tikvi_glb_4",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"b08c0d6d62ac43ecbb9973c2c138bb86": {
+			"id": "b08c0d6d62ac43ecbb9973c2c138bb86",
+			"label": "Fence.glb 7",
+			"parent": {
+				"id": "root",
+				"order": "Znb"
+			},
+			"scriptName": "Fence_glb_7",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"b78eece564e940c68d8c1b3e8e7c7490": {
+			"id": "b78eece564e940c68d8c1b3e8e7c7490",
+			"label": "Fence.glb 10",
+			"parent": {
+				"id": "root",
+				"order": "ZlG"
+			},
+			"scriptName": "Fence_glb_10",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"bd6a8ab401c54eec8cf3fc4643d528f7": {
+			"id": "bd6a8ab401c54eec8cf3fc4643d528f7",
+			"label": "Fence.glb 5",
+			"parent": {
+				"id": "root",
+				"order": "ZnZ"
+			},
+			"scriptName": "Fence_glb_5",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"be33445d5c424e48844c7ab7164dee16": {
+			"id": "be33445d5c424e48844c7ab7164dee16",
+			"label": "Tree_Bigger.glb 7",
+			"parent": {
+				"id": "root",
+				"order": "ZoG"
+			},
+			"scriptName": "Tree_Bigger_glb_7",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"bf1d127bf7234511b3cdc3d5a98af7b0": {
+			"id": "bf1d127bf7234511b3cdc3d5a98af7b0",
+			"label": "ShadowPlane",
+			"locked": true,
+			"parent": {
+				"id": "7b6fb4d895774174b5d151eec86b704c",
+				"order": "a0"
+			},
+			"scriptName": "ShadowPlane",
+			"type": "@zcomponent/three/lib/components/meshes/ShadowPlane#ShadowPlane"
+		},
+		"ce31e8852c2e4a2794d0399f69ba007e": {
+			"id": "ce31e8852c2e4a2794d0399f69ba007e",
+			"label": "Grass.glb 8",
+			"parent": {
+				"id": "root",
+				"order": "ZpX"
+			},
+			"scriptName": "Grass_glb_8",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"d2517eb776504fe4a304c7b1a4182540": {
+			"id": "d2517eb776504fe4a304c7b1a4182540",
+			"label": "Tree_Bigger.glb 5",
+			"parent": {
+				"id": "root",
+				"order": "Zqd"
+			},
+			"scriptName": "Tree_Bigger_glb_5",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"e0d0fe541886434d8082c10d9408b79f": {
+			"id": "e0d0fe541886434d8082c10d9408b79f",
+			"label": "Bush_Classik.glb 4",
+			"parent": {
+				"id": "root",
+				"order": "Zmd"
+			},
+			"scriptName": "Bush_Classik_glb_4",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"e15f091b22e247b9a519be103f0a7b20": {
+			"id": "e15f091b22e247b9a519be103f0a7b20",
+			"label": "Fence.glb 6",
+			"parent": {
+				"id": "root",
+				"order": "Znc"
+			},
+			"scriptName": "Fence_glb_6",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"e2666d9bca7e4b64975ba34ca367cf5f": {
+			"id": "e2666d9bca7e4b64975ba34ca367cf5f",
+			"label": "Green_House.glb 2",
+			"parent": {
+				"id": "root",
+				"order": "ZtG"
+			},
+			"scriptName": "Green_House_glb_2",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"e32ea4ff56ad4f8ba1fe161757d0862a": {
+			"id": "e32ea4ff56ad4f8ba1fe161757d0862a",
+			"label": "Grass.glb 11",
+			"parent": {
+				"id": "root",
+				"order": "ZpXV"
+			},
+			"scriptName": "Grass_glb_11",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"e3a8fa65173046bab1d788c68253d109": {
+			"id": "e3a8fa65173046bab1d788c68253d109",
+			"label": "Fence.glb 11",
+			"parent": {
+				"id": "root",
+				"order": "Zn8"
+			},
+			"scriptName": "Fence_glb_11",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"e53f11114f3144aa980919252dd9276e": {
+			"id": "e53f11114f3144aa980919252dd9276e",
+			"label": "Ploshadka.glb",
+			"parent": {
+				"id": "root",
+				"order": "Zi"
+			},
+			"scriptName": "Ploshadka_glb",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"e54ea71da7fe467592613d80fd65542f": {
+			"id": "e54ea71da7fe467592613d80fd65542f",
+			"label": "Yellow_House.glb",
+			"parent": {
+				"id": "root",
+				"order": "Zx"
+			},
+			"scriptName": "Yellow_House_glb",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"e673d4c569d74c4dbdc055175d186290": {
+			"id": "e673d4c569d74c4dbdc055175d186290",
+			"label": "Bush_Classik.glb 3",
+			"parent": {
+				"id": "root",
+				"order": "Zml"
+			},
+			"scriptName": "Bush_Classik_glb_3",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"e9b6a59a30aa4f3e9fc280aaadd2d8c1": {
+			"id": "e9b6a59a30aa4f3e9fc280aaadd2d8c1",
+			"label": "Bush_Classik.glb 2",
+			"parent": {
+				"id": "root",
+				"order": "ZmV"
+			},
+			"scriptName": "Bush_Classik_glb_2",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"ebb9201634494965a80fcc81899fc9d4": {
+			"id": "ebb9201634494965a80fcc81899fc9d4",
+			"label": "Grass.glb 4",
+			"parent": {
+				"id": "root",
+				"order": "Zp4"
+			},
+			"scriptName": "Grass_glb_4",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"ef0d42a87ede4455950ecc700674f52f": {
+			"id": "ef0d42a87ede4455950ecc700674f52f",
+			"label": "Bush_Classik.glb 9",
+			"parent": {
+				"id": "root",
+				"order": "ZmXE"
+			},
+			"scriptName": "Bush_Classik_glb_9",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"ef28464b1f23452882774634e55fbed9": {
+			"id": "ef28464b1f23452882774634e55fbed9",
+			"label": "Bush_Classik.glb",
+			"parent": {
+				"id": "root",
+				"order": "Zm"
+			},
+			"scriptName": "Bush_Classik_glb",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"f2ffd56c80914120a174a639a2c926db": {
+			"id": "f2ffd56c80914120a174a639a2c926db",
+			"label": "Fence.glb 14",
+			"parent": {
+				"id": "root",
+				"order": "ZnV0G"
+			},
+			"scriptName": "Fence_glb_14",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"f58b5353362e4b03bec411ba15ed1a27": {
+			"id": "f58b5353362e4b03bec411ba15ed1a27",
+			"label": "Tree_Bigger.glb 8",
+			"parent": {
+				"id": "root",
+				"order": "ZqE"
+			},
+			"scriptName": "Tree_Bigger_glb_8",
+			"type": "@zcomponent/three/lib/components/models/GLTF#GLTF"
+		},
+		"root": {
+			"id": "root",
+			"label": "Group",
+			"type": "@zcomponent/three/lib/components/Group#Group"
+		}
+	},
+	"preview": "@zcomponent/three/lib/preview#default",
+	"propEntityOverrides": {
+		"position": {
+			"root": {
+				"position": true
+			}
+		}
+	},
+	"props": {
+		"position": {
+			"comments": [
+				"The position, in 3D space, of this node relative to its parent. The three elements of the array correspond to the `x`, `y`, and `z` components of position."
+			],
+			"default": [
+				0,
+				0,
+				0
+			],
+			"group": "Transform",
+			"groupPriority": 10,
+			"name": "position",
+			"type": {
+				"children": [
+					{
+						"comments": [
+						],
+						"name": "number"
+					},
+					{
+						"comments": [
+						],
+						"name": "number"
+					},
+					{
+						"comments": [
+						],
+						"name": "number"
+					}
+				],
+				"comments": [
+				],
+				"isObservable": true,
+				"name": "tuple",
+				"names": [
+					"x",
+					"y",
+					"z"
+				]
+			}
+		},
+		"rotation": {
+			"comments": [
+				"The rotation, in three dimensions, of this node relative to its parent. The three elements of the array correspond to Euler angles - yaw, pitch and roll."
+			],
+			"default": [
+				0,
+				0,
+				0
+			],
+			"group": "Transform",
+			"groupPriority": 10,
+			"name": "rotation",
+			"type": {
+				"children": [
+					{
+						"comments": [
+						],
+						"name": "number"
+					},
+					{
+						"comments": [
+						],
+						"name": "number"
+					},
+					{
+						"comments": [
+						],
+						"name": "number"
+					}
+				],
+				"comments": [
+				],
+				"isObservable": true,
+				"name": "tuple",
+				"names": [
+					"x",
+					"y",
+					"z"
+				]
+			}
+		},
+		"scale": {
+			"comments": [
+				"The scale, in three dimensions, of this node relative to its parent. The three elements of the array correspond to scales in the the `x`, `y`, and `z` axis."
+			],
+			"default": [
+				1,
+				1,
+				1
+			],
+			"group": "Transform",
+			"groupPriority": 10,
+			"name": "scale",
+			"type": {
+				"children": [
+					{
+						"comments": [
+						],
+						"name": "number"
+					},
+					{
+						"comments": [
+						],
+						"name": "number"
+					},
+					{
+						"comments": [
+						],
+						"name": "number"
+					}
+				],
+				"comments": [
+				],
+				"isObservable": true,
+				"name": "tuple",
+				"names": [
+					"x",
+					"y",
+					"z"
+				]
+			}
+		},
+		"visible": {
+			"comments": [
+				"Determines if this object and its children are rendered to the screen."
+			],
+			"default": true,
+			"group": "Appearance",
+			"groupPriority": 11,
+			"name": "visible",
+			"type": {
+				"comments": [
+				],
+				"isObservable": true,
+				"name": "boolean"
+			}
+		}
+	},
+	"root": "root"
+}

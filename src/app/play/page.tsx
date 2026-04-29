@@ -4,7 +4,7 @@
 
 import { requireChild } from '@/server/auth/guards'
 import { getChildSummary } from '@/server/actions/progress'
-import { World } from '@/components/world/World'
+import { MattercraftWorld } from '@/components/world/MattercraftWorld'
 
 export default async function PlayPage() {
   const child = await requireChild()
@@ -12,7 +12,7 @@ export default async function PlayPage() {
 
   return (
     <div className="h-dvh w-dvw overflow-hidden">
-      <World initialSummary={summary} />
+      <MattercraftWorld initialSummary={summary} />
     </div>
   )
 }

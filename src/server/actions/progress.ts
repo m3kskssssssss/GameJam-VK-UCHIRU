@@ -33,6 +33,7 @@ export type ChildSummary = {
   coins: number
   energy: number
   homeLevel: number
+  gender: 'BOY' | 'GIRL'
   perSubject: PerSubject
 }
 
@@ -186,7 +187,7 @@ export async function fetchSummary(childId: string): Promise<ChildSummary> {
   const [child, progressRows, peCount] = await Promise.all([
     prisma.child.findUniqueOrThrow({
       where: { id: childId },
-      select: { id: true, displayName: true, coins: true, energy: true, homeLevel: true },
+      select: { id: true, displayName: true, coins: true, energy: true, homeLevel: true, gender: true },
     }),
     prisma.subjectProgress.findMany({
       where: { childId },
@@ -209,6 +210,7 @@ export async function fetchSummary(childId: string): Promise<ChildSummary> {
     coins: child.coins,
     energy: child.energy,
     homeLevel: child.homeLevel,
+    gender: child.gender,
     perSubject: {
       math: getSubject('MATH'),
       reading: getSubject('READING'),

@@ -148,7 +148,7 @@ export async function createChild(
     return { ok: false, error: parsed.error.errors[0]?.message ?? t.errors.validationFailed }
   }
 
-  const { username, displayName, password } = parsed.data
+  const { username, displayName, password, gender } = parsed.data
 
   const existing = await prisma.child.findUnique({ where: { username } })
   if (existing) {
@@ -163,6 +163,7 @@ export async function createChild(
       displayName,
       passwordHash,
       parentId: parent.id,
+      gender,
     },
     select: { id: true },
   })

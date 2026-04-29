@@ -25,6 +25,9 @@ export const ru = {
     labelDisplayName: 'Ваше имя',
     labelUsername: 'Имя пользователя',
     labelPassword: 'Пароль',
+    labelGender: 'Пол персонажа',
+    optionGenderBoy: 'Мальчик',
+    optionGenderGirl: 'Девочка',
 
     // Placeholders
     placeholderEmail: 'example@mail.ru',

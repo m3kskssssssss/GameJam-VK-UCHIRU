@@ -28,8 +28,16 @@ export function useSceneInput(targetRef?: React.RefObject<HTMLElement | null>) {
 
     function down(e: KeyboardEvent) {
       const k = e.key.toLowerCase()
-      if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(k)) {
+      if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(k)) {
         e.preventDefault()
+      }
+      // Space → jump (only on keydown, not autorepeat)
+      if (k === ' ' && !e.repeat) {
+        useGameStore.getState().jump()
+      }
+      // Shift → start running
+      if (k === 'shift' && !e.repeat) {
+        useGameStore.getState().setRunning(true)
       }
       held.add(k)
       compute()
@@ -37,6 +45,9 @@ export function useSceneInput(targetRef?: React.RefObject<HTMLElement | null>) {
 
     function up(e: KeyboardEvent) {
       const k = e.key.toLowerCase()
+      if (k === 'shift') {
+        useGameStore.getState().setRunning(false)
+      }
       held.delete(k)
       compute()
     }
