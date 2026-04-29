@@ -17,7 +17,7 @@ import { useGameStore } from '@/hooks/useGameStore'
 // 0.75 of a Mattercraft house "floor". Houses are scaled [4,4,4] in scene
 // (raw GLB ~1.64 m → ~6.56 m scaled total → wall portion ~3.3 m → 0.75 ≈ 2.5 m).
 // Boy raw height ~1.93 m → ~1.3× scale gives ~2.5 m.
-const CHAR_SCALE = 1.3
+const CHAR_SCALE = 1
 
 const CHAR_PATHS = {
   BOY: { mesh: '/characters/boy.glb', anim: '/characters/boy_animations.glb' },
