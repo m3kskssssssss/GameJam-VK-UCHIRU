@@ -4,7 +4,7 @@
 
 import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { signOut } from '@/server/auth/index'
+import { signOutAction } from '@/server/actions/auth-actions'
 import { useGameStore } from '@/hooks/useGameStore'
 import type { HouseSubject } from '@/hooks/useGameStore'
 import { ru } from '@/i18n/ru'
@@ -87,7 +87,7 @@ export function Hud() {
 
   function handleLogout() {
     startTransition(async () => {
-      await signOut({ redirectTo: '/' })
+      await signOutAction()
     })
   }
 

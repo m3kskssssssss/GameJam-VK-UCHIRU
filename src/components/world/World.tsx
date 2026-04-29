@@ -3,7 +3,7 @@
 // Wraps the R3F Canvas, HUD overlay, and Joystick.
 // Keyboard input is handled here via useEffect on window.
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { Hud } from '@/components/play/Hud'
 import { Field } from './Field'
@@ -34,9 +34,12 @@ function computeVelocity() {
 export function World({ initialSummary }: WorldProps) {
   const setSummary = useGameStore((s) => s.setSummary)
   const setVelocity = useGameStore((s) => s.setVelocity)
+  const setPosition = useGameStore((s) => s.setPosition)
+  const setBounds = useGameStore((s) => s.setBounds)
   const isMountedRef = useRef(false)
+  const [isTouchDevice, setIsTouchDevice] = useState(false)
 
-  // Seed store with server data on mount
+  // Seed store with server data on mount and reset position to spawn.
   useEffect(() => {
     if (isMountedRef.current) return
     isMountedRef.current = true
@@ -45,7 +48,14 @@ export function World({ initialSummary }: WorldProps) {
       energy: initialSummary.energy,
       homeLevel: initialSummary.homeLevel,
     })
-  }, [initialSummary, setSummary])
+    setBounds(14, 9)
+    setPosition(0, 0, 4)
+  }, [initialSummary, setSummary, setBounds, setPosition])
+
+  // Detect touch capability after mount to avoid SSR/hydration mismatch.
+  useEffect(() => {
+    setIsTouchDevice('ontouchstart' in window)
+  }, [])
 
   // Keyboard input
   useEffect(() => {
@@ -74,10 +84,6 @@ export function World({ initialSummary }: WorldProps) {
     }
   }, [setVelocity])
 
-  // Detect touch capability for joystick visibility
-  const isTouchDevice =
-    typeof window !== 'undefined' && 'ontouchstart' in window
-
   return (
     <div style={{ position: 'relative', width: '100dvw', height: '100dvh', overflow: 'hidden' }}>
       {/* R3F Canvas */}
@@ -89,7 +95,7 @@ export function World({ initialSummary }: WorldProps) {
           far: 200,
           zoom: 38,
         }}
-        dpr={[1, 2]}
+        dpr={[1, 1.5]}
         shadows={false}
         style={{ background: '#87CEEB' }}  // sky blue background
       >

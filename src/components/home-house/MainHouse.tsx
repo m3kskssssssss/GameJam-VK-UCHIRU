@@ -16,6 +16,7 @@ import { RoomTabs } from './RoomTabs'
 import { PlacementSidebar } from './PlacementSidebar'
 import { ShopModal } from './ShopModal'
 import { WardrobeModal } from './WardrobeModal'
+import { HouseInterior } from '@/components/world/HouseInterior'
 
 const _t = ru.home
 
@@ -225,47 +226,55 @@ export function MainHouse({
         onLobby={handleGoToLobby}
       />
 
-      {/* ── Middle: room tabs + grid + placement sidebar ── */}
+      {/* ── Middle: room tabs + 3D scene OR edit grid ── */}
       <div
         style={{
           flex: 1,
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
-          padding: '0.75rem',
+          padding: placementMode ? '0.75rem' : 0,
           gap: '0.5rem',
         }}
       >
-        {/* Task 6.8: Room tabs */}
-        <RoomTabs
-          rooms={rooms}
-          activeRoomIndex={activeRoomIndex}
-          homeLevel={homeLevel}
-          coins={coins}
-          unlocking={unlocking}
-          onSelectRoom={handleSelectRoom}
-          onUnlockRoom={handleUnlockRoom}
-        />
-
-        {/* Room grid */}
-        <div style={{ flex: 1, minHeight: 0, display: 'flex', alignItems: 'center' }}>
-          <RoomGrid
-            room={activeRoom}
-            inventory={inventory}
-            placementMode={placementMode}
-            selectedItemId={selectedItemId}
-            petKey={appearance.petKey}
-            onCellTap={handleCellTap}
-            onPlacedItemTap={handlePlacedItemTap}
-          />
-        </div>
-
-        {/* Task 6.7: Placement sidebar — visible in placement mode */}
+        {/* Task 6.8: Room tabs (only meaningful in edit mode) */}
         {placementMode && (
-          <PlacementSidebar
-            inventory={inventory}
-            selectedItemId={selectedItemId}
-            onSelectItem={setSelectedItemId}
+          <RoomTabs
+            rooms={rooms}
+            activeRoomIndex={activeRoomIndex}
+            homeLevel={homeLevel}
+            coins={coins}
+            unlocking={unlocking}
+            onSelectRoom={handleSelectRoom}
+            onUnlockRoom={handleUnlockRoom}
+          />
+        )}
+
+        {placementMode ? (
+          <>
+            {/* HTML grid for precise placement */}
+            <div style={{ flex: 1, minHeight: 0, display: 'flex', alignItems: 'center' }}>
+              <RoomGrid
+                room={activeRoom}
+                inventory={inventory}
+                placementMode={placementMode}
+                selectedItemId={selectedItemId}
+                petKey={appearance.petKey}
+                onCellTap={handleCellTap}
+                onPlacedItemTap={handlePlacedItemTap}
+              />
+            </div>
+            <PlacementSidebar
+              inventory={inventory}
+              selectedItemId={selectedItemId}
+              onSelectItem={setSelectedItemId}
+            />
+          </>
+        ) : (
+          /* 3D walk-around scene for normal viewing */
+          <HouseInterior
+            placements={activeRoom?.placements ?? []}
+            onExit={handleExitToWorld}
           />
         )}
       </div>

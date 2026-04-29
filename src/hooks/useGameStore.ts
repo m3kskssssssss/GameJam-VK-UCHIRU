@@ -7,8 +7,6 @@ import { create } from 'zustand'
 export type HouseSubject = 'math' | 'reading' | 'english' | 'pe' | 'home'
 export type FacingDirection = 'down' | 'up' | 'left' | 'right'
 
-const FIELD_HALF_X = 14  // field is ~30 wide → ±14 walkable
-const FIELD_HALF_Z = 9   // field is ~20 deep → ±9 walkable
 const SPEED = 4           // units per second
 
 interface GameState {
@@ -19,6 +17,9 @@ interface GameState {
   facing: FacingDirection
   // Which house the character is near (within trigger radius)
   nearHouse: HouseSubject | null
+  // Walkable bounds — set per-scene on mount
+  halfX: number
+  halfZ: number
 
   // Currency — seeded from server, not polled
   coins: number
@@ -30,6 +31,8 @@ interface GameState {
   setNearHouse: (subject: HouseSubject | null) => void
   applyMovement: (dt: number) => void
   setSummary: (summary: { coins: number; energy: number; homeLevel: number }) => void
+  setPosition: (x: number, y: number, z: number) => void
+  setBounds: (halfX: number, halfZ: number) => void
 }
 
 export const useGameStore = create<GameState>()((set) => ({
@@ -37,6 +40,8 @@ export const useGameStore = create<GameState>()((set) => ({
   velocity: [0, 0],
   facing: 'down',
   nearHouse: null,
+  halfX: 14,
+  halfZ: 9,
   coins: 0,
   energy: 0,
   homeLevel: 1,
@@ -70,11 +75,15 @@ export const useGameStore = create<GameState>()((set) => ({
       if (vx === 0 && vz === 0) return state
 
       const [px, py, pz] = state.position
-      const nx = Math.max(-FIELD_HALF_X, Math.min(FIELD_HALF_X, px + vx * SPEED * dt))
-      const nz = Math.max(-FIELD_HALF_Z, Math.min(FIELD_HALF_Z, pz + vz * SPEED * dt))
+      const nx = Math.max(-state.halfX, Math.min(state.halfX, px + vx * SPEED * dt))
+      const nz = Math.max(-state.halfZ, Math.min(state.halfZ, pz + vz * SPEED * dt))
       return { position: [nx, py, nz] }
     })
   },
 
   setSummary: ({ coins, energy, homeLevel }) => set({ coins, energy, homeLevel }),
+
+  setPosition: (x, y, z) => set({ position: [x, y, z], velocity: [0, 0] }),
+
+  setBounds: (halfX, halfZ) => set({ halfX, halfZ }),
 }))

@@ -2,7 +2,7 @@
 // Logout button — calls signOut server action and redirects to home
 import { useTransition } from 'react'
 import { Button } from '@/components/ui/button'
-import { signOut } from '@/server/auth/index'
+import { signOutAction } from '@/server/actions/auth-actions'
 import { ru } from '@/i18n/ru'
 
 const { auth: t } = ru
@@ -12,7 +12,7 @@ export function LogoutButton() {
 
   function handleLogout() {
     startTransition(async () => {
-      await signOut({ redirectTo: '/' })
+      await signOutAction()
     })
   }
 
