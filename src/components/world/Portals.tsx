@@ -1,10 +1,13 @@
 'use client'
 // Entry portals at the doors of the 5 active Mattercraft houses. Each portal
 // is a glowing ring on the ground + an invisible proximity sphere that updates
-// store.nearHouse when the player walks onto the porch.
+// store.nearHouse when the player walks onto it. A billboarded text label
+// floats above the ring so the kid can read each subject name regardless of
+// camera angle.
 
 import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
+import { Billboard, Text } from '@react-three/drei'
 import * as THREE from 'three'
 import {
   DOOR_OFFSET,
@@ -13,6 +16,15 @@ import {
   type Portal,
 } from './portals-data'
 import { useGameStore } from '@/hooks/useGameStore'
+
+// 1.5× smaller than the original draft.
+const PORTAL_SCALE = 1 / 1.5
+const RING_INNER = 1.6 * PORTAL_SCALE
+const RING_OUTER = 2.4 * PORTAL_SCALE
+const SOFT_INNER = 0.8 * PORTAL_SCALE
+const SOFT_OUTER = 1.6 * PORTAL_SCALE
+const LABEL_HEIGHT = 1.6
+const LABEL_FONT = 0.55
 
 interface PortalNodeProps {
   portal: Portal
@@ -23,19 +35,19 @@ function PortalNode({ portal }: PortalNodeProps) {
   const wasNear = useRef(false)
   const ringRef = useRef<THREE.Mesh>(null)
 
-  // World-space door position: rotate local +Z offset by yaw, add to house pos.
-  const doorPos = useMemo<[number, number, number]>(() => {
+  // World-space portal position: rotate a unit +Z vector by offsetDirection
+  // and add to the house position.
+  const portalPos = useMemo<[number, number, number]>(() => {
     const [hx, , hz] = portal.housePosition
-    const sin = Math.sin(portal.houseYaw)
-    const cos = Math.cos(portal.houseYaw)
-    // local +Z = forward through the door. After yaw: (sin*offset, ?, cos*offset).
+    const sin = Math.sin(portal.offsetDirection)
+    const cos = Math.cos(portal.offsetDirection)
     return [hx + sin * DOOR_OFFSET, 0.05, hz + cos * DOOR_OFFSET]
   }, [portal])
 
   useFrame(() => {
     const [px, , pz] = useGameStore.getState().position
-    const dx = px - doorPos[0]
-    const dz = pz - doorPos[2]
+    const dx = px - portalPos[0]
+    const dz = pz - portalPos[2]
     const distSq = dx * dx + dz * dz
     const isNear = distSq < TRIGGER_RADIUS * TRIGGER_RADIUS
 
@@ -49,7 +61,7 @@ function PortalNode({ portal }: PortalNodeProps) {
       }
     }
 
-    // Gentle pulse on the ring.
+    // Gentle pulse on the outer ring.
     if (ringRef.current) {
       const t = performance.now() / 1000
       const pulse = 1 + Math.sin(t * 2.4) * 0.06
@@ -58,10 +70,10 @@ function PortalNode({ portal }: PortalNodeProps) {
   })
 
   return (
-    <group position={doorPos}>
-      {/* Glowing ring on the ground */}
+    <group position={portalPos}>
+      {/* Glowing outer ring on the ground */}
       <mesh ref={ringRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
-        <ringGeometry args={[1.6, 2.4, 48]} />
+        <ringGeometry args={[RING_INNER, RING_OUTER, 48]} />
         <meshBasicMaterial
           color={portal.color}
           transparent
@@ -71,7 +83,7 @@ function PortalNode({ portal }: PortalNodeProps) {
       </mesh>
       {/* Inner softer ring */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.04, 0]}>
-        <ringGeometry args={[0.8, 1.6, 48]} />
+        <ringGeometry args={[SOFT_INNER, SOFT_OUTER, 48]} />
         <meshBasicMaterial
           color={portal.color}
           transparent
@@ -79,6 +91,21 @@ function PortalNode({ portal }: PortalNodeProps) {
           side={THREE.DoubleSide}
         />
       </mesh>
+
+      {/* Billboarded label — always faces the camera so it's readable from any angle */}
+      <Billboard follow position={[0, LABEL_HEIGHT, 0]}>
+        <Text
+          fontSize={LABEL_FONT}
+          color="#1F2937"
+          anchorX="center"
+          anchorY="middle"
+          outlineWidth={0.05}
+          outlineColor="#FFFFFF"
+          maxWidth={6}
+        >
+          {portal.label}
+        </Text>
+      </Billboard>
     </group>
   )
 }

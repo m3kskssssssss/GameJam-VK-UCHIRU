@@ -8,9 +8,12 @@
 //   Red    → PE
 //   Main   → Home
 //
-// Door faces +Z in local space for each house GLB. To compute the trigger /
-// portal position we rotate the local door offset by the house yaw and add to
-// the house position.
+// `offsetDirection` is a world-space yaw (radians) that picks which side of the
+// house the portal lands on. Convention used by Portals.tsx:
+//   0     → +Z (south on the map)
+//   π / 2 → +X (east)
+//   π     → -Z (north)
+//  -π / 2 → -X (west)
 
 import type { HouseSubject } from '@/hooks/useGameStore'
 
@@ -20,8 +23,8 @@ export interface Portal {
   color: string
   /** House origin in world space. */
   housePosition: [number, number, number]
-  /** House yaw in radians (rotation Y from the .zcomp). */
-  houseYaw: number
+  /** World-space yaw (radians) — direction from house to portal. */
+  offsetDirection: number
 }
 
 // Color hex per subject — used for the glowing portal ring.
@@ -35,46 +38,45 @@ export const PORTAL_COLORS: Record<HouseSubject, string> = {
 
 export const PORTALS: readonly Portal[] = [
   {
-    subject: 'math',
+    subject: 'math', // blue — portal on the WEST side
     label: 'Математика',
     color: PORTAL_COLORS.math,
     housePosition: [-7.932975, 2.066764, 7.653814],
-    houseYaw: 0,
+    offsetDirection: -Math.PI / 2,
   },
   {
-    subject: 'reading',
+    subject: 'reading', // green — portal on the EAST side
     label: 'Чтение',
     color: PORTAL_COLORS.reading,
     housePosition: [7.135908, 2.71294, 19.65324],
-    houseYaw: 0,
+    offsetDirection: Math.PI / 2,
   },
   {
-    subject: 'english',
+    subject: 'english', // yellow — door already faces this way; keep current
     label: 'Английский',
     color: PORTAL_COLORS.english,
     housePosition: [6.74195, 2.992029, -18.054173],
-    houseYaw: -1.5646,
+    offsetDirection: -1.5646,
   },
   {
-    subject: 'pe',
+    subject: 'pe', // red — portal on the EAST side
     label: 'Физкультура',
     color: PORTAL_COLORS.pe,
     housePosition: [-18.030308, 2.45301, -5.521905],
-    houseYaw: 1.5793,
+    offsetDirection: Math.PI / 2,
   },
   {
-    subject: 'home',
+    subject: 'home', // main / white — portal on the WEST side
     label: 'Мой дом',
     color: PORTAL_COLORS.home,
     housePosition: [19.255938, 3.211842, 7.439676],
-    houseYaw: 1.5737,
+    offsetDirection: -Math.PI / 2,
   },
 ] as const
 
-// Distance from house center to its door, in world units. Houses are scaled 4×;
-// the raw GLB door sits ~1.6 units in front of origin → ~6.4 after scale, plus a
-// small landing strip so the player stops on the porch (not inside the wall).
+// Distance from house center to portal, in world units.
 export const DOOR_OFFSET = 6.5
 
-// Trigger sphere radius (player must be within this distance of the door).
-export const TRIGGER_RADIUS = 3.0
+// Trigger sphere radius (player must be within this distance of the portal).
+// Reduced 1.5× alongside the visual ring shrink.
+export const TRIGGER_RADIUS = 2.0
