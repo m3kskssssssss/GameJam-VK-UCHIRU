@@ -5,7 +5,8 @@
   "description": "Educational game for kids with parental dashboard. Built on Next.js + Vercel.",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
+    "postinstall": "prisma generate",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
