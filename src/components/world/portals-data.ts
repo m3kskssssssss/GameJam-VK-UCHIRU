@@ -42,14 +42,14 @@ export const PORTALS: readonly Portal[] = [
     label: 'Математика',
     color: PORTAL_COLORS.math,
     housePosition: [-7.932975, 2.066764, 7.653814],
-    offsetDirection: -Math.PI / 2,
+    offsetDirection: -Math.PI ,
   },
   {
     subject: 'reading', // green — portal on the EAST side
     label: 'Чтение',
     color: PORTAL_COLORS.reading,
     housePosition: [7.135908, 2.71294, 19.65324],
-    offsetDirection: Math.PI / 2,
+    offsetDirection: 3 * Math.PI / 2,
   },
   {
     subject: 'english', // yellow — door already faces this way; keep current
@@ -63,14 +63,14 @@ export const PORTALS: readonly Portal[] = [
     label: 'Физкультура',
     color: PORTAL_COLORS.pe,
     housePosition: [-18.030308, 2.45301, -5.521905],
-    offsetDirection: Math.PI / 2,
+    offsetDirection: 0,
   },
   {
     subject: 'home', // main / white — portal on the WEST side
     label: 'Мой дом',
     color: PORTAL_COLORS.home,
     housePosition: [19.255938, 3.211842, 7.439676],
-    offsetDirection: -Math.PI / 2,
+    offsetDirection: -Math.PI ,
   },
 ] as const
 
