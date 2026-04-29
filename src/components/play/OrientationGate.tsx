@@ -31,6 +31,37 @@ export function OrientationGate({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
+  // Lock the page to the visual viewport while playing — no rubber-band, no
+  // address-bar peeking, no copy menu. Reverts on unmount so the parent
+  // dashboard scrolls normally.
+  useEffect(() => {
+    const html = document.documentElement
+    html.classList.add('kq-immersive')
+
+    function preventGesture(e: Event) {
+      e.preventDefault()
+    }
+    function preventTouchMove(e: TouchEvent) {
+      // Block iOS pull-to-refresh & rubber-band only when the gesture is
+      // a multi-touch pinch — single-finger drags must still reach the canvas
+      // (camera swipe, joystick).
+      if (e.touches.length > 1) e.preventDefault()
+    }
+
+    document.addEventListener('gesturestart', preventGesture)
+    document.addEventListener('gesturechange', preventGesture)
+    document.addEventListener('gestureend', preventGesture)
+    document.addEventListener('touchmove', preventTouchMove, { passive: false })
+
+    return () => {
+      html.classList.remove('kq-immersive')
+      document.removeEventListener('gesturestart', preventGesture)
+      document.removeEventListener('gesturechange', preventGesture)
+      document.removeEventListener('gestureend', preventGesture)
+      document.removeEventListener('touchmove', preventTouchMove)
+    }
+  }, [])
+
   // Try to lock orientation on the next pointerdown — most browsers require a
   // user-gesture activation. Best-effort; silently fails if unsupported.
   useEffect(() => {
@@ -58,7 +89,11 @@ export function OrientationGate({ children }: { children: React.ReactNode }) {
   }, [isTouch])
 
   return (
-    <>
+    <div
+      className="kq-fullscreen"
+      onContextMenu={(e) => e.preventDefault()}
+      onDragStart={(e) => e.preventDefault()}
+    >
       {children}
       {isPortrait && (
         <div
@@ -104,6 +139,6 @@ export function OrientationGate({ children }: { children: React.ReactNode }) {
           `}</style>
         </div>
       )}
-    </>
+    </div>
   )
 }
