@@ -11,7 +11,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { useAnimations, useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
-import { SkeletonUtils } from 'three/examples/jsm/utils/SkeletonUtils.js'
+import { clone as skeletonClone } from 'three/examples/jsm/utils/SkeletonUtils.js'
 import { useGameStore } from '@/hooks/useGameStore'
 
 // 0.75 of a Mattercraft house "floor". Houses are scaled [4,4,4] in scene
@@ -41,7 +41,7 @@ export function CharacterGLB({ gender }: CharacterGLBProps) {
 
   // Skinned meshes need SkeletonUtils.clone to keep bone hierarchy intact.
   const cloned = useMemo(
-    () => SkeletonUtils.clone(meshGltf.scene),
+    () => skeletonClone(meshGltf.scene) as THREE.Object3D,
     [meshGltf.scene],
   )
 

@@ -32,7 +32,7 @@ function PortalNode({ portal }: PortalNodeProps) {
     return [hx + sin * DOOR_OFFSET, 0.05, hz + cos * DOOR_OFFSET]
   }, [portal])
 
-  useFrame((_, dt) => {
+  useFrame(() => {
     const [px, , pz] = useGameStore.getState().position
     const dx = px - doorPos[0]
     const dz = pz - doorPos[2]
