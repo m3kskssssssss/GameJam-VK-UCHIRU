@@ -1,4 +1,4 @@
-// Internal helpers for lobby mini-game (Phase 7).
+// Internal helpers for lobby mini-game.
 // Not a server action file — no 'use server' directive needed.
 // Imported only by lobby.ts.
 
@@ -7,15 +7,22 @@ import { prisma } from '@/lib/db'
 import { addCoins } from '@/server/actions/progress'
 
 // ---------------------------------------------------------------------------
-// Grid / round constants
+// Field / round constants
 // ---------------------------------------------------------------------------
 
-export const GRID_W = 12
-export const GRID_H = 8
+// Field is laid out in cells. Coins live at integer cell centres; player
+// position is continuous (Float in DB).
+export const GRID_W = 24
+export const GRID_H = 16
+export const FIELD_HALF_W = GRID_W / 2 // world half-extent in X
+export const FIELD_HALF_D = GRID_H / 2 // world half-extent in Z
+export const COLLECT_RADIUS = 0.7
+export const COLLECT_RADIUS_SQ = COLLECT_RADIUS * COLLECT_RADIUS
+
 export const ROUND_DURATION_MS = 60_000
-export const TARGET_ACTIVE_TILES = 10
+export const TARGET_ACTIVE_TILES = 14
 export const SPAWN_INTERVAL_MS = 1500
-export const MOVE_THROTTLE_MS = 80
+export const POSITION_THROTTLE_MS = 60
 export const MAX_PLAYERS = 8
 
 // ---------------------------------------------------------------------------
@@ -24,11 +31,20 @@ export const MAX_PLAYERS = 8
 
 export const MatchIdSchema = z.object({ matchId: z.string().cuid() })
 
-export const MoveSchema = z.object({
+export const PositionSchema = z.object({
   matchId: z.string().cuid(),
-  dx: z.union([z.literal(-1), z.literal(0), z.literal(1)]),
-  dy: z.union([z.literal(-1), z.literal(0), z.literal(1)]),
+  x: z.number().finite(),
+  y: z.number().finite(),
 })
+
+// ---------------------------------------------------------------------------
+// Coordinate helpers
+// ---------------------------------------------------------------------------
+
+/** Convert grid cell (col, row) to world (x, z) at the cell centre. */
+export function cellToWorld(col: number, row: number): { x: number; z: number } {
+  return { x: col - GRID_W / 2 + 0.5, z: row - GRID_H / 2 + 0.5 }
+}
 
 // ---------------------------------------------------------------------------
 // Return-type shapes
@@ -43,6 +59,7 @@ export type PlayerState = {
 }
 
 export type TileState = {
+  id: string
   x: number
   y: number
   stompedById: string | null
@@ -74,7 +91,7 @@ export type MatchState = {
 /**
  * Generate `count` random (x, y) coordinates not in `occupied`,
  * then bulk-insert them. Uses try/catch to swallow unique-constraint
- * violations (SQLite has no ON CONFLICT IGNORE via createMany).
+ * violations.
  */
 export async function _spawnTiles(
   matchId: string,
@@ -86,7 +103,7 @@ export async function _spawnTiles(
   const coords: Array<{ x: number; y: number }> = []
   const seen = new Set<string>(occupied)
   let attempts = 0
-  const maxAttempts = count * 20
+  const maxAttempts = count * 30
 
   while (coords.length < count && attempts < maxAttempts) {
     attempts++
@@ -104,14 +121,13 @@ export async function _spawnTiles(
         data: { matchId, x: coord.x, y: coord.y },
       })
     } catch {
-      // Unique constraint violation — tile already exists at this coordinate.
-      // Safe to ignore; another concurrent player may have spawned it first.
+      // Unique violation — another concurrent caller picked this cell.
     }
   }
 }
 
 // ---------------------------------------------------------------------------
-// loadMatchWithTiles — shared Prisma query used by getMatchState
+// loadMatchWithTiles
 // ---------------------------------------------------------------------------
 
 type RawMatch = {
@@ -120,43 +136,51 @@ type RawMatch = {
   startedAt: Date | null
   endsAt: Date | null
   lastSpawnAt: Date | null
-  players: Array<{ childId: string; displayName: string; x: number; y: number; score: number }>
-  tiles: Array<{ x: number; y: number; stompedById: string | null }>
+  players: Array<{
+    childId: string
+    displayName: string
+    x: number
+    y: number
+    score: number
+  }>
+  tiles: Array<{ id: string; x: number; y: number; stompedById: string | null }>
 }
 
 export async function loadMatchWithTiles(matchId: string, fadeCutoff: Date): Promise<RawMatch> {
   return prisma.lobbyMatch.findUniqueOrThrow({
     where: { id: matchId },
     select: {
-      id: true, status: true, startedAt: true, endsAt: true, lastSpawnAt: true,
+      id: true,
+      status: true,
+      startedAt: true,
+      endsAt: true,
+      lastSpawnAt: true,
       players: { select: { childId: true, displayName: true, x: true, y: true, score: true } },
       tiles: {
         where: { OR: [{ stompedById: null }, { stompedAt: { gte: fadeCutoff } }] },
-        select: { x: true, y: true, stompedById: true },
+        select: { id: true, x: true, y: true, stompedById: true },
       },
     },
   })
 }
 
 // ---------------------------------------------------------------------------
-// _finalizeMatch
+// _finalizeMatch — distribute round prizes
 // ---------------------------------------------------------------------------
 
 export const PLACE_COINS: Record<number, number> = { 0: 30, 1: 20, 2: 10 }
 const PARTICIPATION_COINS = 5
 
-/**
- * Mark a match FINISHED and award coins to all players.
- * Idempotent — returns immediately if already FINISHED.
- */
 export async function _finalizeMatch(matchId: string): Promise<void> {
   const match = await prisma.lobbyMatch.findUnique({
     where: { id: matchId },
-    select: { status: true, players: { select: { childId: true, displayName: true, score: true } } },
+    select: {
+      status: true,
+      players: { select: { childId: true, displayName: true, score: true } },
+    },
   })
   if (!match || match.status === 'FINISHED') return
 
-  // Sort by score descending to determine places.
   const sorted = [...match.players].sort((a, b) => b.score - a.score)
 
   await prisma.lobbyMatch.update({
@@ -164,7 +188,6 @@ export async function _finalizeMatch(matchId: string): Promise<void> {
     data: { status: 'FINISHED' },
   })
 
-  // Award coins concurrently — addCoins is already atomic per child.
   await Promise.all(
     sorted.map((player, index) => {
       const base = PLACE_COINS[index] ?? PARTICIPATION_COINS
@@ -176,15 +199,11 @@ export async function _finalizeMatch(matchId: string): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
-// occupiedSet — build a Set<"x,y"> from arrays of positions
+// occupiedSet — build a Set<"x,y"> from arrays of coin positions
 // ---------------------------------------------------------------------------
 
-export function occupiedSet(
-  tiles: Array<{ x: number; y: number }>,
-  players: Array<{ x: number; y: number }>,
-): Set<string> {
+export function occupiedSet(tiles: Array<{ x: number; y: number }>): Set<string> {
   const set = new Set<string>()
   for (const t of tiles) set.add(`${t.x},${t.y}`)
-  for (const p of players) set.add(`${p.x},${p.y}`)
   return set
 }

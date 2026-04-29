@@ -1,12 +1,12 @@
-// Play area layout — enforces CHILD session server-side
+// Play area layout — enforces CHILD session server-side and locks orientation.
 import { requireChild } from '@/server/auth/guards'
+import { OrientationGate } from '@/components/play/OrientationGate'
 
 export default async function PlayLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  // Redirects to /auth/login if session is missing or wrong role.
   await requireChild()
-  return <>{children}</>
+  return <OrientationGate>{children}</OrientationGate>
 }

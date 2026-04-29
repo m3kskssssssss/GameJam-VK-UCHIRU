@@ -1,7 +1,5 @@
 'use client'
-// Top-level game world client component.
-// Wraps the R3F Canvas, HUD overlay, and Joystick.
-// Keyboard input is handled here via useEffect on window.
+// Top-level outdoor scene. Perspective camera + 3rd-person follow rig.
 
 import { useEffect, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
@@ -11,35 +9,26 @@ import { Houses } from './Houses'
 import { Character } from './Character'
 import { CameraRig } from './CameraRig'
 import { Joystick } from './Joystick'
+import { RotationJoystick } from './RotationJoystick'
 import { useGameStore } from '@/hooks/useGameStore'
+import { useSceneInput } from '@/hooks/useSceneInput'
 import type { ChildSummary } from '@/server/actions/progress'
 
 interface WorldProps {
   initialSummary: ChildSummary
 }
 
-// Track which keys are currently held
-const heldKeys = new Set<string>()
-
-function computeVelocity() {
-  let vx = 0
-  let vz = 0
-  if (heldKeys.has('ArrowLeft') || heldKeys.has('a') || heldKeys.has('A')) vx -= 1
-  if (heldKeys.has('ArrowRight') || heldKeys.has('d') || heldKeys.has('D')) vx += 1
-  if (heldKeys.has('ArrowUp') || heldKeys.has('w') || heldKeys.has('W')) vz -= 1
-  if (heldKeys.has('ArrowDown') || heldKeys.has('s') || heldKeys.has('S')) vz += 1
-  return { vx, vz }
-}
-
 export function World({ initialSummary }: WorldProps) {
   const setSummary = useGameStore((s) => s.setSummary)
-  const setVelocity = useGameStore((s) => s.setVelocity)
   const setPosition = useGameStore((s) => s.setPosition)
   const setBounds = useGameStore((s) => s.setBounds)
+  const setCameraDistance = useGameStore((s) => s.setCameraDistance)
+  const setCameraPitch = useGameStore((s) => s.setCameraPitch)
+  const setCameraYaw = useGameStore((s) => s.setCameraYaw)
   const isMountedRef = useRef(false)
+  const containerRef = useRef<HTMLDivElement>(null)
   const [isTouchDevice, setIsTouchDevice] = useState(false)
 
-  // Seed store with server data on mount and reset position to spawn.
   useEffect(() => {
     if (isMountedRef.current) return
     isMountedRef.current = true
@@ -50,54 +39,46 @@ export function World({ initialSummary }: WorldProps) {
     })
     setBounds(14, 9)
     setPosition(0, 0, 4)
-  }, [initialSummary, setSummary, setBounds, setPosition])
+    setCameraDistance(11)
+    setCameraPitch(0.7)
+    setCameraYaw(0)
+  }, [
+    initialSummary,
+    setSummary,
+    setBounds,
+    setPosition,
+    setCameraDistance,
+    setCameraPitch,
+    setCameraYaw,
+  ])
 
-  // Detect touch capability after mount to avoid SSR/hydration mismatch.
   useEffect(() => {
     setIsTouchDevice('ontouchstart' in window)
   }, [])
 
-  // Keyboard input
-  useEffect(() => {
-    function onKeyDown(e: KeyboardEvent) {
-      // Prevent default scroll on arrow keys
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-        e.preventDefault()
-      }
-      heldKeys.add(e.key)
-      const { vx, vz } = computeVelocity()
-      setVelocity(vx, vz)
-    }
-
-    function onKeyUp(e: KeyboardEvent) {
-      heldKeys.delete(e.key)
-      const { vx, vz } = computeVelocity()
-      setVelocity(vx, vz)
-    }
-
-    window.addEventListener('keydown', onKeyDown)
-    window.addEventListener('keyup', onKeyUp)
-    return () => {
-      window.removeEventListener('keydown', onKeyDown)
-      window.removeEventListener('keyup', onKeyUp)
-      heldKeys.clear()
-    }
-  }, [setVelocity])
+  useSceneInput(containerRef)
 
   return (
-    <div style={{ position: 'relative', width: '100dvw', height: '100dvh', overflow: 'hidden' }}>
-      {/* R3F Canvas */}
+    <div
+      ref={containerRef}
+      style={{
+        position: 'relative',
+        width: '100dvw',
+        height: '100dvh',
+        overflow: 'hidden',
+        touchAction: 'none',
+      }}
+    >
       <Canvas
-        orthographic
         camera={{
-          position: [0, 14, 10],
+          position: [0, 8, 12],
+          fov: 45,
           near: 0.1,
           far: 200,
-          zoom: 38,
         }}
         dpr={[1, 1.5]}
         shadows={false}
-        style={{ background: '#87CEEB' }}  // sky blue background
+        style={{ background: '#87CEEB' }}
       >
         <CameraRig />
         <Field />
@@ -105,11 +86,14 @@ export function World({ initialSummary }: WorldProps) {
         <Character />
       </Canvas>
 
-      {/* HUD sits outside Canvas as DOM overlay */}
       <Hud />
 
-      {/* Virtual joystick for touch devices */}
-      {isTouchDevice && <Joystick />}
+      {isTouchDevice && (
+        <>
+          <Joystick />
+          <RotationJoystick />
+        </>
+      )}
     </div>
   )
 }

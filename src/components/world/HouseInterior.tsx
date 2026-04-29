@@ -1,7 +1,8 @@
 'use client'
 // 3D interior scene for /play/home.
-// White grid floor, simple walls, a door at the front, placed furniture as
-// 3D primitives, and the same 2D billboard character used outdoors.
+// White grid floor, walls, door, placed furniture, animated 2D character.
+// Walls fade out when they're between the camera and the player so the
+// rotated camera angle never blocks the action.
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
@@ -9,12 +10,12 @@ import * as THREE from 'three'
 import { Character } from './Character'
 import { CameraRig } from './CameraRig'
 import { Joystick } from './Joystick'
+import { RotationJoystick } from './RotationJoystick'
 import { Furniture3D } from './Furniture3D'
 import { useGameStore } from '@/hooks/useGameStore'
+import { useSceneInput } from '@/hooks/useSceneInput'
 import type { RoomPlacementSummary } from '@/server/actions/rooms'
 
-// Room dimensions (cells × meters per cell). 8 wide × 6 deep matches the
-// existing placement schema (x: 0..7, y: 0..5).
 const COLS = 8
 const ROWS = 6
 const CELL = 1
@@ -25,13 +26,101 @@ const WALL_T = 0.18
 
 interface Props {
   placements: RoomPlacementSummary[]
-  /** Called when the character walks into the door zone and confirms exit. */
   onExit: () => void
+}
+
+// ── Wall — own its own material ref so the scene can fade it on demand ─────
+
+interface WallSpec {
+  id: string
+  position: [number, number, number]
+  size: [number, number, number]
+  color: string
+}
+
+function FadeWall({
+  spec,
+  registerRef,
+}: {
+  spec: WallSpec
+  registerRef: (id: string, ref: THREE.MeshLambertMaterial | null) => void
+}) {
+  const matRef = useRef<THREE.MeshLambertMaterial | null>(null)
+  useEffect(() => {
+    registerRef(spec.id, matRef.current)
+    return () => registerRef(spec.id, null)
+  }, [spec.id, registerRef])
+
+  return (
+    <mesh position={spec.position}>
+      <boxGeometry args={spec.size} />
+      <meshLambertMaterial
+        ref={matRef}
+        color={spec.color}
+        transparent
+        opacity={1}
+      />
+    </mesh>
+  )
 }
 
 // ── Indoor scene ────────────────────────────────────────────────────────────
 
-function IndoorScene({ placements }: { placements: RoomPlacementSummary[] }) {
+const HALF_W = FLOOR_W / 2
+const HALF_D = FLOOR_D / 2
+
+const WALL_SPECS: WallSpec[] = [
+  // Back
+  {
+    id: 'back',
+    position: [0, WALL_H / 2, -HALF_D - WALL_T / 2],
+    size: [FLOOR_W + WALL_T * 2, WALL_H, WALL_T],
+    color: '#FAEDCD',
+  },
+  // Left
+  {
+    id: 'left',
+    position: [-HALF_W - WALL_T / 2, WALL_H / 2, 0],
+    size: [WALL_T, WALL_H, FLOOR_D],
+    color: '#F5E1B4',
+  },
+  // Right
+  {
+    id: 'right',
+    position: [HALF_W + WALL_T / 2, WALL_H / 2, 0],
+    size: [WALL_T, WALL_H, FLOOR_D],
+    color: '#F5E1B4',
+  },
+  // Front-left of door
+  {
+    id: 'frontL',
+    position: [-(HALF_W / 2 + 0.6), WALL_H / 2, HALF_D + WALL_T / 2],
+    size: [HALF_W - 1.2, WALL_H, WALL_T],
+    color: '#FAEDCD',
+  },
+  // Front-right of door
+  {
+    id: 'frontR',
+    position: [HALF_W / 2 + 0.6, WALL_H / 2, HALF_D + WALL_T / 2],
+    size: [HALF_W - 1.2, WALL_H, WALL_T],
+    color: '#FAEDCD',
+  },
+  // Lintel above the door
+  {
+    id: 'lintel',
+    position: [0, WALL_H - 0.25, HALF_D + WALL_T / 2],
+    size: [2.4, 0.5, WALL_T],
+    color: '#FAEDCD',
+  },
+]
+
+function IndoorScene({
+  placements,
+  registerWallRef,
+}: {
+  placements: RoomPlacementSummary[]
+  registerWallRef: (id: string, ref: THREE.MeshLambertMaterial | null) => void
+}) {
   const floorTex = useMemo(() => {
     const size = 512
     const canvas = document.createElement('canvas')
@@ -61,9 +150,6 @@ function IndoorScene({ placements }: { placements: RoomPlacementSummary[] }) {
     return tex
   }, [])
 
-  const halfW = FLOOR_W / 2
-  const halfD = FLOOR_D / 2
-
   return (
     <group>
       <ambientLight intensity={0.85} />
@@ -76,84 +162,49 @@ function IndoorScene({ placements }: { placements: RoomPlacementSummary[] }) {
         <meshLambertMaterial map={floorTex} />
       </mesh>
 
-      {/* Back wall */}
-      <mesh position={[0, WALL_H / 2, -halfD - WALL_T / 2]}>
-        <boxGeometry args={[FLOOR_W + WALL_T * 2, WALL_H, WALL_T]} />
-        <meshLambertMaterial color="#FAEDCD" />
-      </mesh>
+      {/* Walls + lintel */}
+      {WALL_SPECS.map((spec) => (
+        <FadeWall key={spec.id} spec={spec} registerRef={registerWallRef} />
+      ))}
 
-      {/* Left wall */}
-      <mesh position={[-halfW - WALL_T / 2, WALL_H / 2, 0]}>
-        <boxGeometry args={[WALL_T, WALL_H, FLOOR_D]} />
-        <meshLambertMaterial color="#F5E1B4" />
-      </mesh>
-
-      {/* Right wall */}
-      <mesh position={[halfW + WALL_T / 2, WALL_H / 2, 0]}>
-        <boxGeometry args={[WALL_T, WALL_H, FLOOR_D]} />
-        <meshLambertMaterial color="#F5E1B4" />
-      </mesh>
-
-      {/* Front wall — split for door gap */}
-      <mesh position={[-(halfW / 2 + 0.6), WALL_H / 2, halfD + WALL_T / 2]}>
-        <boxGeometry args={[halfW - 1.2, WALL_H, WALL_T]} />
-        <meshLambertMaterial color="#FAEDCD" />
-      </mesh>
-      <mesh position={[halfW / 2 + 0.6, WALL_H / 2, halfD + WALL_T / 2]}>
-        <boxGeometry args={[halfW - 1.2, WALL_H, WALL_T]} />
-        <meshLambertMaterial color="#FAEDCD" />
-      </mesh>
-      {/* Lintel above the door */}
-      <mesh position={[0, WALL_H - 0.25, halfD + WALL_T / 2]}>
-        <boxGeometry args={[2.4, 0.5, WALL_T]} />
-        <meshLambertMaterial color="#FAEDCD" />
-      </mesh>
-
-      {/* Door visual (a coloured panel within the gap, slightly recessed) */}
-      <mesh position={[0, 1.0, halfD + 0.01]}>
+      {/* Door panel + knob */}
+      <mesh position={[0, 1.0, HALF_D + 0.01]}>
         <planeGeometry args={[1.6, 2.0]} />
         <meshBasicMaterial color="#5D4037" side={THREE.DoubleSide} />
       </mesh>
-      <mesh position={[0.45, 1.0, halfD + 0.02]}>
+      <mesh position={[0.45, 1.0, HALF_D + 0.02]}>
         <sphereGeometry args={[0.06, 12, 12]} />
         <meshBasicMaterial color="#FFC107" />
       </mesh>
 
-      {/* Welcome rug at the door */}
+      {/* Welcome rug */}
       <mesh
-        position={[0, 0.01, halfD - 0.6]}
+        position={[0, 0.01, HALF_D - 0.6]}
         rotation={[-Math.PI / 2, 0, 0]}
       >
         <planeGeometry args={[1.4, 0.6]} />
-        <meshBasicMaterial color="#FFB347" />
+        <meshBasicMaterial color="#FFB347" side={THREE.DoubleSide} />
       </mesh>
 
       {/* Placed furniture */}
       {placements.map((p) => {
-        // Map grid (col 0..7, row 0..5) → world (-halfW + 0.5 .. halfW - 0.5)
         const wx = p.x - (COLS - 1) / 2
         const wz = p.y - (ROWS - 1) / 2
         return (
-          <Furniture3D
-            key={p.id}
-            catalogKey={p.catalogKey}
-            position={[wx, 0, wz]}
-          />
+          <Furniture3D key={p.id} catalogKey={p.catalogKey} position={[wx, 0, wz]} />
         )
       })}
     </group>
   )
 }
 
-// ── Door trigger — sets local nearExit flag based on character position ────
+// ── Door trigger ───────────────────────────────────────────────────────────
 
 function DoorTrigger({ onSetNear }: { onSetNear: (b: boolean) => void }) {
   const wasNear = useRef(false)
-  const halfD = FLOOR_D / 2
   useFrame(() => {
     const [px, , pz] = useGameStore.getState().position
-    // Door is centred at x=0, z = halfD. Trigger when within ~1.2m.
-    const near = pz > halfD - 1.2 && Math.abs(px) < 1.0
+    const near = pz > HALF_D - 1.2 && Math.abs(px) < 1.0
     if (near !== wasNear.current) {
       wasNear.current = near
       onSetNear(near)
@@ -162,63 +213,99 @@ function DoorTrigger({ onSetNear }: { onSetNear: (b: boolean) => void }) {
   return null
 }
 
+// ── Wall fade controller — runs inside the Canvas ──────────────────────────
+//
+// For each wall, decide whether the segment from the camera to the player
+// passes through that wall. If yes, lerp opacity down so the player stays
+// visible from any rotated camera angle.
+
+function WallFadeController({
+  wallRefs,
+}: {
+  wallRefs: React.MutableRefObject<Record<string, THREE.MeshLambertMaterial | null>>
+}) {
+  const camToPlayer = useRef(new THREE.Vector3())
+  const camToWall = useRef(new THREE.Vector3())
+  const projVec = useRef(new THREE.Vector3())
+  const lateral = useRef(new THREE.Vector3())
+
+  useFrame((threeState) => {
+    const { camera } = threeState
+    const [px, py, pz] = useGameStore.getState().position
+
+    camToPlayer.current.set(px - camera.position.x, py + 0.6 - camera.position.y, pz - camera.position.z)
+    const playerDist = camToPlayer.current.length()
+    if (playerDist < 0.001) return
+    const playerDir = camToPlayer.current.clone().normalize()
+
+    for (const spec of WALL_SPECS) {
+      const mat = wallRefs.current[spec.id]
+      if (!mat) continue
+
+      camToWall.current.set(
+        spec.position[0] - camera.position.x,
+        spec.position[1] - camera.position.y,
+        spec.position[2] - camera.position.z,
+      )
+      const projection = camToWall.current.dot(playerDir)
+      let target = 1
+      if (projection > 0 && projection < playerDist) {
+        // Compute lateral distance from the camera-to-player line.
+        projVec.current.copy(playerDir).multiplyScalar(projection)
+        lateral.current.copy(camToWall.current).sub(projVec.current)
+        const lateralDist = lateral.current.length()
+        // Use a generous lateral threshold tied to the longer wall axis.
+        const halfSpan = Math.max(spec.size[0], spec.size[2]) / 2
+        if (lateralDist < halfSpan + 0.4) {
+          target = 0.18
+        }
+      }
+      mat.opacity = THREE.MathUtils.lerp(mat.opacity, target, 0.18)
+      mat.transparent = true
+      // Hide back-face writing so the see-through wall doesn't z-fight.
+      mat.depthWrite = mat.opacity > 0.85
+    }
+  })
+
+  return null
+}
+
 // ── Wrapper component ──────────────────────────────────────────────────────
 
 export function HouseInterior({ placements, onExit }: Props) {
-  const setVelocity = useGameStore((s) => s.setVelocity)
   const setPosition = useGameStore((s) => s.setPosition)
   const setBounds = useGameStore((s) => s.setBounds)
+  const setCameraDistance = useGameStore((s) => s.setCameraDistance)
+  const setCameraPitch = useGameStore((s) => s.setCameraPitch)
+  const setCameraYaw = useGameStore((s) => s.setCameraYaw)
   const [nearExit, setNearExit] = useState(false)
   const [isTouchDevice, setIsTouchDevice] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const wallRefs = useRef<Record<string, THREE.MeshLambertMaterial | null>>({})
 
-  // Reset bounds + spawn position on mount.
+  const registerWallRef = (id: string, ref: THREE.MeshLambertMaterial | null) => {
+    wallRefs.current[id] = ref
+  }
+
   useEffect(() => {
     const halfW = FLOOR_W / 2 - 0.5
     const halfD = FLOOR_D / 2 - 0.5
     setBounds(halfW, halfD)
-    setPosition(0, 0, halfD - 1.0) // just inside the door, facing inward
-  }, [setBounds, setPosition])
+    setPosition(0, 0, halfD - 1.0)
+    setCameraDistance(7)
+    setCameraPitch(0.7)
+    setCameraYaw(0)
+  }, [setBounds, setPosition, setCameraDistance, setCameraPitch, setCameraYaw])
 
-  // Detect touch only on the client.
   useEffect(() => {
     setIsTouchDevice('ontouchstart' in window)
   }, [])
 
-  // Keyboard input
-  useEffect(() => {
-    const held = new Set<string>()
-    function compute() {
-      let vx = 0
-      let vz = 0
-      if (held.has('ArrowLeft') || held.has('a') || held.has('A')) vx -= 1
-      if (held.has('ArrowRight') || held.has('d') || held.has('D')) vx += 1
-      if (held.has('ArrowUp') || held.has('w') || held.has('W')) vz -= 1
-      if (held.has('ArrowDown') || held.has('s') || held.has('S')) vz += 1
-      setVelocity(vx, vz)
-    }
-    function down(e: KeyboardEvent) {
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-        e.preventDefault()
-      }
-      held.add(e.key)
-      compute()
-    }
-    function up(e: KeyboardEvent) {
-      held.delete(e.key)
-      compute()
-    }
-    window.addEventListener('keydown', down)
-    window.addEventListener('keyup', up)
-    return () => {
-      window.removeEventListener('keydown', down)
-      window.removeEventListener('keyup', up)
-      held.clear()
-      setVelocity(0, 0)
-    }
-  }, [setVelocity])
+  useSceneInput(containerRef)
 
   return (
     <div
+      ref={containerRef}
       style={{
         position: 'relative',
         flex: 1,
@@ -226,27 +313,23 @@ export function HouseInterior({ placements, onExit }: Props) {
         width: '100%',
         background: '#FAEDCD',
         overflow: 'hidden',
+        touchAction: 'none',
       }}
     >
       <Canvas
-        orthographic
         camera={{
-          position: [0, 10, 7],
+          position: [0, 6, 7],
+          fov: 50,
           near: 0.1,
           far: 100,
-          zoom: 60,
         }}
         dpr={[1, 1.5]}
         shadows={false}
         style={{ background: '#FAEDCD' }}
       >
-        <CameraRig
-          zoomMobile={70}
-          zoomDesktop={95}
-          offset={[0, 9, 6]}
-          lookAtY={0.4}
-        />
-        <IndoorScene placements={placements} />
+        <CameraRig headHeight={0.9} />
+        <IndoorScene placements={placements} registerWallRef={registerWallRef} />
+        <WallFadeController wallRefs={wallRefs} />
         <DoorTrigger onSetNear={setNearExit} />
         <Character />
       </Canvas>
@@ -283,7 +366,12 @@ export function HouseInterior({ placements, onExit }: Props) {
         </div>
       )}
 
-      {isTouchDevice && <Joystick />}
+      {isTouchDevice && (
+        <>
+          <Joystick />
+          <RotationJoystick />
+        </>
+      )}
     </div>
   )
 }

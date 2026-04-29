@@ -204,8 +204,8 @@ model LobbyPlayer {
   matchId     String
   childId     String
   displayName String
-  x           Int      @default(6)
-  y           Int      @default(4)
+  x           Float    @default(0)
+  y           Float    @default(0)
   score       Int      @default(0)
   lastMoveAt  DateTime @default(now())
   joinedAt    DateTime @default(now())

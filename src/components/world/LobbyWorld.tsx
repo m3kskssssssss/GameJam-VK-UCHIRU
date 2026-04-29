@@ -11,7 +11,9 @@ import { useRouter } from 'next/navigation'
 import { Character } from './Character'
 import { CameraRig } from './CameraRig'
 import { Joystick } from './Joystick'
+import { RotationJoystick } from './RotationJoystick'
 import { useGameStore } from '@/hooks/useGameStore'
+import { useSceneInput } from '@/hooks/useSceneInput'
 import { ru } from '@/i18n/ru'
 
 const t = ru.lobby
@@ -21,10 +23,8 @@ const FIELD_D = 16
 const FENCE_H = 0.8
 const FENCE_T = 0.2
 const HOUSE_POS: [number, number, number] = [0, 0, -3]
-const TRIGGER_RADIUS = 1.8
+const TRIGGER_RADIUS = 2.4
 const TRIGGER_RADIUS_SQ = TRIGGER_RADIUS * TRIGGER_RADIUS
-
-// ── Ground + fence ─────────────────────────────────────────────────────────
 
 function LobbyGround() {
   const groundTex = useMemo(() => {
@@ -64,13 +64,12 @@ function LobbyGround() {
       <ambientLight intensity={0.75} />
       <directionalLight position={[10, 18, 10]} intensity={0.7} />
 
-      {/* Ground */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]}>
         <planeGeometry args={[FIELD_W, FIELD_D]} />
         <meshLambertMaterial map={groundTex} />
       </mesh>
 
-      {/* Fence walls */}
+      {/* Fence */}
       <mesh position={[0, FENCE_H / 2, -hd - FENCE_T / 2]}>
         <boxGeometry args={[FIELD_W + FENCE_T * 2, FENCE_H, FENCE_T]} />
         <meshLambertMaterial color="#8D6E63" />
@@ -88,7 +87,7 @@ function LobbyGround() {
         <meshLambertMaterial color="#8D6E63" />
       </mesh>
 
-      {/* Decorative bushes around the perimeter */}
+      {/* Decorative bushes */}
       <mesh position={[-7, 0.4, -6]}>
         <sphereGeometry args={[0.6, 12, 12]} />
         <meshLambertMaterial color="#43A047" />
@@ -109,14 +108,12 @@ function LobbyGround() {
   )
 }
 
-// ── Game house (Kid Quest style) ───────────────────────────────────────────
-
 function GameHouse({ onSetNear }: { onSetNear: (b: boolean) => void }) {
   const wasNear = useRef(false)
   useFrame(() => {
     const [px, , pz] = useGameStore.getState().position
     const dx = px - HOUSE_POS[0]
-    const dz = pz - HOUSE_POS[2]
+    const dz = pz - HOUSE_POS[2] - 1.6
     const distSq = dx * dx + dz * dz
     const near = distSq < TRIGGER_RADIUS_SQ
     if (near !== wasNear.current) {
@@ -127,40 +124,49 @@ function GameHouse({ onSetNear }: { onSetNear: (b: boolean) => void }) {
 
   return (
     <group position={HOUSE_POS}>
+      {/* Foundation */}
+      <mesh position={[0, 0.05, 1.4]}>
+        <boxGeometry args={[2.6, 0.1, 0.5]} />
+        <meshLambertMaterial color="#9E9E9E" />
+      </mesh>
       {/* Body */}
-      <mesh position={[0, 0.9, 0]}>
-        <boxGeometry args={[2.4, 1.8, 2.4]} />
+      <mesh position={[0, 1.1, 0]}>
+        <boxGeometry args={[2.6, 2.0, 2.6]} />
         <meshLambertMaterial color="#FFB347" />
       </mesh>
-      {/* Roof */}
-      <mesh position={[0, 2.25, 0]}>
-        <coneGeometry args={[1.85, 1.4, 4]} />
+      {/* Roof — gable */}
+      <mesh position={[0, 2.55, 0]}>
+        <cylinderGeometry args={[1.85, 1.85, 2.8, 4, 1]} />
         <meshLambertMaterial color="#E53935" />
       </mesh>
       {/* Door */}
-      <mesh position={[0, 0.5, 1.21]}>
-        <planeGeometry args={[0.7, 1.0]} />
+      <mesh position={[0, 0.65, 1.31]}>
+        <planeGeometry args={[0.7, 1.2]} />
         <meshLambertMaterial color="#5D4037" side={THREE.DoubleSide} />
       </mesh>
+      <mesh position={[0.2, 0.7, 1.32]}>
+        <sphereGeometry args={[0.05, 12, 12]} />
+        <meshBasicMaterial color="#FFC107" />
+      </mesh>
       {/* Windows */}
-      <mesh position={[-0.7, 1.1, 1.21]}>
-        <planeGeometry args={[0.5, 0.5]} />
+      <mesh position={[-0.85, 1.4, 1.31]}>
+        <planeGeometry args={[0.55, 0.55]} />
         <meshBasicMaterial color="#90CAF9" side={THREE.DoubleSide} />
       </mesh>
-      <mesh position={[0.7, 1.1, 1.21]}>
-        <planeGeometry args={[0.5, 0.5]} />
+      <mesh position={[0.85, 1.4, 1.31]}>
+        <planeGeometry args={[0.55, 0.55]} />
         <meshBasicMaterial color="#90CAF9" side={THREE.DoubleSide} />
       </mesh>
       {/* Sign */}
       <Text
-        position={[0, 3.5, 0]}
-        fontSize={0.5}
+        position={[0, 4.1, 0]}
+        fontSize={0.55}
         color="#1F2937"
         anchorX="center"
         anchorY="middle"
-        outlineWidth={0.05}
+        outlineWidth={0.06}
         outlineColor="#ffffff"
-        maxWidth={4}
+        maxWidth={4.5}
       >
         {t.enterArena}
       </Text>
@@ -168,81 +174,55 @@ function GameHouse({ onSetNear }: { onSetNear: (b: boolean) => void }) {
   )
 }
 
-// ── Wrapper component ──────────────────────────────────────────────────────
-
 export function LobbyWorld() {
   const router = useRouter()
-  const setVelocity = useGameStore((s) => s.setVelocity)
   const setPosition = useGameStore((s) => s.setPosition)
   const setBounds = useGameStore((s) => s.setBounds)
+  const setCameraDistance = useGameStore((s) => s.setCameraDistance)
+  const setCameraPitch = useGameStore((s) => s.setCameraPitch)
+  const setCameraYaw = useGameStore((s) => s.setCameraYaw)
   const [nearHouse, setNearHouse] = useState(false)
   const [isTouchDevice, setIsTouchDevice] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setBounds(FIELD_W / 2 - 0.5, FIELD_D / 2 - 0.5)
-    setPosition(0, 0, 4) // spawn south of the house
-  }, [setBounds, setPosition])
+    setPosition(0, 0, 4)
+    setCameraDistance(10)
+    setCameraPitch(0.7)
+    setCameraYaw(0)
+  }, [setBounds, setPosition, setCameraDistance, setCameraPitch, setCameraYaw])
 
   useEffect(() => {
     setIsTouchDevice('ontouchstart' in window)
   }, [])
 
-  useEffect(() => {
-    const held = new Set<string>()
-    function compute() {
-      let vx = 0
-      let vz = 0
-      if (held.has('ArrowLeft') || held.has('a') || held.has('A')) vx -= 1
-      if (held.has('ArrowRight') || held.has('d') || held.has('D')) vx += 1
-      if (held.has('ArrowUp') || held.has('w') || held.has('W')) vz -= 1
-      if (held.has('ArrowDown') || held.has('s') || held.has('S')) vz += 1
-      setVelocity(vx, vz)
-    }
-    function down(e: KeyboardEvent) {
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-        e.preventDefault()
-      }
-      held.add(e.key)
-      compute()
-    }
-    function up(e: KeyboardEvent) {
-      held.delete(e.key)
-      compute()
-    }
-    window.addEventListener('keydown', down)
-    window.addEventListener('keyup', up)
-    return () => {
-      window.removeEventListener('keydown', down)
-      window.removeEventListener('keyup', up)
-      held.clear()
-      setVelocity(0, 0)
-    }
-  }, [setVelocity])
+  useSceneInput(containerRef)
 
   return (
     <div
+      ref={containerRef}
       style={{
         position: 'relative',
         width: '100dvw',
         height: '100dvh',
         overflow: 'hidden',
         background: '#87CEEB',
+        touchAction: 'none',
       }}
     >
       <Canvas
-        orthographic
-        camera={{ position: [0, 14, 10], near: 0.1, far: 200, zoom: 38 }}
+        camera={{ position: [0, 8, 12], fov: 45, near: 0.1, far: 200 }}
         dpr={[1, 1.5]}
         shadows={false}
         style={{ background: '#87CEEB' }}
       >
-        <CameraRig zoomMobile={70} zoomDesktop={92} />
+        <CameraRig />
         <LobbyGround />
         <GameHouse onSetNear={setNearHouse} />
         <Character />
       </Canvas>
 
-      {/* Top plaque */}
       <div
         style={{
           position: 'absolute',
@@ -256,6 +236,7 @@ export function LobbyWorld() {
           fontFamily: 'Nunito, sans-serif',
           boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
           zIndex: 20,
+          pointerEvents: 'none',
         }}
       >
         <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#1F2937' }}>
@@ -266,7 +247,6 @@ export function LobbyWorld() {
         </div>
       </div>
 
-      {/* Back button */}
       <button
         onClick={() => router.push('/play')}
         style={{
@@ -320,7 +300,12 @@ export function LobbyWorld() {
         </div>
       )}
 
-      {isTouchDevice && <Joystick />}
+      {isTouchDevice && (
+        <>
+          <Joystick />
+          <RotationJoystick />
+        </>
+      )}
     </div>
   )
 }

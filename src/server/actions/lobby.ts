@@ -1,12 +1,15 @@
 'use server'
-// Lobby mini-game server actions (Phase 7 — tile-stomp, 60 s rounds).
+// Lobby mini-game server actions — 3D coin-collection variant (60 s rounds).
+// Players move continuously in the world; coins spawn at integer grid cells.
+// Walking within COLLECT_RADIUS of an unclaimed coin claims it for the player.
 
 import { prisma } from '@/lib/db'
 import { requireChild } from '@/server/auth/guards'
 import {
-  GRID_W, GRID_H, ROUND_DURATION_MS, TARGET_ACTIVE_TILES,
-  SPAWN_INTERVAL_MS, MOVE_THROTTLE_MS, MAX_PLAYERS, PLACE_COINS,
-  MatchIdSchema, MoveSchema,
+  GRID_W, GRID_H, FIELD_HALF_W, FIELD_HALF_D,
+  COLLECT_RADIUS_SQ, ROUND_DURATION_MS, TARGET_ACTIVE_TILES,
+  SPAWN_INTERVAL_MS, POSITION_THROTTLE_MS, MAX_PLAYERS, PLACE_COINS,
+  MatchIdSchema, PositionSchema, cellToWorld,
   _spawnTiles, _finalizeMatch, occupiedSet, loadMatchWithTiles,
   type MatchState, type PlayerState, type TileState, type LeaderboardEntry,
 } from '@/server/actions/lobby-helpers'
@@ -41,8 +44,9 @@ export async function joinOrCreateMatch(): Promise<{ matchId: string }> {
   })
   if (existing) return { matchId: existing.matchId }
 
-  const startX = Math.floor(Math.random() * GRID_W)
-  const startY = Math.floor(Math.random() * GRID_H)
+  // Random spawn somewhere in the field, away from the absolute centre.
+  const startX = (Math.random() - 0.5) * (GRID_W - 4)
+  const startY = (Math.random() - 0.5) * (GRID_H - 4)
 
   const openMatch = await prisma.lobbyMatch.findFirst({
     where: { status: 'WAITING' },
@@ -78,7 +82,7 @@ export async function startMatch(input: { matchId: string }): Promise<void> {
 
   const match = await prisma.lobbyMatch.findUniqueOrThrow({
     where: { id: matchId },
-    select: { status: true, players: { select: { x: true, y: true } } },
+    select: { status: true },
   })
 
   if (match.status === 'FINISHED') throw new Error('ROUND_FINISHED')
@@ -92,21 +96,23 @@ export async function startMatch(input: { matchId: string }): Promise<void> {
     data: { status: 'ACTIVE', startedAt: now, endsAt, lastSpawnAt: now },
   })
 
-  await _spawnTiles(matchId, TARGET_ACTIVE_TILES, occupiedSet([], match.players))
+  // Initial spawn — coin coords are integer cells; players are at continuous
+  // positions, so they don't conflict with cells.
+  await _spawnTiles(matchId, TARGET_ACTIVE_TILES, occupiedSet([]))
 }
 
 // ---------------------------------------------------------------------------
-// movePlayer
+// setPlayerPosition — move + collect any coins within COLLECT_RADIUS
 // ---------------------------------------------------------------------------
 
-export async function movePlayer(input: {
+export async function setPlayerPosition(input: {
   matchId: string
-  dx: -1 | 0 | 1
-  dy: -1 | 0 | 1
-}): Promise<{ ok: boolean }> {
-  const parsed = MoveSchema.safeParse(input)
+  x: number
+  y: number
+}): Promise<{ ok: boolean; collectedIds: string[]; newScore: number }> {
+  const parsed = PositionSchema.safeParse(input)
   if (!parsed.success) throw new Error('INVALID_INPUT')
-  const { matchId, dx, dy } = parsed.data
+  const { matchId, x, y } = parsed.data
 
   const child = await requireChild()
   const childId = child.id
@@ -115,48 +121,68 @@ export async function movePlayer(input: {
     where: { id: matchId },
     select: { status: true, endsAt: true },
   })
-  if (!match || match.status !== 'ACTIVE') return { ok: false }
+  if (!match || match.status !== 'ACTIVE') {
+    return { ok: false, collectedIds: [], newScore: 0 }
+  }
 
   const now = new Date()
   if (match.endsAt && now > match.endsAt) {
     await _finalizeMatch(matchId)
-    return { ok: false }
+    return { ok: false, collectedIds: [], newScore: 0 }
   }
 
   const player = await prisma.lobbyPlayer.findUnique({
     where: { matchId_childId: { matchId, childId } },
-    select: { x: true, y: true, lastMoveAt: true },
+    select: { lastMoveAt: true, score: true },
   })
   if (!player) throw new Error('NOT_AUTHORIZED')
 
-  if (now.getTime() - player.lastMoveAt.getTime() < MOVE_THROTTLE_MS) return { ok: true }
+  // Throttle position writes — protects DB from spammy clients.
+  if (now.getTime() - player.lastMoveAt.getTime() < POSITION_THROTTLE_MS) {
+    return { ok: true, collectedIds: [], newScore: player.score }
+  }
 
-  const nx = clamp(player.x + dx, 0, GRID_W - 1)
-  const ny = clamp(player.y + dy, 0, GRID_H - 1)
+  const clampedX = clamp(x, -FIELD_HALF_W + 0.4, FIELD_HALF_W - 0.4)
+  const clampedZ = clamp(y, -FIELD_HALF_D + 0.4, FIELD_HALF_D - 0.4)
 
-  await prisma.$transaction(async (tx) => {
-    const tile = await tx.lobbyTile.findUnique({
-      where: { matchId_x_y: { matchId, x: nx, y: ny } },
-      select: { id: true, stompedById: true },
-    })
-    if (tile && tile.stompedById === null) {
-      await tx.lobbyTile.update({
-        where: { id: tile.id },
-        data: { stompedById: childId, stompedAt: now },
-      })
-      await tx.lobbyPlayer.update({
-        where: { matchId_childId: { matchId, childId } },
-        data: { x: nx, y: ny, lastMoveAt: now, score: { increment: 1 } },
-      })
-    } else {
-      await tx.lobbyPlayer.update({
-        where: { matchId_childId: { matchId, childId } },
-        data: { x: nx, y: ny, lastMoveAt: now },
-      })
-    }
+  // Find candidate coins near the new position.
+  const candidates = await prisma.lobbyTile.findMany({
+    where: { matchId, stompedById: null },
+    select: { id: true, x: true, y: true },
   })
 
-  return { ok: true }
+  const within: string[] = []
+  for (const c of candidates) {
+    const w = cellToWorld(c.x, c.y)
+    const dx = clampedX - w.x
+    const dz = clampedZ - w.z
+    if (dx * dx + dz * dz < COLLECT_RADIUS_SQ) within.push(c.id)
+  }
+
+  // Atomically: claim the coins (only those still null), update player.
+  const result = await prisma.$transaction(async (tx) => {
+    let claimed = 0
+    if (within.length > 0) {
+      const claim = await tx.lobbyTile.updateMany({
+        where: { id: { in: within }, stompedById: null },
+        data: { stompedById: childId, stompedAt: now },
+      })
+      claimed = claim.count
+    }
+    const updated = await tx.lobbyPlayer.update({
+      where: { matchId_childId: { matchId, childId } },
+      data: {
+        x: clampedX,
+        y: clampedZ,
+        lastMoveAt: now,
+        score: claimed > 0 ? { increment: claimed } : undefined,
+      },
+      select: { score: true },
+    })
+    return { claimed, score: updated.score }
+  })
+
+  return { ok: true, collectedIds: within.slice(0, result.claimed), newScore: result.score }
 }
 
 // ---------------------------------------------------------------------------
@@ -182,14 +208,18 @@ export async function getMatchState(input: { matchId: string }): Promise<MatchSt
     match.status === 'ACTIVE' &&
     (!match.lastSpawnAt || now.getTime() - match.lastSpawnAt.getTime() > SPAWN_INTERVAL_MS)
   ) {
-    const deficit = TARGET_ACTIVE_TILES - match.tiles.filter((t) => t.stompedById === null).length
+    const activeTiles = match.tiles.filter((t) => t.stompedById === null)
+    const deficit = TARGET_ACTIVE_TILES - activeTiles.length
     if (deficit > 0) {
-      await _spawnTiles(matchId, deficit, occupiedSet(match.tiles, match.players))
+      await _spawnTiles(matchId, deficit, occupiedSet(activeTiles))
     }
-    await prisma.lobbyMatch.update({ where: { id: matchId }, data: { lastSpawnAt: now } })
+    await prisma.lobbyMatch.update({
+      where: { id: matchId },
+      data: { lastSpawnAt: now },
+    })
     const freshTiles = await prisma.lobbyTile.findMany({
       where: { matchId, OR: [{ stompedById: null }, { stompedAt: { gte: fadeCutoff } }] },
-      select: { x: true, y: true, stompedById: true },
+      select: { id: true, x: true, y: true, stompedById: true },
     })
     match = { ...match, tiles: freshTiles }
   }
@@ -198,7 +228,12 @@ export async function getMatchState(input: { matchId: string }): Promise<MatchSt
   if (!me) throw new Error('NOT_AUTHORIZED')
 
   const players: PlayerState[] = [...match.players].sort((a, b) => b.score - a.score)
-  const tiles: TileState[] = match.tiles.map((t) => ({ x: t.x, y: t.y, stompedById: t.stompedById }))
+  const tiles: TileState[] = match.tiles.map((t) => ({
+    id: t.id,
+    x: t.x,
+    y: t.y,
+    stompedById: t.stompedById,
+  }))
   const timeLeftMs = match.endsAt ? Math.max(0, match.endsAt.getTime() - now.getTime()) : 0
 
   const state: MatchState = {
@@ -233,4 +268,24 @@ export async function leaveMatch(input: { matchId: string }): Promise<void> {
   const { matchId } = MatchIdSchema.parse(input)
   const child = await requireChild()
   await prisma.lobbyPlayer.deleteMany({ where: { matchId, childId: child.id } })
+}
+
+// ---------------------------------------------------------------------------
+// Re-export field constants so the client can render the matching world size.
+// ---------------------------------------------------------------------------
+
+export async function getArenaConfig(): Promise<{
+  gridW: number
+  gridH: number
+  halfW: number
+  halfD: number
+  collectRadius: number
+}> {
+  return {
+    gridW: GRID_W,
+    gridH: GRID_H,
+    halfW: FIELD_HALF_W,
+    halfD: FIELD_HALF_D,
+    collectRadius: Math.sqrt(COLLECT_RADIUS_SQ),
+  }
 }

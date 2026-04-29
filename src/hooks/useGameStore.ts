@@ -7,21 +7,34 @@ import { create } from 'zustand'
 export type HouseSubject = 'math' | 'reading' | 'english' | 'pe' | 'home'
 export type FacingDirection = 'down' | 'up' | 'left' | 'right'
 
-const SPEED = 4           // units per second
+const SPEED = 4 // units per second
+
+const PITCH_MIN = 0.45
+const PITCH_MAX = 1.05
+const TWO_PI = Math.PI * 2
+
+function clamp(v: number, lo: number, hi: number): number {
+  return Math.max(lo, Math.min(hi, v))
+}
+
+function wrapAngle(a: number): number {
+  // Wrap to (-π, π]
+  const m = ((a + Math.PI) % TWO_PI + TWO_PI) % TWO_PI
+  return m - Math.PI
+}
 
 interface GameState {
-  // World position of the character
   position: [number, number, number]
-  // Normalised movement input (-1..1 each axis)
   velocity: [number, number]
   facing: FacingDirection
-  // Which house the character is near (within trigger radius)
   nearHouse: HouseSubject | null
-  // Walkable bounds — set per-scene on mount
   halfX: number
   halfZ: number
 
-  // Currency — seeded from server, not polled
+  cameraYaw: number
+  cameraPitch: number
+  cameraDistance: number
+
   coins: number
   energy: number
   homeLevel: number
@@ -33,36 +46,38 @@ interface GameState {
   setSummary: (summary: { coins: number; energy: number; homeLevel: number }) => void
   setPosition: (x: number, y: number, z: number) => void
   setBounds: (halfX: number, halfZ: number) => void
+  setCameraYaw: (yaw: number) => void
+  addCameraYaw: (delta: number) => void
+  setCameraPitch: (pitch: number) => void
+  setCameraDistance: (d: number) => void
 }
 
 export const useGameStore = create<GameState>()((set) => ({
-  position: [0, 0, 4],   // start slightly towards player
+  position: [0, 0, 4],
   velocity: [0, 0],
   facing: 'down',
   nearHouse: null,
   halfX: 14,
   halfZ: 9,
+
+  cameraYaw: 0,
+  cameraPitch: 0.75,
+  cameraDistance: 9,
+
   coins: 0,
   energy: 0,
   homeLevel: 1,
 
   setVelocity: (vx, vz) => {
     set((state) => {
-      // Normalise diagonal movement so speed is consistent
       const len = Math.sqrt(vx * vx + vz * vz)
       const nx = len > 0 ? vx / len : 0
       const nz = len > 0 ? vz / len : 0
-
-      // Determine facing direction from dominant axis
       let facing: FacingDirection = state.facing
       if (len > 0) {
-        if (Math.abs(nx) >= Math.abs(nz)) {
-          facing = nx > 0 ? 'right' : 'left'
-        } else {
-          facing = nz > 0 ? 'down' : 'up'
-        }
+        if (Math.abs(nx) >= Math.abs(nz)) facing = nx > 0 ? 'right' : 'left'
+        else facing = nz > 0 ? 'down' : 'up'
       }
-
       return { velocity: [nx, nz], facing }
     })
   },
@@ -74,9 +89,21 @@ export const useGameStore = create<GameState>()((set) => ({
       const [vx, vz] = state.velocity
       if (vx === 0 && vz === 0) return state
 
+      // Camera-relative movement.
+      // Input convention: vz<0 = forward (away from camera), vx>0 = strafe right.
+      // Forward unit (XZ): (-sin(yaw), -cos(yaw)) so that yaw=0 → -Z forward.
+      // Right unit (XZ):   ( cos(yaw), -sin(yaw))
+      const yaw = state.cameraYaw
+      const sy = Math.sin(yaw)
+      const cy = Math.cos(yaw)
+      const forwardInput = -vz
+      const rightInput = vx
+      const dx = -sy * forwardInput + cy * rightInput
+      const dz = -cy * forwardInput - sy * rightInput
+
       const [px, py, pz] = state.position
-      const nx = Math.max(-state.halfX, Math.min(state.halfX, px + vx * SPEED * dt))
-      const nz = Math.max(-state.halfZ, Math.min(state.halfZ, pz + vz * SPEED * dt))
+      const nx = clamp(px + dx * SPEED * dt, -state.halfX, state.halfX)
+      const nz = clamp(pz + dz * SPEED * dt, -state.halfZ, state.halfZ)
       return { position: [nx, py, nz] }
     })
   },
@@ -86,4 +113,14 @@ export const useGameStore = create<GameState>()((set) => ({
   setPosition: (x, y, z) => set({ position: [x, y, z], velocity: [0, 0] }),
 
   setBounds: (halfX, halfZ) => set({ halfX, halfZ }),
+
+  setCameraYaw: (yaw) => set({ cameraYaw: wrapAngle(yaw) }),
+
+  addCameraYaw: (delta) =>
+    set((s) => ({ cameraYaw: wrapAngle(s.cameraYaw + delta) })),
+
+  setCameraPitch: (pitch) =>
+    set({ cameraPitch: clamp(pitch, PITCH_MIN, PITCH_MAX) }),
+
+  setCameraDistance: (d) => set({ cameraDistance: clamp(d, 4, 16) }),
 }))

@@ -1,53 +1,63 @@
 'use client'
-// Orthographic camera that lerps to follow the character.
-// Camera angle: slightly isometric. Zoom and offset configurable per scene.
+// Third-person follow camera (Genshin/Zelda style).
+// Reads cameraYaw / cameraPitch / cameraDistance from useGameStore so any UI
+// (joystick, mouse drag, keys) can drive it.
 
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useGameStore } from '@/hooks/useGameStore'
 
-const LERP_FACTOR = 0.1
+const POS_LERP = 0.18
+const LOOK_LERP = 0.22
 
-interface CameraRigProps {
-  zoomMobile?: number
-  zoomDesktop?: number
-  offset?: [number, number, number]
-  lookAtY?: number
+const _desired = new THREE.Vector3()
+const _lookAt = new THREE.Vector3()
+const _currentLook = new THREE.Vector3()
+
+interface Props {
+  /** Override the in-store camera distance for this scene. */
+  distance?: number
+  /** Where the camera looks (above ground), in world units above the player. */
+  headHeight?: number
 }
 
-const _target = new THREE.Vector3()
-const _desired = new THREE.Vector3()
-const _offset = new THREE.Vector3()
-
-export function CameraRig({
-  zoomMobile = 68,
-  zoomDesktop = 88,
-  offset = [0, 14, 10],
-  lookAtY = 0.5,
-}: CameraRigProps = {}) {
+export function CameraRig({ distance, headHeight = 0.9 }: Props = {}) {
   const { camera, size } = useThree()
-  _offset.set(offset[0], offset[1], offset[2])
 
   useFrame(() => {
-    const [px, , pz] = useGameStore.getState().position
+    const s = useGameStore.getState()
+    const [px, , pz] = s.position
+    const yaw = s.cameraYaw
+    const pitch = s.cameraPitch
+    const dist = distance ?? s.cameraDistance
 
-    _target.set(px, 0, pz)
-    _desired.copy(_target).add(_offset)
-    camera.position.lerp(_desired, LERP_FACTOR)
+    const cosP = Math.cos(pitch)
+    const sinP = Math.sin(pitch)
+    const sinY = Math.sin(yaw)
+    const cosY = Math.cos(yaw)
 
-    _target.y = lookAtY
-    camera.lookAt(_target)
+    // Camera at +Z when yaw=0 (south of player) — reading "behind player" as
+    // +Z so pressing Up (forward, -Z) moves player away from the camera.
+    _desired.set(
+      px + dist * cosP * sinY,
+      headHeight + dist * sinP,
+      pz + dist * cosP * cosY,
+    )
 
-    if ((camera as THREE.OrthographicCamera).isOrthographicCamera) {
-      const ortho = camera as THREE.OrthographicCamera
-      const isMobile = size.width < 768
-      const zoom = isMobile ? zoomMobile : zoomDesktop
+    camera.position.lerp(_desired, POS_LERP)
+
+    _lookAt.set(px, headHeight, pz)
+    _currentLook.copy(camera.getWorldDirection(new THREE.Vector3())).multiplyScalar(1)
+    camera.lookAt(_lookAt)
+
+    // Keep aspect in sync if window resizes.
+    if ((camera as THREE.PerspectiveCamera).isPerspectiveCamera) {
+      const persp = camera as THREE.PerspectiveCamera
       const aspect = size.width / size.height
-      ortho.left = -zoom * aspect
-      ortho.right = zoom * aspect
-      ortho.top = zoom
-      ortho.bottom = -zoom
-      ortho.updateProjectionMatrix()
+      if (Math.abs(persp.aspect - aspect) > 0.001) {
+        persp.aspect = aspect
+        persp.updateProjectionMatrix()
+      }
     }
   })
 
