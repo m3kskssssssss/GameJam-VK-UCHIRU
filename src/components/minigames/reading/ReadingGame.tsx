@@ -3,20 +3,20 @@
 import React from 'react'
 import { useRouter } from 'next/navigation'
 import { startTask, submitTask } from '@/server/actions/tasks'
-import type { TaskItemClient } from '@/server/content/types'
+import type { TaskItemClient, AnswerValue } from '@/server/content/types'
 import { LevelSelect } from '@/components/minigames/shared/LevelSelect'
 import { QuestionRunner } from '@/components/minigames/shared/QuestionRunner'
 import { ResultScreen } from '@/components/minigames/shared/ResultScreen'
-import { MultipleChoiceItem } from '@/components/minigames/math/MultipleChoiceItem'
+import {
+  TaskItemRenderer,
+  serializeAnswer,
+} from '@/components/minigames/shared/items/TaskItemRenderer'
 import { PassageViewer } from './PassageViewer'
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
 
 interface ReadingGameProps {
   initialLevel: number
   completedLevels: number
+  grade: number
 }
 
 type Phase = 'select' | 'playing' | 'result'
@@ -36,15 +36,9 @@ interface ResultData {
   newLevel: number
 }
 
-// ---------------------------------------------------------------------------
-// Passage extraction
-// ---------------------------------------------------------------------------
-
-// Each reading item.prompt is shaped as:
+// Reading items with passages embed text in the prompt as:
 //   Текст: "...passage..."\n\nQuestion text here?
-// We extract passage and question from this shape.
-// If the pattern is not found, the whole prompt is treated as the question.
-
+// Other types (text_input, true_false, etc.) just have a plain prompt.
 const PASSAGE_REGEX = /^Текст:\s*"([^"]+)"\s*\n\n(.+)$/s
 
 function splitPrompt(prompt: string): { passage: string; question: string } {
@@ -55,106 +49,102 @@ function splitPrompt(prompt: string): { passage: string; question: string } {
   return { passage: '', question: prompt }
 }
 
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
-
-export function ReadingGame({ initialLevel, completedLevels }: ReadingGameProps) {
+export function ReadingGame({ initialLevel, completedLevels, grade }: ReadingGameProps) {
   const router = useRouter()
 
   const [phase, setPhase] = React.useState<Phase>('select')
   const [level, setLevel] = React.useState(initialLevel)
+  const [completedCount, setCompletedCount] = React.useState(completedLevels)
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
 
-  // Session state
   const [sessionToken, setSessionToken] = React.useState<string>('')
   const [items, setItems] = React.useState<TaskItemClient[]>([])
   const [currentIndex, setCurrentIndex] = React.useState(0)
   const [answers, setAnswers] = React.useState<Answer[]>([])
   const [lastAnswerCorrect, setLastAnswerCorrect] = React.useState<boolean | null>(null)
+  const [answerLocked, setAnswerLocked] = React.useState(false)
   const [result, setResult] = React.useState<ResultData | null>(null)
 
-  // ---------------------------------------------------------------------------
-  // Handlers
-  // ---------------------------------------------------------------------------
-
-  const handleStart = React.useCallback(async (lvl: number) => {
-    setLoading(true)
-    setError(null)
-    try {
-      const bundle = await startTask({ subject: 'READING', level: lvl })
-      setSessionToken(bundle.sessionToken)
-      setItems(bundle.items)
-      setCurrentIndex(0)
-      setAnswers([])
-      setLastAnswerCorrect(null)
-      setResult(null)
-      setLevel(lvl)
-      setPhase('playing')
-    } catch {
-      setError('Не удалось загрузить задание. Попробуй ещё раз.')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  const handleStart = React.useCallback(
+    async (lvl: number) => {
+      setLoading(true)
+      setError(null)
+      try {
+        const bundle = await startTask({ subject: 'READING', grade, level: lvl })
+        setSessionToken(bundle.sessionToken)
+        setItems(bundle.items)
+        setCurrentIndex(0)
+        setAnswers([])
+        setLastAnswerCorrect(null)
+        setAnswerLocked(false)
+        setResult(null)
+        setLevel(lvl)
+        setPhase('playing')
+      } catch {
+        setError('Не удалось загрузить задание. Попробуй ещё раз.')
+      } finally {
+        setLoading(false)
+      }
+    },
+    [grade],
+  )
 
   const handleAnswer = React.useCallback(
-    (answer: string) => {
+    (value: AnswerValue, isCorrect: boolean) => {
       const item = items[currentIndex]
-      if (!item) return
+      if (!item || answerLocked) return
 
-      const newAnswers = [...answers, { itemId: item.id, answer }]
+      setAnswerLocked(true)
+      setLastAnswerCorrect(isCorrect)
+
+      const newAnswers: Answer[] = [
+        ...answers,
+        { itemId: item.id, answer: serializeAnswer(value) },
+      ]
       setAnswers(newAnswers)
-
-      // Optimistic flash — we can't know correctness client-side, so always
-      // show neutral positive feedback to keep the child engaged.
-      // We set null to trigger QuestionRunner's no-flash state, then advance.
-      setLastAnswerCorrect(null)
 
       const isLast = currentIndex >= items.length - 1
 
-      if (isLast) {
-        // Submit all answers
-        setLoading(true)
-        submitTask({ sessionToken, answers: newAnswers })
-          .then((res) => {
-            setResult(res)
-            setPhase('result')
-          })
-          .catch(() => {
-            setError('Не удалось сохранить результат. Попробуй ещё раз.')
-            setPhase('select')
-          })
-          .finally(() => setLoading(false))
-      } else {
-        setCurrentIndex((i) => i + 1)
-      }
+      setTimeout(() => {
+        if (isLast) {
+          setLoading(true)
+          submitTask({ sessionToken, answers: newAnswers })
+            .then((res) => {
+              setResult(res)
+              if (res.passed) setCompletedCount((c) => c + 1)
+              setLastAnswerCorrect(null)
+              setPhase('result')
+            })
+            .catch(() => {
+              setError('Не удалось сохранить результат. Попробуй ещё раз.')
+              setPhase('select')
+            })
+            .finally(() => setLoading(false))
+        } else {
+          setCurrentIndex((i) => i + 1)
+          setLastAnswerCorrect(null)
+          setAnswerLocked(false)
+        }
+      }, 700)
     },
-    [answers, currentIndex, items, sessionToken],
+    [answers, currentIndex, items, sessionToken, answerLocked],
   )
 
   const handleNextLevel = React.useCallback(() => {
-    const nextLevel = Math.min(level + 1, 10)
+    const nextLevel = result?.passed ? Math.min(level + 1, 10) : level
     setPhase('select')
     setLevel(nextLevel)
-  }, [level])
+    setResult(null)
+  }, [level, result])
 
   const handleExit = React.useCallback(() => {
     router.refresh()
     router.push('/play')
   }, [router])
 
-  // ---------------------------------------------------------------------------
-  // Derived values
-  // ---------------------------------------------------------------------------
-
   const currentItem = items[currentIndex]
   const parsed = currentItem ? splitPrompt(currentItem.prompt) : { passage: '', question: '' }
-
-  // ---------------------------------------------------------------------------
-  // Render
-  // ---------------------------------------------------------------------------
 
   if (phase === 'select') {
     return (
@@ -169,7 +159,8 @@ export function ReadingGame({ initialLevel, completedLevels }: ReadingGameProps)
         <LevelSelect
           subjectLabel="Чтение"
           currentLevel={level}
-          completedLevels={completedLevels}
+          completedLevels={completedCount}
+          grade={grade}
           onStart={handleStart}
           onExit={handleExit}
           loading={loading}
@@ -202,30 +193,26 @@ export function ReadingGame({ initialLevel, completedLevels }: ReadingGameProps)
           currentIndex={currentIndex}
           totalCount={items.length}
           lastAnswerCorrect={lastAnswerCorrect}
-          promptText={parsed.question}
+          promptText={parsed.passage ? parsed.question : currentItem.prompt}
         >
-          {/* Passage viewer sits inside the answer slot, above choices */}
-          {currentItem.type === 'multiple_choice' && (
-            parsed.passage ? (
-              <div className="flex flex-col gap-4">
-                <PassageViewer text={parsed.passage} />
-                <MultipleChoiceItem
-                  options={currentItem.options}
-                  onSelect={handleAnswer}
-                  disabled={loading}
-                />
-              </div>
-            ) : (
-              <MultipleChoiceItem
-                options={currentItem.options}
-                onSelect={handleAnswer}
-                disabled={loading}
+          {parsed.passage ? (
+            <div className="w-full max-w-md mx-auto flex flex-col gap-4">
+              <PassageViewer text={parsed.passage} />
+              <TaskItemRenderer
+                task={currentItem}
+                disabled={answerLocked || loading}
+                onAnswer={handleAnswer}
               />
-            )
+            </div>
+          ) : (
+            <TaskItemRenderer
+              task={currentItem}
+              disabled={answerLocked || loading}
+              onAnswer={handleAnswer}
+            />
           )}
         </QuestionRunner>
 
-        {/* Loading overlay when submitting final answer */}
         {loading && (
           <div className="fixed inset-0 flex items-center justify-center bg-[--color-background]/70 z-50">
             <p className="text-lg font-semibold text-[--color-foreground]">Загрузка...</p>
@@ -235,6 +222,5 @@ export function ReadingGame({ initialLevel, completedLevels }: ReadingGameProps)
     )
   }
 
-  // Fallback — should not be visible normally
   return null
 }

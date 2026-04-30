@@ -105,7 +105,8 @@ function normalizeText(s: string): string {
 export function isAnswerCorrect(task: TaskItem, value: AnswerValue): boolean {
   switch (task.type) {
     case 'multiple_choice':
-      return typeof value === 'string' && value === task.correct
+      if (typeof value !== 'string') return false
+      return normalizeText(value) === normalizeText(task.correct)
 
     case 'text_input': {
       if (typeof value !== 'string') return false
@@ -120,7 +121,7 @@ export function isAnswerCorrect(task: TaskItem, value: AnswerValue): boolean {
     case 'match_pairs': {
       if (!Array.isArray(value)) return false
       if (value.length !== task.pairs.length) return false
-      return task.pairs.every((p, i) => p.right === value[i])
+      return task.pairs.every((p, i) => normalizeText(p.right) === normalizeText(value[i] ?? ''))
     }
 
     case 'fill_blank': {

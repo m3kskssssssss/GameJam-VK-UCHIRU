@@ -2,18 +2,14 @@
 
 import React from 'react'
 
-// ---------------------------------------------------------------------------
-// Flash overlay keyframe injected once via a <style> tag
-// ---------------------------------------------------------------------------
-
 const FLASH_STYLE = `
 @keyframes kq-flash-fade {
-  0%   { opacity: 0.5; }
+  0%   { opacity: 0.55; }
   60%  { opacity: 0.35; }
   100% { opacity: 0; }
 }
 .kq-flash-overlay {
-  animation: kq-flash-fade 600ms ease-out forwards;
+  animation: kq-flash-fade 700ms ease-out forwards;
 }
 `
 
@@ -27,10 +23,6 @@ function ensureFlashStyle() {
   styleInjected = true
 }
 
-// ---------------------------------------------------------------------------
-// Props
-// ---------------------------------------------------------------------------
-
 export interface QuestionRunnerProps {
   currentIndex: number
   totalCount: number
@@ -39,10 +31,6 @@ export interface QuestionRunnerProps {
   children: React.ReactNode
 }
 
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
-
 export function QuestionRunner({
   currentIndex,
   totalCount,
@@ -50,14 +38,12 @@ export function QuestionRunner({
   promptText,
   children,
 }: QuestionRunnerProps) {
-  // Inject the CSS keyframe once when component first mounts
   React.useEffect(() => {
     ensureFlashStyle()
   }, [])
 
   const progressPct = totalCount > 0 ? (currentIndex / totalCount) * 100 : 0
 
-  // Determine flash colour
   let flashColour = 'transparent'
   if (lastAnswerCorrect === true) flashColour = '#6BCB77'
   if (lastAnswerCorrect === false) flashColour = '#FF6B6B'
@@ -74,8 +60,8 @@ export function QuestionRunner({
         />
       )}
 
-      {/* Progress bar */}
-      <div className="w-full h-3 bg-[--color-border]">
+      {/* Progress bar — solid neutral track + animated fill */}
+      <div className="w-full h-3 bg-black/15">
         <div
           className="h-full bg-[--color-success] transition-[width] duration-300 ease-out"
           style={{ width: `${progressPct}%` }}
@@ -87,27 +73,31 @@ export function QuestionRunner({
       </div>
 
       {/* Question counter */}
-      <div className="px-4 pt-3 pb-1 text-sm font-semibold text-[--color-foreground] opacity-60 text-right">
-        {currentIndex + 1} / {totalCount}
+      <div className="px-4 pt-3 pb-1 text-sm font-semibold text-[--color-foreground] opacity-70 text-center">
+        Вопрос {currentIndex + 1} из {totalCount}
       </div>
 
-      {/* Prompt card */}
-      {promptText && (
-        <div className="mx-4 mt-2 mb-4 rounded-[1rem] border border-[--color-border] bg-[--color-muted] p-5"
-          style={{ boxShadow: '0 6px 20px rgba(31,41,55,0.08)' }}
-        >
-          <p
-            className="text-[22px] font-semibold text-[--color-foreground] leading-[1.4]"
-            style={{ fontFamily: 'var(--font-sans)' }}
+      {/* Centred content column — vertically centred so cards sit in the middle of the viewport */}
+      <div className="flex-1 flex flex-col items-center justify-center gap-5 px-4 py-6 w-full">
+        {/* Prompt card — centred, max-width */}
+        {promptText && (
+          <div
+            className="w-full max-w-md rounded-[1rem] border border-[--color-border] bg-[--color-muted] p-5"
+            style={{ boxShadow: '0 6px 20px rgba(31,41,55,0.08)' }}
           >
-            {promptText}
-          </p>
-        </div>
-      )}
+            <p
+              className="text-[20px] font-semibold text-[--color-foreground] leading-[1.4] text-center whitespace-pre-line"
+              style={{ fontFamily: 'var(--font-sans)' }}
+            >
+              {promptText}
+            </p>
+          </div>
+        )}
 
-      {/* Answer UI slot */}
-      <div className="flex-1 px-4 pb-8">
-        {children}
+        {/* Answer UI slot — children control their own width via max-w on inner wrappers */}
+        <div className="w-full flex justify-center">
+          {children}
+        </div>
       </div>
     </div>
   )

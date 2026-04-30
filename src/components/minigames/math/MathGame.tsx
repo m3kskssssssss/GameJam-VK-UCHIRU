@@ -1,15 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { startTask, submitTask } from '@/server/actions/tasks'
 import type { TaskBundle, TaskResult } from '@/server/actions/tasks'
-import type { TaskItemClient } from '@/server/content/types'
+import type { AnswerValue } from '@/server/content/types'
 import { LevelSelect } from '@/components/minigames/shared/LevelSelect'
 import { QuestionRunner } from '@/components/minigames/shared/QuestionRunner'
 import { ResultScreen } from '@/components/minigames/shared/ResultScreen'
-import { MultipleChoiceItem } from './MultipleChoiceItem'
-import { NumericInputItem } from './NumericInputItem'
+import {
+  TaskItemRenderer,
+  serializeAnswer,
+} from '@/components/minigames/shared/items/TaskItemRenderer'
 import { Button } from '@/components/ui/button'
 
 // ---------------------------------------------------------------------------
@@ -19,12 +21,20 @@ import { Button } from '@/components/ui/button'
 interface MathGameProps {
   initialLevel: number
   completedLevels: number
+  grade: number
 }
 
 type GameState =
   | { phase: 'select' }
   | { phase: 'loading' }
-  | { phase: 'running'; bundle: TaskBundle; currentIndex: number; answers: { itemId: string; answer: string }[] }
+  | {
+      phase: 'running'
+      bundle: TaskBundle
+      currentIndex: number
+      answers: { itemId: string; answer: string }[]
+      lastAnswerCorrect: boolean | null
+      answerLocked: boolean
+    }
   | { phase: 'submitting' }
   | { phase: 'result'; result: TaskResult }
   | { phase: 'error'; message: string }
@@ -45,49 +55,76 @@ function Spinner() {
 // MathGame
 // ---------------------------------------------------------------------------
 
-export function MathGame({ initialLevel, completedLevels }: MathGameProps) {
+export function MathGame({ initialLevel, completedLevels, grade }: MathGameProps) {
   const router = useRouter()
 
   const [levelCursor, setLevelCursor] = useState(initialLevel)
   const [completedCount, setCompletedCount] = useState(completedLevels)
   const [state, setState] = useState<GameState>({ phase: 'select' })
 
-  // -------------------------------------------------------------------------
-  // Handlers
-  // -------------------------------------------------------------------------
+  const handleStart = useCallback(
+    async (level: number) => {
+      setState({ phase: 'loading' })
+      try {
+        const bundle = await startTask({ subject: 'MATH', grade, level })
+        setState({
+          phase: 'running',
+          bundle,
+          currentIndex: 0,
+          answers: [],
+          lastAnswerCorrect: null,
+          answerLocked: false,
+        })
+      } catch {
+        setState({ phase: 'error', message: 'Не удалось загрузить задание. Попробуй ещё раз.' })
+      }
+    },
+    [grade],
+  )
 
-  async function handleStart(level: number) {
-    setState({ phase: 'loading' })
-    try {
-      const bundle = await startTask({ subject: 'MATH', level })
-      setState({ phase: 'running', bundle, currentIndex: 0, answers: [] })
-    } catch {
-      setState({ phase: 'error', message: 'Не удалось загрузить задание. Попробуй ещё раз.' })
-    }
-  }
+  const handleAnswer = useCallback(
+    (value: AnswerValue, isCorrect: boolean) => {
+      setState((prev) => {
+        if (prev.phase !== 'running' || prev.answerLocked) return prev
+        const item = prev.bundle.items[prev.currentIndex]
+        if (!item) return prev
 
-  function handleAnswer(answer: string) {
-    if (state.phase !== 'running') return
+        const answer = serializeAnswer(value)
+        const newAnswers = [...prev.answers, { itemId: item.id, answer }]
+        return {
+          ...prev,
+          answers: newAnswers,
+          lastAnswerCorrect: isCorrect,
+          answerLocked: true,
+        }
+      })
 
-    const item = state.bundle.items[state.currentIndex]
-    if (!item) return
-
-    const newAnswers = [...state.answers, { itemId: item.id, answer }]
-    const nextIndex = state.currentIndex + 1
-
-    if (nextIndex >= state.bundle.items.length) {
-      // All items answered — submit
-      void handleSubmit(state.bundle.sessionToken, newAnswers)
-    } else {
-      setState({ phase: 'running', bundle: state.bundle, currentIndex: nextIndex, answers: newAnswers })
-    }
-  }
+      // Advance after the flash animation.
+      setTimeout(() => {
+        setState((prev) => {
+          if (prev.phase !== 'running') return prev
+          const nextIndex = prev.currentIndex + 1
+          if (nextIndex >= prev.bundle.items.length) {
+            // Submit
+            void handleSubmit(prev.bundle.sessionToken, prev.answers)
+            return { phase: 'submitting' as const }
+          }
+          return {
+            ...prev,
+            currentIndex: nextIndex,
+            lastAnswerCorrect: null,
+            answerLocked: false,
+          }
+        })
+      }, 700)
+    },
+    [],
+  )
 
   async function handleSubmit(
     sessionToken: string,
     answers: { itemId: string; answer: string }[],
   ) {
-    setState({ phase: 'submitting' })
     try {
       const result = await submitTask({ sessionToken, answers })
       if (result.passed) {
@@ -115,84 +152,43 @@ export function MathGame({ initialLevel, completedLevels }: MathGameProps) {
     setState({ phase: 'select' })
   }
 
-  // -------------------------------------------------------------------------
-  // Render helpers
-  // -------------------------------------------------------------------------
-
-  function renderAnswerComponent(item: TaskItemClient, disabled: boolean) {
-    switch (item.type) {
-      case 'multiple_choice':
-        return (
-          <MultipleChoiceItem
-            options={item.options ?? []}
-            onSelect={handleAnswer}
-            disabled={disabled}
-          />
-        )
-      case 'text_input':
-        return (
-          <NumericInputItem
-            onSubmit={handleAnswer}
-            disabled={disabled}
-          />
-        )
-      case 'true_false':
-      case 'match_pairs':
-      case 'fill_blank':
-        return (
-          <p className="text-[--color-foreground] opacity-60 text-center">
-            Тип задания появится позже.
-          </p>
-        )
-      default: {
-        const _unreachable: never = item
-        void _unreachable
-        return null
-      }
-    }
-  }
-
-  // -------------------------------------------------------------------------
-  // State machine render
-  // -------------------------------------------------------------------------
-
   if (state.phase === 'select') {
     return (
       <LevelSelect
         subjectLabel="Математика"
         currentLevel={levelCursor}
         completedLevels={completedCount}
+        grade={grade}
         onStart={handleStart}
         onExit={handleExit}
       />
     )
   }
 
-  if (state.phase === 'loading') {
-    return <Spinner />
-  }
+  if (state.phase === 'loading') return <Spinner />
 
   if (state.phase === 'running') {
-    const { bundle, currentIndex } = state
+    const { bundle, currentIndex, lastAnswerCorrect, answerLocked } = state
     const item = bundle.items[currentIndex]
-
     if (!item) return <Spinner />
 
     return (
       <QuestionRunner
         currentIndex={currentIndex}
         totalCount={bundle.items.length}
-        lastAnswerCorrect={null}
+        lastAnswerCorrect={lastAnswerCorrect}
         promptText={item.prompt}
       >
-        {renderAnswerComponent(item, false)}
+        <TaskItemRenderer
+          task={item}
+          disabled={answerLocked}
+          onAnswer={handleAnswer}
+        />
       </QuestionRunner>
     )
   }
 
-  if (state.phase === 'submitting') {
-    return <Spinner />
-  }
+  if (state.phase === 'submitting') return <Spinner />
 
   if (state.phase === 'result') {
     const { result } = state
@@ -211,7 +207,7 @@ export function MathGame({ initialLevel, completedLevels }: MathGameProps) {
     )
   }
 
-  // phase === 'error'
+  // error
   return (
     <div className="min-h-dvh flex items-center justify-center bg-[--color-background] p-4">
       <div
@@ -230,7 +226,7 @@ export function MathGame({ initialLevel, completedLevels }: MathGameProps) {
         <Button
           variant="ghost"
           onClick={handleExit}
-          className="w-full min-h-[56px] text-base font-semibold rounded-[0.75rem] bg-[--color-muted] text-[--color-foreground] hover:bg-[--color-border] cursor-pointer"
+          className="w-full min-h-[56px] text-base font-semibold rounded-[0.75rem] bg-[--color-muted] text-[--color-foreground] border border-[--color-border] hover:bg-[--color-border] cursor-pointer"
         >
           Выйти из домика
         </Button>

@@ -55,6 +55,13 @@ export default async function HousePage({
   const dbSubject: DbSubject = SUBJECT_MAP[subject]
   const child = await requireChild()
 
+  // Read the child's grade so we can pass it to the game components.
+  const childRow = await prisma.child.findUnique({
+    where: { id: child.id },
+    select: { grade: true },
+  })
+  const grade = childRow?.grade ?? 1
+
   // Fetch SubjectProgress (may not exist for brand-new children).
   const progressRow = await prisma.subjectProgress.findUnique({
     where: { childId_subject: { childId: child.id, subject: dbSubject } },
@@ -77,18 +84,21 @@ export default async function HousePage({
         <MathGame
           initialLevel={progress.level}
           completedLevels={progress.completedLevels}
+          grade={grade}
         />
       )}
       {dbSubject === 'READING' && (
         <ReadingGame
           initialLevel={progress.level}
           completedLevels={progress.completedLevels}
+          grade={grade}
         />
       )}
       {dbSubject === 'ENGLISH' && (
         <EnglishGame
           initialLevel={progress.level}
           completedLevels={progress.completedLevels}
+          grade={grade}
         />
       )}
       {dbSubject === 'PE' && <PEGame peSessionsCount={peSessionsCount} />}

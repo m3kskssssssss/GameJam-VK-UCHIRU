@@ -122,12 +122,12 @@ export function ResultScreen({
           }
         </Button>
 
-        {/* Exit ghost button */}
+        {/* Exit ghost button — bordered so it stays visible against the muted card */}
         <Button
           variant="ghost"
           onClick={onExit}
           disabled={loading}
-          className="w-full min-h-[56px] text-base font-semibold rounded-[0.75rem] bg-[--color-muted] text-[--color-foreground] hover:bg-[--color-border] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full min-h-[56px] text-base font-semibold rounded-[0.75rem] bg-[--color-background] text-[--color-foreground] border border-[--color-border] hover:bg-[--color-border] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Выйти из домика
         </Button>

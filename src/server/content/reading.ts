@@ -455,23 +455,200 @@ const LEVEL_5_ITEMS: TaskItem[] = [
   },
 ]
 
-/**
- * Returns 10 TaskItems for the given reading level.
- * Levels 1-5: real content.
- * Levels 6–10: stubs (level-1 items with shifted IDs).
- */
-export function getLevel(level: number): TaskItem[] {
-  if (level < 1 || level > 10) {
-    throw new Error('LEVEL_NOT_FOUND')
-  }
-  if (level === 1) return LEVEL_1_ITEMS
-  if (level === 2) return LEVEL_2_ITEMS
-  if (level === 3) return LEVEL_3_ITEMS
-  if (level === 4) return LEVEL_4_ITEMS
-  if (level === 5) return LEVEL_5_ITEMS
+// --- Grade-specific Russian language tasks (mixed types) ---
 
-  return LEVEL_1_ITEMS.map((item) => ({
-    ...item,
-    id: `reading-${level}-${item.id.split('-').pop() ?? '00'}`,
-  }))
+const GRADE_1_ITEMS: TaskItem[] = [
+  { id: 'rd-g1-01', type: 'multiple_choice', prompt: 'Какая буква гласная?', options: ['К', 'А', 'Б', 'М'], correct: 'А' },
+  { id: 'rd-g1-02', type: 'multiple_choice', prompt: 'Какая буква согласная?', options: ['О', 'У', 'Т', 'И'], correct: 'Т' },
+  { id: 'rd-g1-03', type: 'true_false', prompt: 'Буква «Я» — гласная.', correct: true },
+  { id: 'rd-g1-04', type: 'true_false', prompt: 'Буква «Р» — гласная.', correct: false },
+  { id: 'rd-g1-05', type: 'match_pairs', prompt: 'Соедини слоги в слова', pairs: [
+    { left: 'ма', right: 'ма' },
+    { left: 'па', right: 'па' },
+    { left: 'ко', right: 'т' },
+    { left: 'ро', right: 'т' },
+  ]},
+  { id: 'rd-g1-06', type: 'fill_blank', prompt: 'Дополни: «Кош___»', before: 'Кош', after: '', correct: 'ка', acceptable: ['КА', 'Ка'] },
+  { id: 'rd-g1-07', type: 'text_input', prompt: 'Какая первая буква в слове «мама»?', correct: 'м', acceptable: ['М'] },
+  { id: 'rd-g1-08', type: 'multiple_choice', prompt: 'Сколько слогов в слове «мама»?', options: ['1', '2', '3', '4'], correct: '2' },
+  { id: 'rd-g1-09', type: 'fill_blank', prompt: 'Кот сидит ___ окне.', before: 'Кот сидит', after: 'окне.', correct: 'на', acceptable: ['На', 'НА'] },
+  { id: 'rd-g1-10', type: 'true_false', prompt: 'В слове «дом» три буквы.', correct: true },
+]
+
+const GRADE_2_ITEMS: TaskItem[] = [
+  { id: 'rd-g2-01', type: 'multiple_choice', prompt: 'Какое слово с ударением на 1-й слог?', options: ['ка-ран-да́ш', 'кни́-га', 'те-тра́дь', 'дев-чо́н-ка'], correct: 'кни́-га' },
+  { id: 'rd-g2-02', type: 'true_false', prompt: 'В слове «ёлка» пишется «ё».', correct: true },
+  { id: 'rd-g2-03', type: 'fill_blank', prompt: 'У ___ёлок зелёные иголки.', before: 'У', after: 'ёлок зелёные иголки.', correct: 'этих', acceptable: ['Этих'] },
+  { id: 'rd-g2-04', type: 'match_pairs', prompt: 'Найди антонимы', pairs: [
+    { left: 'большой', right: 'маленький' },
+    { left: 'горячий', right: 'холодный' },
+    { left: 'высокий', right: 'низкий' },
+    { left: 'светлый', right: 'тёмный' },
+  ]},
+  { id: 'rd-g2-05', type: 'multiple_choice', prompt: 'Что нужно писать после согласной перед «е»?', options: ['ъ', 'ь', '–', 'й'], correct: 'ь' },
+  { id: 'rd-g2-06', type: 'text_input', prompt: 'Напиши слово, противоположное к «день»', correct: 'ночь', acceptable: ['Ночь', 'НОЧЬ'] },
+  { id: 'rd-g2-07', type: 'multiple_choice', prompt: 'Сколько букв в слове «семья»?', options: ['4', '5', '6', '7'], correct: '5' },
+  { id: 'rd-g2-08', type: 'true_false', prompt: 'В слове «жильё» пишется «ь».', correct: true },
+  { id: 'rd-g2-09', type: 'fill_blank', prompt: 'У бабушки во дворе ___ кот.', before: 'У бабушки во дворе', after: 'кот.', correct: 'живёт', acceptable: ['Живёт'] },
+  { id: 'rd-g2-10', type: 'multiple_choice', prompt: 'В слове «коньки» какая буква обозначает мягкость?', options: ['к', 'о', 'н', 'ь'], correct: 'ь' },
+]
+
+const GRADE_3_ITEMS: TaskItem[] = [
+  { id: 'rd-g3-01', type: 'multiple_choice', prompt: 'Корень в слове «лесной»', options: ['лес', 'лесн', 'ной', 'ой'], correct: 'лес' },
+  { id: 'rd-g3-02', type: 'multiple_choice', prompt: 'Приставка в слове «подъезд»', options: ['под', 'подъ', 'ъезд', 'езд'], correct: 'под' },
+  { id: 'rd-g3-03', type: 'text_input', prompt: 'Корень слова «школьник»', correct: 'школ', acceptable: ['школ', 'школа'] },
+  { id: 'rd-g3-04', type: 'fill_blank', prompt: 'Безударная гласная: в___да', before: 'в', after: 'да', correct: 'о', acceptable: ['О'] },
+  { id: 'rd-g3-05', type: 'true_false', prompt: 'В слове «солнце» проверочное — «солнышко».', correct: true },
+  { id: 'rd-g3-06', type: 'match_pairs', prompt: 'Соедини фразеологизмы', pairs: [
+    { left: 'бить баклуши', right: 'бездельничать' },
+    { left: 'водить за нос', right: 'обманывать' },
+    { left: 'спустя рукава', right: 'небрежно' },
+    { left: 'как снег на голову', right: 'неожиданно' },
+  ]},
+  { id: 'rd-g3-07', type: 'multiple_choice', prompt: 'Суффикс в слове «домик»', options: ['ик', 'омик', 'дом', 'мик'], correct: 'ик' },
+  { id: 'rd-g3-08', type: 'fill_blank', prompt: 'Окончание в слове «мама»: ма___', before: 'ма', after: '', correct: 'ма', acceptable: ['а', 'А'] },
+  { id: 'rd-g3-09', type: 'true_false', prompt: 'Слово «прибежал» имеет приставку «при-».', correct: true },
+  { id: 'rd-g3-10', type: 'multiple_choice', prompt: 'Безударная гласная в слове «трава»', options: ['а', 'о', 'е', 'у'], correct: 'а' },
+]
+
+const GRADE_4_ITEMS: TaskItem[] = [
+  { id: 'rd-g4-01', type: 'multiple_choice', prompt: 'Часть речи: «бежать»', options: ['существительное', 'прилагательное', 'глагол', 'наречие'], correct: 'глагол' },
+  { id: 'rd-g4-02', type: 'multiple_choice', prompt: 'Часть речи: «красивый»', options: ['существительное', 'прилагательное', 'глагол', 'местоимение'], correct: 'прилагательное' },
+  { id: 'rd-g4-03', type: 'text_input', prompt: 'Часть речи слова «стол» (одним словом)', correct: 'существительное', acceptable: ['Существительное', 'сущ', 'сущ.'] },
+  { id: 'rd-g4-04', type: 'match_pairs', prompt: 'Соедини синонимы', pairs: [
+    { left: 'храбрый', right: 'смелый' },
+    { left: 'грустный', right: 'печальный' },
+    { left: 'быстрый', right: 'скорый' },
+    { left: 'весёлый', right: 'радостный' },
+  ]},
+  { id: 'rd-g4-05', type: 'true_false', prompt: 'Существительное обозначает действие.', correct: false },
+  { id: 'rd-g4-06', type: 'multiple_choice', prompt: 'Падеж слова «маме» в «дать маме»', options: ['Именительный', 'Родительный', 'Дательный', 'Винительный'], correct: 'Дательный' },
+  { id: 'rd-g4-07', type: 'fill_blank', prompt: 'Прилагательное «син___» к слову «небо»', before: 'син', after: '', correct: 'ее', acceptable: ['ее', 'Ее', 'ЕЕ'] },
+  { id: 'rd-g4-08', type: 'multiple_choice', prompt: 'Какое слово — наречие?', options: ['быстро', 'быстрый', 'скорость', 'спешить'], correct: 'быстро' },
+  { id: 'rd-g4-09', type: 'true_false', prompt: 'Местоимение заменяет существительное.', correct: true },
+  { id: 'rd-g4-10', type: 'text_input', prompt: 'Какое местоимение 1-го лица единственного числа?', correct: 'я', acceptable: ['Я'] },
+]
+
+const GRADE_5_ITEMS: TaskItem[] = [
+  { id: 'rd-g5-01', type: 'multiple_choice', prompt: 'Какое предложение повествовательное?', options: ['Куда ты идёшь?', 'Беги быстрее!', 'Я люблю читать.', 'Какой красивый день!'], correct: 'Я люблю читать.' },
+  { id: 'rd-g5-02', type: 'multiple_choice', prompt: 'Какое предложение восклицательное?', options: ['Вот моя книга.', 'Какая чудесная погода!', 'Ты идёшь домой?', 'Я ем завтрак.'], correct: 'Какая чудесная погода!' },
+  { id: 'rd-g5-03', type: 'text_input', prompt: 'Какой главный член предложения отвечает на вопрос «кто?» или «что?» (одним словом)', correct: 'подлежащее', acceptable: ['Подлежащее'] },
+  { id: 'rd-g5-04', type: 'true_false', prompt: 'Сказуемое отвечает на вопрос «что делает?»', correct: true },
+  { id: 'rd-g5-05', type: 'fill_blank', prompt: 'В предложении «Дети играют» подлежащее — это «___».', before: 'В предложении «Дети играют» подлежащее — это «', after: '».', correct: 'дети', acceptable: ['Дети', 'ДЕТИ'] },
+  { id: 'rd-g5-06', type: 'match_pairs', prompt: 'Соедини член предложения и вопрос', pairs: [
+    { left: 'подлежащее', right: 'кто? что?' },
+    { left: 'сказуемое', right: 'что делает?' },
+    { left: 'определение', right: 'какой?' },
+    { left: 'обстоятельство', right: 'где? когда?' },
+  ]},
+  { id: 'rd-g5-07', type: 'multiple_choice', prompt: 'Тип предложения «Какая красивая роза!»', options: ['повествовательное', 'вопросительное', 'восклицательное', 'побудительное'], correct: 'восклицательное' },
+  { id: 'rd-g5-08', type: 'fill_blank', prompt: '«Солнце светит» — основа предложения: ___ светит.', before: '«Солнце светит» — основа предложения:', after: 'светит.', correct: 'солнце', acceptable: ['Солнце'] },
+  { id: 'rd-g5-09', type: 'multiple_choice', prompt: 'Что делает определение?', options: ['обозначает действие', 'обозначает признак', 'обозначает место', 'обозначает количество'], correct: 'обозначает признак' },
+  { id: 'rd-g5-10', type: 'true_false', prompt: 'Простое предложение содержит одну грамматическую основу.', correct: true },
+]
+
+const GRADE_6_ITEMS: TaskItem[] = [
+  { id: 'rd-g6-01', type: 'multiple_choice', prompt: 'Какое слово — причастие?', options: ['бежать', 'бегущий', 'бег', 'быстро'], correct: 'бегущий' },
+  { id: 'rd-g6-02', type: 'multiple_choice', prompt: 'Какое слово — деепричастие?', options: ['читая', 'читал', 'чтение', 'читатель'], correct: 'читая' },
+  { id: 'rd-g6-03', type: 'fill_blank', prompt: 'Сколько Н в слове «варё___ый»?', before: 'варё', after: 'ый', correct: 'н', acceptable: ['Н', 'нн', 'НН'] },
+  { id: 'rd-g6-04', type: 'true_false', prompt: 'В причастиях, образованных от глаголов несовершенного вида, пишется одна Н.', correct: true },
+  { id: 'rd-g6-05', type: 'match_pairs', prompt: 'Соедини глагол и причастие', pairs: [
+    { left: 'читать', right: 'читающий' },
+    { left: 'писать', right: 'пишущий' },
+    { left: 'видеть', right: 'видящий' },
+    { left: 'делать', right: 'делающий' },
+  ]},
+  { id: 'rd-g6-06', type: 'text_input', prompt: 'Напиши причастие настоящего времени от «играть»', correct: 'играющий', acceptable: ['Играющий'] },
+  { id: 'rd-g6-07', type: 'multiple_choice', prompt: 'Сколько Н в «стеклянный»?', options: ['Н', 'НН', 'НИ', 'нет Н'], correct: 'НН' },
+  { id: 'rd-g6-08', type: 'fill_blank', prompt: 'Деепричастие от «бежать» — ___', before: 'Деепричастие от «бежать» —', after: '', correct: 'бежа', acceptable: ['Бежа'] },
+  { id: 'rd-g6-09', type: 'true_false', prompt: 'Причастный оборот выделяется запятыми, если стоит после определяемого слова.', correct: true },
+  { id: 'rd-g6-10', type: 'multiple_choice', prompt: 'В каком слове пишется НН?', options: ['пуга...ый', 'мороже...ый', 'жаре...ый', 'варё...ый'], correct: 'пуга...ый' },
+]
+
+const GRADE_7_ITEMS: TaskItem[] = [
+  { id: 'rd-g7-01', type: 'multiple_choice', prompt: 'Что такое предлог?', options: ['самостоятельная часть речи', 'служебная часть речи', 'союз', 'междометие'], correct: 'служебная часть речи' },
+  { id: 'rd-g7-02', type: 'multiple_choice', prompt: 'Какое слово — союз?', options: ['и', 'на', 'не', 'до'], correct: 'и' },
+  { id: 'rd-g7-03', type: 'multiple_choice', prompt: 'Какое слово — частица?', options: ['но', 'или', 'не', 'через'], correct: 'не' },
+  { id: 'rd-g7-04', type: 'text_input', prompt: 'Союз, обозначающий противопоставление (одним словом)', correct: 'но', acceptable: ['Но', 'НО', 'а'] },
+  { id: 'rd-g7-05', type: 'true_false', prompt: 'Предлог не является членом предложения.', correct: true },
+  { id: 'rd-g7-06', type: 'match_pairs', prompt: 'Соедини и определи разряд', pairs: [
+    { left: 'и', right: 'союз' },
+    { left: 'на', right: 'предлог' },
+    { left: 'не', right: 'частица' },
+    { left: 'ах', right: 'междометие' },
+  ]},
+  { id: 'rd-g7-07', type: 'fill_blank', prompt: 'Я пошёл, ___ устал. (противопоставление)', before: 'Я пошёл,', after: 'устал.', correct: 'но', acceptable: ['Но', 'однако'] },
+  { id: 'rd-g7-08', type: 'multiple_choice', prompt: 'Какой союз сочинительный?', options: ['чтобы', 'потому что', 'и', 'если'], correct: 'и' },
+  { id: 'rd-g7-09', type: 'multiple_choice', prompt: 'Какой союз подчинительный?', options: ['и', 'но', 'или', 'если'], correct: 'если' },
+  { id: 'rd-g7-10', type: 'true_false', prompt: 'Частица «бы» используется в условном наклонении.', correct: true },
+]
+
+const GRADE_LEVELS: TaskItem[][] = [
+  GRADE_1_ITEMS,
+  GRADE_2_ITEMS,
+  GRADE_3_ITEMS,
+  GRADE_4_ITEMS,
+  GRADE_5_ITEMS,
+  GRADE_6_ITEMS,
+  GRADE_7_ITEMS,
+]
+
+const COMPREHENSION_LEVELS: TaskItem[][] = [
+  LEVEL_1_ITEMS,
+  LEVEL_2_ITEMS,
+  LEVEL_3_ITEMS,
+  LEVEL_4_ITEMS,
+  LEVEL_5_ITEMS,
+]
+
+function mulberry32(seed: number): () => number {
+  let s = seed >>> 0
+  return () => {
+    s = (s + 0x6d2b79f5) >>> 0
+    let t = s
+    t = Math.imul(t ^ (t >>> 15), t | 1)
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+function shuffle<T>(arr: T[], rng: () => number): T[] {
+  const a = arr.slice()
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1))
+    ;[a[i], a[j]] = [a[j]!, a[i]!]
+  }
+  return a
+}
+
+/**
+ * Returns 10 TaskItems for the given reading (grade, level).
+ * grade: 1-7, level: 1-10.
+ * - Odd levels (1, 3, 5, 7, 9) → grade-specific Russian language tasks (mixed types)
+ * - Even levels (2, 4, 6, 8, 10) → reading comprehension texts (multiple_choice)
+ *
+ * Items and multiple-choice options are shuffled deterministically by (grade, level)
+ * so subsequent passes through the same content feel different.
+ */
+export function getLevel(grade: number, level: number): TaskItem[] {
+  const g = Math.max(1, Math.min(7, Math.round(grade)))
+  const lvl = Math.max(1, Math.min(10, Math.round(level)))
+
+  let base: TaskItem[]
+  if (lvl % 2 === 1) {
+    base = GRADE_LEVELS[g - 1] ?? GRADE_LEVELS[0] ?? GRADE_1_ITEMS
+  } else {
+    const compIdx = Math.floor((lvl - 1) / 2) % COMPREHENSION_LEVELS.length
+    base = COMPREHENSION_LEVELS[compIdx] ?? LEVEL_1_ITEMS
+  }
+
+  const rng = mulberry32(g * 10_000 + lvl * 100 + 17)
+  const shuffled = shuffle(base, rng)
+  return shuffled.map((item, idx) => {
+    const withLevelId = { ...item, id: `${item.id}-srv-${lvl}-${idx}` } as TaskItem
+    if (withLevelId.type === 'multiple_choice') {
+      return { ...withLevelId, options: shuffle(withLevelId.options, rng) }
+    }
+    return withLevelId
+  })
 }

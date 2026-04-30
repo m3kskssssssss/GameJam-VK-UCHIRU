@@ -63,6 +63,7 @@ vi.mock('@/lib/db', () => ({
     ),
     child: {
       update: vi.fn().mockResolvedValue({}),
+      findUnique: vi.fn().mockResolvedValue({ grade: 1 }),
     },
     subjectProgress: {
       findMany: vi.fn().mockResolvedValue([]),
@@ -112,7 +113,7 @@ describe('submitTask — grading', () => {
     const bundle = await startTask({ subject: 'MATH', level: 1 })
 
     // Produce correct answers from the source-of-truth content (not from the token)
-    const items = loadLevel('MATH', 1)
+    const items = loadLevel('MATH', 1, 1)
     const answers = items.map((it) => ({ itemId: it.id, answer: correctOf(it) }))
 
     const result = await submitTask({ sessionToken: bundle.sessionToken, answers })
@@ -130,7 +131,7 @@ describe('submitTask — grading', () => {
 
   it('grades a run with 6 / 10 correct as failed (threshold is 7)', async () => {
     const bundle = await startTask({ subject: 'MATH', level: 1 })
-    const items = loadLevel('MATH', 1)
+    const items = loadLevel('MATH', 1, 1)
 
     // Answer first 6 correctly, rest wrong
     const answers = items.map((it, idx) => ({
@@ -149,7 +150,7 @@ describe('submitTask — grading', () => {
 
   it('grades a run with exactly 7 / 10 as passed (boundary)', async () => {
     const bundle = await startTask({ subject: 'MATH', level: 1 })
-    const items = loadLevel('MATH', 1)
+    const items = loadLevel('MATH', 1, 1)
 
     const answers = items.map((it, idx) => ({
       itemId: it.id,
@@ -166,7 +167,7 @@ describe('submitTask — grading', () => {
 
   it('normalises whitespace and case in answer comparison', async () => {
     const bundle = await startTask({ subject: 'MATH', level: 1 })
-    const items = loadLevel('MATH', 1)
+    const items = loadLevel('MATH', 1, 1)
 
     // Correct answers with extra spaces and uppercase
     const answers = items.map((it) => ({
@@ -212,7 +213,7 @@ describe('submitTask — grading', () => {
   it('rejects when token childId does not match the session child', async () => {
     // startTask signed for CHILD_ID (mock returns CHILD_ID by default)
     const bundle = await startTask({ subject: 'MATH', level: 1 })
-    const items = loadLevel('MATH', 1)
+    const items = loadLevel('MATH', 1, 1)
     const answers = items.map((it) => ({ itemId: it.id, answer: correctOf(it) }))
 
     // Override requireChild to return a DIFFERENT child for the submitTask call
@@ -239,7 +240,7 @@ describe('submitTask — grading', () => {
 describe('submitTask — READING and ENGLISH subjects', () => {
   it('grades READING level 1 with all correct answers as passed', async () => {
     const bundle = await startTask({ subject: 'READING', level: 1 })
-    const items = loadLevel('READING', 1)
+    const items = loadLevel('READING', 1, 1)
 
     const answers = items.map((it) => ({ itemId: it.id, answer: correctOf(it) }))
     const result = await submitTask({ sessionToken: bundle.sessionToken, answers })
@@ -250,7 +251,7 @@ describe('submitTask — READING and ENGLISH subjects', () => {
 
   it('grades ENGLISH level 1 with all correct answers as passed', async () => {
     const bundle = await startTask({ subject: 'ENGLISH', level: 1 })
-    const items = loadLevel('ENGLISH', 1)
+    const items = loadLevel('ENGLISH', 1, 1)
 
     const answers = items.map((it) => ({ itemId: it.id, answer: correctOf(it) }))
     const result = await submitTask({ sessionToken: bundle.sessionToken, answers })

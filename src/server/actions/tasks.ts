@@ -1,14 +1,16 @@
 'use server'
 // Task session actions: startTask / submitTask.
-// Security model: answers are embedded in a server-signed HS256 JWT so the
-// client can never see correct answers in the network tab.
+// Security model: answers are embedded in a server-signed HS256 JWT.
+// As of the grade-1..7 overhaul, the client receives full TaskItems
+// (including `correct`) for instant feedback. Server-side grading stays
+// authoritative — submitTask re-validates every answer against the JWT payload.
 
 import { SignJWT, jwtVerify } from 'jose'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { requireChild } from '@/server/auth/guards'
-import { loadLevel } from '@/server/content'
-import type { TaskItemClient } from '@/server/content'
+import { loadLevel, isAnswerCorrect } from '@/server/content'
+import type { TaskItem, TaskItemClient, AnswerValue } from '@/server/content'
 import { awardChild, recomputeHomeLevel } from '@/server/actions/progress'
 
 // ---------------------------------------------------------------------------
@@ -25,13 +27,12 @@ function getJwtSecret(): Uint8Array {
 // Token payload shape (server-only — never sent to client)
 // ---------------------------------------------------------------------------
 
-type TokenItem = { id: string; correct: string }
-
 type TaskTokenPayload = {
   childId: string
   subject: string
+  grade: number
   level: number
-  items: TokenItem[]
+  items: TaskItem[]
   // iat / exp added by jose automatically
 }
 
@@ -43,11 +44,13 @@ const SubjectEnum = z.enum(['MATH', 'READING', 'ENGLISH', 'PE'])
 
 const StartTaskSchema = z.object({
   subject: SubjectEnum,
+  grade: z.number().int().min(1).max(7).optional(),
   level: z.number().int().min(1).max(20),
 })
 
 const AnswerSchema = z.object({
   itemId: z.string().min(1),
+  // Encoded answer (string). For boolean → "true"/"false", for arrays → comma-joined.
   answer: z.string(),
 })
 
@@ -98,39 +101,52 @@ const PERFECT_BONUS: Record<SubjectKey, Reward> = {
 }
 
 // ---------------------------------------------------------------------------
-// normalise — trim + lowercase for string comparison
+// Decode a string-encoded answer back to AnswerValue for the given task.
+// Mirrors the encoding done by the client (see TaskItemRenderer.serializeAnswer).
 // ---------------------------------------------------------------------------
 
-function normalise(s: string): string {
-  return s.trim().toLowerCase()
+function decodeAnswer(task: TaskItem, raw: string): AnswerValue {
+  switch (task.type) {
+    case 'true_false': {
+      const v = raw.trim().toLowerCase()
+      return v === 'true' || v === 'да' || v === '1'
+    }
+    case 'match_pairs':
+      return raw.split(',').map((s) => s.trim())
+    case 'multiple_choice':
+    case 'text_input':
+    case 'fill_blank':
+    default:
+      return raw
+  }
 }
 
 // ---------------------------------------------------------------------------
 // startTask
 // ---------------------------------------------------------------------------
 
-export async function startTask(input: { subject: string; level: number }): Promise<TaskBundle> {
+export async function startTask(input: {
+  subject: string
+  grade?: number
+  level: number
+}): Promise<TaskBundle> {
   const parsed = StartTaskSchema.safeParse(input)
   if (!parsed.success) throw new Error('INVALID_INPUT')
 
   const child = await requireChild()
   const { subject, level } = parsed.data
 
-  const items = loadLevel(subject, level)
+  // Use the child's stored grade unless an explicit grade is provided in input.
+  const grade = parsed.data.grade ?? (await getChildGrade(child.id))
 
-  // Build token payload with correct answers serialised for server-side grading.
-  const tokenItems: TokenItem[] = items.map((it) => ({
-    id: it.id,
-    correct: it.type === 'match_pairs'
-      ? JSON.stringify(it.pairs.map((p) => p.right))
-      : String(it.correct),
-  }))
+  const items = loadLevel(subject, grade, level)
 
   const payload: TaskTokenPayload = {
     childId: child.id,
     subject,
+    grade,
     level,
-    items: tokenItems,
+    items,
   }
 
   const token = await new SignJWT(payload as unknown as Record<string, unknown>)
@@ -140,9 +156,15 @@ export async function startTask(input: { subject: string; level: number }): Prom
     .sign(getJwtSecret())
 
   // Full items (including correct) sent to client for instant feedback.
-  const clientItems: TaskItemClient[] = items
+  return { sessionToken: token, items }
+}
 
-  return { sessionToken: token, items: clientItems }
+async function getChildGrade(childId: string): Promise<number> {
+  const child = await prisma.child.findUnique({
+    where: { id: childId },
+    select: { grade: true },
+  })
+  return child?.grade ?? 1
 }
 
 // ---------------------------------------------------------------------------
@@ -163,7 +185,6 @@ export async function submitTask(input: {
   let payload: TaskTokenPayload
   try {
     const { payload: raw } = await jwtVerify(sessionToken, getJwtSecret())
-    // Narrow unknown to TaskTokenPayload safely.
     const p = raw as Record<string, unknown>
     if (
       typeof p.childId !== 'string' ||
@@ -176,8 +197,9 @@ export async function submitTask(input: {
     payload = {
       childId: p.childId,
       subject: p.subject,
+      grade: typeof p.grade === 'number' ? p.grade : 1,
       level: p.level,
-      items: p.items as TokenItem[],
+      items: p.items as TaskItem[],
     }
   } catch {
     throw new Error('INVALID_TOKEN')
@@ -189,12 +211,13 @@ export async function submitTask(input: {
   const subject = payload.subject as SubjectKey
   const totalCount = payload.items.length
 
-  // Grade answers server-side — client answer strings are never trusted.
+  // Grade answers server-side using the same logic as client (isAnswerCorrect).
   let correctCount = 0
-  for (const tokenItem of payload.items) {
-    const clientAnswer = answers.find((a) => a.itemId === tokenItem.id)
+  for (const task of payload.items) {
+    const clientAnswer = answers.find((a) => a.itemId === task.id)
     if (!clientAnswer) continue
-    if (normalise(clientAnswer.answer) === normalise(tokenItem.correct)) {
+    const decoded = decodeAnswer(task, clientAnswer.answer)
+    if (isAnswerCorrect(task, decoded)) {
       correctCount++
     }
   }

@@ -5,14 +5,20 @@
 // first time the user taps.
 
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 
 interface ScreenOrientationLockable extends ScreenOrientation {
   lock?: (mode: 'landscape' | 'portrait' | 'natural') => Promise<void>
 }
 
 export function OrientationGate({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname()
   const [isPortrait, setIsPortrait] = useState(false)
   const [isTouch, setIsTouch] = useState(false)
+
+  // Subject mini-games (/play/house/*) are paged scrollable UIs — keep the
+  // immersive lock for the 3D world only.
+  const isImmersiveRoute = !pathname?.startsWith('/play/house')
 
   useEffect(() => {
     setIsTouch('ontouchstart' in window)
@@ -35,6 +41,8 @@ export function OrientationGate({ children }: { children: React.ReactNode }) {
   // address-bar peeking, no copy menu. Reverts on unmount so the parent
   // dashboard scrolls normally.
   useEffect(() => {
+    if (!isImmersiveRoute) return
+
     const html = document.documentElement
     html.classList.add('kq-immersive')
 
@@ -60,12 +68,12 @@ export function OrientationGate({ children }: { children: React.ReactNode }) {
       document.removeEventListener('gestureend', preventGesture)
       document.removeEventListener('touchmove', preventTouchMove)
     }
-  }, [])
+  }, [isImmersiveRoute])
 
   // Try to lock orientation on the next pointerdown — most browsers require a
   // user-gesture activation. Best-effort; silently fails if unsupported.
   useEffect(() => {
-    if (!isTouch) return
+    if (!isTouch || !isImmersiveRoute) return
     let triedOnce = false
     async function tryLock() {
       if (triedOnce) return
@@ -86,16 +94,16 @@ export function OrientationGate({ children }: { children: React.ReactNode }) {
     }
     window.addEventListener('pointerdown', tryLock, { once: true })
     return () => window.removeEventListener('pointerdown', tryLock)
-  }, [isTouch])
+  }, [isTouch, isImmersiveRoute])
 
   return (
     <div
-      className="kq-fullscreen"
+      className={isImmersiveRoute ? 'kq-fullscreen' : 'min-h-dvh w-full'}
       onContextMenu={(e) => e.preventDefault()}
       onDragStart={(e) => e.preventDefault()}
     >
       {children}
-      {isPortrait && (
+      {isImmersiveRoute && isPortrait && (
         <div
           style={{
             position: 'fixed',
