@@ -72,10 +72,11 @@ export function TextInputItem({ task, disabled, onAnswer }: Props) {
           type="button"
           disabled={disabled || !value.trim()}
           onClick={submit}
+          style={{ backgroundColor: '#4DA8DA', color: '#FFFFFF' }}
           className="
-            w-full min-h-[56px] rounded-[0.75rem] bg-[--color-primary] text-white
-            text-lg font-semibold
-            hover:bg-[--color-primary]/90 active:scale-[0.97]
+            w-full min-h-[56px] rounded-[0.75rem]
+            text-lg font-extrabold shadow-md
+            hover:brightness-95 active:scale-[0.97]
             disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer
             transition-all duration-150
           "

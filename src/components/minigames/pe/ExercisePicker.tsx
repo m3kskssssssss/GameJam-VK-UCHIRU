@@ -3,7 +3,6 @@
 import { useRouter } from 'next/navigation'
 import { PE_EXERCISES } from '@/server/content/pe'
 import type { PEExercise } from '@/server/content/pe'
-import { Button } from '@/components/ui/button'
 
 // ---------------------------------------------------------------------------
 // Props
@@ -62,12 +61,14 @@ function ExerciseCard({
         <p className="text-[14px] text-[--color-foreground] opacity-60 leading-snug flex-1">
           {exercise.instruction}
         </p>
-        <Button
+        <button
+          type="button"
           onClick={() => onPick(exercise.key)}
-          className="w-full min-h-[56px] text-base font-semibold rounded-[0.75rem] bg-[--color-primary] text-white hover:bg-[--color-primary]/90 cursor-pointer mt-2"
+          style={{ backgroundColor: '#4DA8DA', color: '#FFFFFF' }}
+          className="w-full min-h-[56px] text-base font-extrabold rounded-[0.75rem] cursor-pointer mt-2 shadow-md hover:brightness-95 active:scale-[0.98] transition-all"
         >
           Начать
-        </Button>
+        </button>
       </div>
     </div>
   )
@@ -90,13 +91,14 @@ export function ExercisePicker({ onPick }: ExercisePickerProps) {
         >
           Физкультура
         </h1>
-        <Button
-          variant="ghost"
+        <button
+          type="button"
           onClick={() => router.push('/play')}
-          className="text-base font-semibold text-[--color-foreground] hover:bg-[--color-border] rounded-[0.75rem] cursor-pointer"
+          style={{ color: '#1F2937' }}
+          className="text-base font-semibold rounded-[0.75rem] px-3 py-2 cursor-pointer hover:bg-black/5 active:scale-[0.98] transition-all"
         >
           Выйти
-        </Button>
+        </button>
       </div>
 
       {/* Exercise grid: 1 col on mobile, 2 col on desktop */}

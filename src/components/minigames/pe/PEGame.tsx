@@ -9,7 +9,6 @@ import { getPEExercise } from '@/server/content/pe'
 import { ExercisePicker } from './ExercisePicker'
 import { CameraSession } from './CameraSession'
 import { ResultScreen } from '@/components/minigames/shared/ResultScreen'
-import { Button } from '@/components/ui/button'
 
 // ---------------------------------------------------------------------------
 // Props
@@ -156,19 +155,22 @@ export function PEGame({ peSessionsCount }: PEGameProps) {
         <p className="text-lg font-semibold text-[--color-foreground] text-center">
           {state.message}
         </p>
-        <Button
+        <button
+          type="button"
           onClick={handleRetryFromError}
-          className="w-full min-h-[56px] text-base font-semibold rounded-[0.75rem] bg-[--color-primary] text-white hover:bg-[--color-primary]/90 cursor-pointer"
+          style={{ backgroundColor: '#4DA8DA', color: '#FFFFFF' }}
+          className="w-full min-h-[56px] text-base font-extrabold rounded-[0.75rem] cursor-pointer shadow-md hover:brightness-95 active:scale-[0.98] transition-all"
         >
           Выбрать упражнение
-        </Button>
-        <Button
-          variant="ghost"
+        </button>
+        <button
+          type="button"
           onClick={handleExit}
-          className="w-full min-h-[56px] text-base font-semibold rounded-[0.75rem] bg-[--color-muted] text-[--color-foreground] hover:bg-[--color-border] cursor-pointer"
+          style={{ backgroundColor: '#FFF9F0', color: '#1F2937', borderColor: '#C9C0AE' }}
+          className="w-full min-h-[56px] text-base font-semibold rounded-[0.75rem] border-2 cursor-pointer hover:brightness-95 active:scale-[0.98] transition-all"
         >
           Выйти из домика
-        </Button>
+        </button>
       </div>
     </div>
   )

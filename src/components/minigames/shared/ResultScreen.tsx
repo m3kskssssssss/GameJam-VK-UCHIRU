@@ -1,7 +1,6 @@
 'use client'
 
 import { Trophy, RotateCcw, Coins, Zap } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 
 // ---------------------------------------------------------------------------
 // Props
@@ -109,10 +108,12 @@ export function ResultScreen({
         )}
 
         {/* Primary action */}
-        <Button
+        <button
+          type="button"
           onClick={onNextLevel}
           disabled={loading}
-          className="w-full min-h-[56px] text-base font-semibold rounded-[0.75rem] bg-[--color-primary] text-white hover:bg-[--color-primary]/90 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{ backgroundColor: '#4DA8DA', color: '#FFFFFF' }}
+          className="w-full min-h-[56px] text-base font-extrabold rounded-[0.75rem] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:brightness-95 active:scale-[0.98] transition-all"
         >
           {loading
             ? 'Загрузка...'
@@ -120,17 +121,18 @@ export function ResultScreen({
               ? (nextLevelLabel ?? 'Перейти к следующему уровню')
               : 'Попробовать снова'
           }
-        </Button>
+        </button>
 
         {/* Exit ghost button — bordered so it stays visible against the muted card */}
-        <Button
-          variant="ghost"
+        <button
+          type="button"
           onClick={onExit}
           disabled={loading}
-          className="w-full min-h-[56px] text-base font-semibold rounded-[0.75rem] bg-[--color-background] text-[--color-foreground] border border-[--color-border] hover:bg-[--color-border] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{ backgroundColor: '#FFF9F0', color: '#1F2937', borderColor: '#C9C0AE' }}
+          className="w-full min-h-[56px] text-base font-semibold rounded-[0.75rem] border-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:brightness-95 active:scale-[0.98] transition-all"
         >
           Выйти из домика
-        </Button>
+        </button>
       </div>
     </div>
   )

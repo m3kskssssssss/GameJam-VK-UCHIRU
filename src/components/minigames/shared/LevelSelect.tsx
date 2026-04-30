@@ -1,7 +1,5 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
-
 export interface LevelSelectProps {
   subjectLabel: string
   currentLevel: number
@@ -54,24 +52,27 @@ export function LevelSelect({
           Пройдено уровней: <span className="font-bold">{completedLevels}</span> из 10
         </p>
 
-        {/* Start button */}
-        <Button
+        {/* Start button — explicit colours to dodge tailwind-merge dropping CSS-var arbitraries */}
+        <button
+          type="button"
           onClick={() => onStart(currentLevel)}
           disabled={loading}
-          className="w-full min-h-[56px] text-lg font-semibold rounded-[0.75rem] bg-[--color-primary] text-white hover:bg-[--color-primary]/90 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{ backgroundColor: '#4DA8DA', color: '#FFFFFF' }}
+          className="w-full min-h-[56px] text-lg font-extrabold rounded-[0.75rem] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:brightness-95 active:scale-[0.98] transition-all"
         >
           {loading ? 'Загрузка...' : 'Начать'}
-        </Button>
+        </button>
 
         {/* Exit ghost button */}
-        <Button
-          variant="ghost"
+        <button
+          type="button"
           onClick={onExit}
           disabled={loading}
-          className="w-full min-h-[56px] text-base font-semibold rounded-[0.75rem] bg-[--color-background] text-[--color-foreground] border border-[--color-border] hover:bg-[--color-border] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{ backgroundColor: '#FFF9F0', color: '#1F2937', borderColor: '#C9C0AE' }}
+          className="w-full min-h-[56px] text-base font-semibold rounded-[0.75rem] border-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:brightness-95 active:scale-[0.98] transition-all"
         >
           Выйти
-        </Button>
+        </button>
       </div>
     </div>
   )
