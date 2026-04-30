@@ -34,6 +34,10 @@ interface GameState {
   isGrounded: boolean
   isRunning: boolean
   facing: FacingDirection
+  /** World-space yaw (radians) the character's body is currently facing.
+   *  Written by CharacterGLB each frame — used by the lobby heartbeat to
+   *  broadcast the local player's orientation to remote clients. */
+  playerYaw: number
   nearHouse: HouseSubject | null
   halfX: number
   halfZ: number
@@ -59,6 +63,7 @@ interface GameState {
   setCameraDistance: (d: number) => void
   jump: () => void
   setRunning: (on: boolean) => void
+  setPlayerYaw: (yaw: number) => void
 }
 
 export const useGameStore = create<GameState>()((set) => ({
@@ -68,6 +73,7 @@ export const useGameStore = create<GameState>()((set) => ({
   isGrounded: true,
   isRunning: false,
   facing: 'down',
+  playerYaw: 0,
   nearHouse: null,
   halfX: 14,
   halfZ: 9,
@@ -177,4 +183,8 @@ export const useGameStore = create<GameState>()((set) => ({
     }),
 
   setRunning: (on) => set({ isRunning: on }),
+
+  // Mutate without React subscriptions — components that need playerYaw read
+  // it via getState(). Avoids re-renders on every animation frame.
+  setPlayerYaw: (yaw) => set({ playerYaw: wrapAngle(yaw) }),
 }))

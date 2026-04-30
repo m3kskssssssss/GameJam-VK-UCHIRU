@@ -3,6 +3,13 @@
 // (lobbymap.png ground + bushes/trees/grass/doors). Player walks around with
 // the same 3D character used in /play. One of the 4 doors is wrapped in a
 // glowing portal that pushes the player into the multi-player arena.
+//
+// Multi-player presence: every ~400ms we POST a heartbeat with our position +
+// world-space velocity + facing yaw + run/jump flags. Every ~500ms we poll
+// the server for everyone else's last snapshot. Remote players are rendered
+// by RemoteLobbyPlayer which extrapolates the snapshot forward in time and
+// lerps the visual transform — so movement looks continuous despite the
+// half-second poll cadence.
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
@@ -12,10 +19,10 @@ import { useRouter } from 'next/navigation'
 import { CameraRig } from './CameraRig'
 import { CharacterGLB, type CharacterGender } from './CharacterGLB'
 import { Joystick } from './Joystick'
-import { RotationJoystick } from './RotationJoystick'
 import { LobbyScene } from './LobbyScene'
 import { LOBBY_SCENE_INSTANCES } from './lobby-scene-data'
-import { RemoteLobbyPlayer } from './RemoteLobbyPlayer'
+import { RemoteLobbyPlayer, type RemoteSnapshot } from './RemoteLobbyPlayer'
+import { ActionButtons } from '@/components/play/ActionButtons'
 import { useGameStore } from '@/hooks/useGameStore'
 import { useSceneInput } from '@/hooks/useSceneInput'
 import { ru } from '@/i18n/ru'
@@ -32,6 +39,16 @@ const t = ru.lobby
 // so they don't walk past the trees/doors.
 const HALF_BOUND_X = 24
 const HALF_BOUND_Z = 24
+
+// Movement constants — must mirror useGameStore so we can reconstruct the
+// player's instantaneous world-space velocity from input direction + yaw.
+const WALK_SPEED = 4
+const RUN_MULTIPLIER = 2
+
+// Heartbeat / poll cadence. 400/500 ms keeps DB writes light while feeling
+// near-real-time once velocity prediction kicks in on the receiver.
+const HEARTBEAT_INTERVAL_MS = 400
+const PRESENCE_POLL_INTERVAL_MS = 500
 
 // Portal is anchored at the first door (NW corner of the map). Position is
 // taken from the extracted scene data; portal sits on the ground a few units
@@ -112,8 +129,30 @@ interface LobbyWorldProps {
   gender: CharacterGender
 }
 
-const HEARTBEAT_INTERVAL_MS = 600
-const PRESENCE_POLL_INTERVAL_MS = 1000
+// Per-player snapshot map. Keyed by childId; new snapshots replace the old.
+type RemoteState = {
+  childId: string
+  displayName: string
+  gender: 'BOY' | 'GIRL'
+  snapshot: RemoteSnapshot
+}
+
+// Compute the local player's world-space velocity (units/sec) from the
+// store's normalised input direction, camera yaw, and run flag.
+function computeWorldVelocity(): { vx: number; vz: number } {
+  const s = useGameStore.getState()
+  const [ix, iz] = s.velocity
+  if (ix === 0 && iz === 0) return { vx: 0, vz: 0 }
+  const yaw = s.cameraYaw
+  const sy = Math.sin(yaw)
+  const cy = Math.cos(yaw)
+  const forwardInput = -iz
+  const rightInput = ix
+  const dx = -sy * forwardInput + cy * rightInput
+  const dz = -cy * forwardInput - sy * rightInput
+  const speed = s.isRunning ? WALK_SPEED * RUN_MULTIPLIER : WALK_SPEED
+  return { vx: dx * speed, vz: dz * speed }
+}
 
 export function LobbyWorld({ gender }: LobbyWorldProps) {
   const router = useRouter()
@@ -124,8 +163,13 @@ export function LobbyWorld({ gender }: LobbyWorldProps) {
   const setCameraYaw = useGameStore((s) => s.setCameraYaw)
   const [nearArenaPortal, setNearArenaPortal] = useState(false)
   const [isTouchDevice, setIsTouchDevice] = useState(false)
-  const [remotePlayers, setRemotePlayers] = useState<LobbyPresenceEntry[]>([])
+  const [remotePlayers, setRemotePlayers] = useState<RemoteState[]>([])
   const containerRef = useRef<HTMLDivElement>(null)
+
+  // Local-clock offset to the server clock (server t - local t at receive).
+  // Lets us translate server timestamps to local performance.now() so the
+  // remote players' "received at" reference is consistent with our frame loop.
+  const clockOffsetRef = useRef<number>(0)
 
   const portalPos = useMemo(() => arenaPortalPosition(), [])
 
@@ -143,15 +187,26 @@ export function LobbyWorld({ gender }: LobbyWorldProps) {
 
   useSceneInput(containerRef)
 
-  // Heartbeat — push the local player's position to the server so other lobby
-  // visitors can see us. Reads position straight from the store on each tick.
+  // Heartbeat — push the local player's position + velocity + facing + flags.
   useEffect(() => {
     let cancelled = false
     const tick = async () => {
       if (cancelled) return
-      const [px, , pz] = useGameStore.getState().position
+      const s = useGameStore.getState()
+      const [px, , pz] = s.position
+      const { vx, vz } = computeWorldVelocity()
       try {
-        await heartbeatLobbyPresence({ x: px, z: pz })
+        const res = await heartbeatLobbyPresence({
+          x: px,
+          z: pz,
+          yaw: s.playerYaw,
+          vx,
+          vz,
+          isRunning: s.isRunning,
+          isJumping: !s.isGrounded,
+        })
+        // Sync local→server clock offset so we can translate updatedAtMs.
+        clockOffsetRef.current = res.serverTimeMs - Date.now()
       } catch {
         // Network blip — try again next tick.
       }
@@ -165,14 +220,42 @@ export function LobbyWorld({ gender }: LobbyWorldProps) {
     }
   }, [])
 
-  // Poll other players' positions.
+  // Poll other players' snapshots and turn them into RemoteState entries.
   useEffect(() => {
     let cancelled = false
     const tick = async () => {
       if (cancelled) return
       try {
-        const entries = await getLobbyPresence()
-        if (!cancelled) setRemotePlayers(entries)
+        const { entries, serverTimeMs } = await getLobbyPresence()
+        if (cancelled) return
+        // Refine the clock offset on every poll for stability.
+        clockOffsetRef.current = serverTimeMs - Date.now()
+        // Translate each row's server-stamped updatedAtMs to local
+        // performance.now() — that's what RemoteLobbyPlayer extrapolates from.
+        const localPerfNow = performance.now()
+        const localDateNow = Date.now()
+        const next: RemoteState[] = entries.map((e: LobbyPresenceEntry) => {
+          // Server time → local Date.now() → performance.now() reference.
+          const localDate = e.updatedAtMs - clockOffsetRef.current
+          const ageMs = Math.max(0, localDateNow - localDate)
+          const receivedAtMs = localPerfNow - ageMs
+          return {
+            childId: e.childId,
+            displayName: e.displayName,
+            gender: e.gender,
+            snapshot: {
+              x: e.x,
+              z: e.z,
+              yaw: e.yaw,
+              vx: e.vx,
+              vz: e.vz,
+              isRunning: e.isRunning,
+              isJumping: e.isJumping,
+              receivedAtMs,
+            },
+          }
+        })
+        setRemotePlayers(next)
       } catch {
         // ignore transient errors
       }
@@ -215,7 +298,7 @@ export function LobbyWorld({ gender }: LobbyWorldProps) {
             key={p.childId}
             displayName={p.displayName}
             gender={p.gender}
-            targetPosition={[p.x, p.z]}
+            snapshot={p.snapshot}
           />
         ))}
       </Canvas>
@@ -300,7 +383,7 @@ export function LobbyWorld({ gender }: LobbyWorldProps) {
       {isTouchDevice && (
         <>
           <Joystick />
-          <RotationJoystick />
+          <ActionButtons />
         </>
       )}
     </div>

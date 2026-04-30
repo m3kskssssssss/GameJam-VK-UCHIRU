@@ -93,6 +93,7 @@ export function CharacterGLB({ gender }: CharacterGLBProps) {
       const next = cur + diff * Math.min(1, delta * 12)
       facingYawRef.current = next
       characterRef.current.rotation.y = next
+      s.setPlayerYaw(next)
     }
 
     // Animation state: pick clip and scale weights/speed.
