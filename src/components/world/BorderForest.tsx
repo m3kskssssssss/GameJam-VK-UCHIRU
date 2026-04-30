@@ -155,11 +155,19 @@ export interface BorderForestProps {
   groundY?: number
 }
 
-const RING_OFFSETS: Array<[number, number]> = [
-  [-1, -1], [0, -1], [1, -1],
-  [-1,  0],          [1,  0],
-  [-1,  1], [0,  1], [1,  1],
-]
+// 5×5 grid of surrounding tiles (center cell skipped — that's the playable
+// scene). 24 tiles total — gives a deeper forest so the horizon doesn't end
+// abruptly at the first ring.
+const RING_OFFSETS: Array<[number, number]> = (() => {
+  const out: Array<[number, number]> = []
+  for (let dz = -2; dz <= 2; dz++) {
+    for (let dx = -2; dx <= 2; dx++) {
+      if (dx === 0 && dz === 0) continue
+      out.push([dx, dz])
+    }
+  }
+  return out
+})()
 
 export function BorderForest({
   tileSize,
