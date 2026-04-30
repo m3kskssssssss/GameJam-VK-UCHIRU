@@ -1,16 +1,22 @@
 // Phase 7 — Lobby landing page (server component).
-// Renders a 3D world with one demo game-house. Walking near the house opens
-// an "Войти в игровой домик" CTA that links to the arena.
+// Renders the GLB-based lobby scene with the player's 3D character. One door
+// in the corner is wrapped in a portal that pushes into the multi-player arena.
 
 import { requireChild } from '@/server/auth/guards'
+import { prisma } from '@/lib/db'
 import { LobbyWorld } from '@/components/world/LobbyWorld'
 
 export default async function LobbyPage() {
-  await requireChild()
+  const child = await requireChild()
+  const row = await prisma.child.findUnique({
+    where: { id: child.id },
+    select: { gender: true },
+  })
+  const gender = row?.gender === 'GIRL' ? 'GIRL' : 'BOY'
 
   return (
     <div className="h-dvh w-dvw overflow-hidden">
-      <LobbyWorld />
+      <LobbyWorld gender={gender} />
     </div>
   )
 }

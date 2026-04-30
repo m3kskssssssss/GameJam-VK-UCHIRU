@@ -16,11 +16,13 @@ export default async function HomePage() {
     prisma.characterAppearance.findUnique({ where: { childId: child.id } }),
     prisma.child.findUnique({
       where: { id: child.id },
-      select: { coins: true, energy: true, homeLevel: true },
+      select: { coins: true, energy: true, homeLevel: true, gender: true },
     }),
   ])
 
   if (!fresh) redirect('/auth/login')
+
+  const gender: 'BOY' | 'GIRL' = fresh.gender === 'GIRL' ? 'GIRL' : 'BOY'
 
   // Defensive: ensure appearance row exists for new children.
   const finalAppearance =
@@ -43,6 +45,7 @@ export default async function HomePage() {
         coins={fresh.coins}
         energy={fresh.energy}
         homeLevel={fresh.homeLevel}
+        gender={gender}
       />
     </div>
   )

@@ -241,3 +241,19 @@ model LobbyTile {
   @@unique([matchId, x, y])
   @@index([matchId, stompedById])
 }
+
+// LobbyPresence — heartbeat-based "who is currently in the lobby world" table.
+// Distinct from LobbyMatch/Player which model the coin-collection mini-game.
+// Children upsert this row every ~300 ms while inside /play/lobby; presence
+// queries return rows whose lastHeartbeatAt is recent (≤8 s ago).
+model LobbyPresence {
+  childId         String   @id
+  displayName     String
+  gender          Gender   @default(BOY)
+  x               Float    @default(0)
+  z               Float    @default(0)
+  lastHeartbeatAt DateTime @default(now())
+
+  // Index reason: getActivePresence orders/filters by lastHeartbeatAt.
+  @@index([lastHeartbeatAt])
+}

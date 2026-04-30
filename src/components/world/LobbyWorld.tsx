@@ -1,194 +1,138 @@
 'use client'
-// 3D lobby scene — small grass field with a single demo "game house".
-// Walking near the house pops up an "Войти в игровой домик" CTA that pushes
-// to /play/lobby/arena.
+// 3D lobby scene — uses the GLB-based scene exported from for-lobby/Scene.zcomp
+// (lobbymap.png ground + bushes/trees/grass/doors). Player walks around with
+// the same 3D character used in /play. One of the 4 doors is wrapped in a
+// glowing portal that pushes the player into the multi-player arena.
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { Text } from '@react-three/drei'
+import { Billboard, Text } from '@react-three/drei'
 import * as THREE from 'three'
 import { useRouter } from 'next/navigation'
-import { Character } from './Character'
 import { CameraRig } from './CameraRig'
+import { CharacterGLB, type CharacterGender } from './CharacterGLB'
 import { Joystick } from './Joystick'
 import { RotationJoystick } from './RotationJoystick'
+import { LobbyScene } from './LobbyScene'
+import { LOBBY_SCENE_INSTANCES } from './lobby-scene-data'
+import { RemoteLobbyPlayer } from './RemoteLobbyPlayer'
 import { useGameStore } from '@/hooks/useGameStore'
 import { useSceneInput } from '@/hooks/useSceneInput'
 import { ru } from '@/i18n/ru'
+import {
+  heartbeatLobbyPresence,
+  getLobbyPresence,
+  leaveLobbyPresence,
+  type LobbyPresenceEntry,
+} from '@/server/actions/lobby-presence'
 
 const t = ru.lobby
 
-const FIELD_W = 22
-const FIELD_D = 16
-const FENCE_H = 0.8
-const FENCE_T = 0.2
-const HOUSE_POS: [number, number, number] = [0, 0, -3]
-const TRIGGER_RADIUS = 2.4
-const TRIGGER_RADIUS_SQ = TRIGGER_RADIUS * TRIGGER_RADIUS
+// Lobby ground is 60×60. Keep player inside the playable inner ~24×24 area
+// so they don't walk past the trees/doors.
+const HALF_BOUND_X = 24
+const HALF_BOUND_Z = 24
 
-function LobbyGround() {
-  const groundTex = useMemo(() => {
-    const size = 512
-    const canvas = document.createElement('canvas')
-    canvas.width = size
-    canvas.height = size
-    const ctx = canvas.getContext('2d')!
-    ctx.fillStyle = '#8BC34A'
-    ctx.fillRect(0, 0, size, size)
-    ctx.strokeStyle = 'rgba(255,255,255,0.12)'
-    ctx.lineWidth = 1
-    const cells = 8
-    const step = size / cells
-    for (let i = 0; i <= cells; i++) {
-      ctx.beginPath()
-      ctx.moveTo(i * step, 0)
-      ctx.lineTo(i * step, size)
-      ctx.stroke()
-      ctx.beginPath()
-      ctx.moveTo(0, i * step)
-      ctx.lineTo(size, i * step)
-      ctx.stroke()
-    }
-    const tex = new THREE.CanvasTexture(canvas)
-    tex.wrapS = THREE.RepeatWrapping
-    tex.wrapT = THREE.RepeatWrapping
-    tex.repeat.set(4, 3)
-    return tex
-  }, [])
+// Portal is anchored at the first door (NW corner of the map). Position is
+// taken from the extracted scene data; portal sits on the ground a few units
+// in front of the door so the player walks INTO it from the playable area.
+const PORTAL_DOOR = LOBBY_SCENE_INSTANCES.find((i) => i.label === 'Door.glb')!
+const PORTAL_RADIUS = 2.4
+const PORTAL_INNER = 1.05
+const PORTAL_OUTER = 1.55
 
-  const hw = FIELD_W / 2
-  const hd = FIELD_D / 2
-
-  return (
-    <group>
-      <ambientLight intensity={0.75} />
-      <directionalLight position={[10, 18, 10]} intensity={0.7} />
-
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]}>
-        <planeGeometry args={[FIELD_W, FIELD_D]} />
-        <meshLambertMaterial map={groundTex} />
-      </mesh>
-
-      {/* Fence */}
-      <mesh position={[0, FENCE_H / 2, -hd - FENCE_T / 2]}>
-        <boxGeometry args={[FIELD_W + FENCE_T * 2, FENCE_H, FENCE_T]} />
-        <meshLambertMaterial color="#8D6E63" />
-      </mesh>
-      <mesh position={[0, FENCE_H / 2, hd + FENCE_T / 2]}>
-        <boxGeometry args={[FIELD_W + FENCE_T * 2, FENCE_H, FENCE_T]} />
-        <meshLambertMaterial color="#8D6E63" />
-      </mesh>
-      <mesh position={[-hw - FENCE_T / 2, FENCE_H / 2, 0]}>
-        <boxGeometry args={[FENCE_T, FENCE_H, FIELD_D]} />
-        <meshLambertMaterial color="#8D6E63" />
-      </mesh>
-      <mesh position={[hw + FENCE_T / 2, FENCE_H / 2, 0]}>
-        <boxGeometry args={[FENCE_T, FENCE_H, FIELD_D]} />
-        <meshLambertMaterial color="#8D6E63" />
-      </mesh>
-
-      {/* Decorative bushes */}
-      <mesh position={[-7, 0.4, -6]}>
-        <sphereGeometry args={[0.6, 12, 12]} />
-        <meshLambertMaterial color="#43A047" />
-      </mesh>
-      <mesh position={[7, 0.4, -6]}>
-        <sphereGeometry args={[0.6, 12, 12]} />
-        <meshLambertMaterial color="#43A047" />
-      </mesh>
-      <mesh position={[-7, 0.4, 5]}>
-        <sphereGeometry args={[0.5, 12, 12]} />
-        <meshLambertMaterial color="#388E3C" />
-      </mesh>
-      <mesh position={[7, 0.4, 5]}>
-        <sphereGeometry args={[0.5, 12, 12]} />
-        <meshLambertMaterial color="#388E3C" />
-      </mesh>
-    </group>
-  )
+function arenaPortalPosition(): [number, number, number] {
+  const [dx, , dz] = PORTAL_DOOR.position
+  // Pull the portal a few units back from the door toward the lobby centre so
+  // the kid steps into it while approaching the door.
+  const len = Math.hypot(dx, dz) || 1
+  const nx = dx / len
+  const nz = dz / len
+  const back = 4
+  return [dx - nx * back, 0.05, dz - nz * back]
 }
 
-function GameHouse({ onSetNear }: { onSetNear: (b: boolean) => void }) {
+interface LobbyArenaPortalProps {
+  position: [number, number, number]
+  onSetNear: (b: boolean) => void
+}
+
+function LobbyArenaPortal({ position, onSetNear }: LobbyArenaPortalProps) {
   const wasNear = useRef(false)
+  const ringRef = useRef<THREE.Mesh>(null)
+
   useFrame(() => {
     const [px, , pz] = useGameStore.getState().position
-    const dx = px - HOUSE_POS[0]
-    const dz = pz - HOUSE_POS[2] - 1.6
+    const dx = px - position[0]
+    const dz = pz - position[2]
     const distSq = dx * dx + dz * dz
-    const near = distSq < TRIGGER_RADIUS_SQ
-    if (near !== wasNear.current) {
-      wasNear.current = near
-      onSetNear(near)
+    const isNear = distSq < PORTAL_RADIUS * PORTAL_RADIUS
+
+    if (isNear !== wasNear.current) {
+      wasNear.current = isNear
+      onSetNear(isNear)
+    }
+
+    if (ringRef.current) {
+      const tnow = performance.now() / 1000
+      const pulse = 1 + Math.sin(tnow * 2.4) * 0.08
+      ringRef.current.scale.setScalar(pulse)
     }
   })
 
   return (
-    <group position={HOUSE_POS}>
-      {/* Foundation */}
-      <mesh position={[0, 0.05, 1.4]}>
-        <boxGeometry args={[2.6, 0.1, 0.5]} />
-        <meshLambertMaterial color="#9E9E9E" />
+    <group position={position}>
+      <mesh ref={ringRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
+        <ringGeometry args={[PORTAL_INNER, PORTAL_OUTER, 48]} />
+        <meshBasicMaterial color="#FFD86E" transparent opacity={0.75} side={THREE.DoubleSide} />
       </mesh>
-      {/* Body */}
-      <mesh position={[0, 1.1, 0]}>
-        <boxGeometry args={[2.6, 2.0, 2.6]} />
-        <meshLambertMaterial color="#FFB347" />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.04, 0]}>
+        <ringGeometry args={[0.55, 1.05, 48]} />
+        <meshBasicMaterial color="#FFD86E" transparent opacity={0.28} side={THREE.DoubleSide} />
       </mesh>
-      {/* Roof — gable */}
-      <mesh position={[0, 2.55, 0]}>
-        <cylinderGeometry args={[1.85, 1.85, 2.8, 4, 1]} />
-        <meshLambertMaterial color="#E53935" />
-      </mesh>
-      {/* Door */}
-      <mesh position={[0, 0.65, 1.31]}>
-        <planeGeometry args={[0.7, 1.2]} />
-        <meshLambertMaterial color="#5D4037" side={THREE.DoubleSide} />
-      </mesh>
-      <mesh position={[0.2, 0.7, 1.32]}>
-        <sphereGeometry args={[0.05, 12, 12]} />
-        <meshBasicMaterial color="#FFC107" />
-      </mesh>
-      {/* Windows */}
-      <mesh position={[-0.85, 1.4, 1.31]}>
-        <planeGeometry args={[0.55, 0.55]} />
-        <meshBasicMaterial color="#90CAF9" side={THREE.DoubleSide} />
-      </mesh>
-      <mesh position={[0.85, 1.4, 1.31]}>
-        <planeGeometry args={[0.55, 0.55]} />
-        <meshBasicMaterial color="#90CAF9" side={THREE.DoubleSide} />
-      </mesh>
-      {/* Sign */}
-      <Text
-        position={[0, 4.1, 0]}
-        fontSize={0.55}
-        color="#1F2937"
-        anchorX="center"
-        anchorY="middle"
-        outlineWidth={0.06}
-        outlineColor="#ffffff"
-        maxWidth={4.5}
-      >
-        {t.enterArena}
-      </Text>
+
+      <Billboard follow position={[0, 1.6, 0]}>
+        <Text
+          fontSize={0.55}
+          color="#1F2937"
+          anchorX="center"
+          anchorY="middle"
+          outlineWidth={0.05}
+          outlineColor="#FFFFFF"
+          maxWidth={6}
+        >
+          {t.enterArena}
+        </Text>
+      </Billboard>
     </group>
   )
 }
 
-export function LobbyWorld() {
+interface LobbyWorldProps {
+  gender: CharacterGender
+}
+
+const HEARTBEAT_INTERVAL_MS = 600
+const PRESENCE_POLL_INTERVAL_MS = 1000
+
+export function LobbyWorld({ gender }: LobbyWorldProps) {
   const router = useRouter()
   const setPosition = useGameStore((s) => s.setPosition)
   const setBounds = useGameStore((s) => s.setBounds)
   const setCameraDistance = useGameStore((s) => s.setCameraDistance)
   const setCameraPitch = useGameStore((s) => s.setCameraPitch)
   const setCameraYaw = useGameStore((s) => s.setCameraYaw)
-  const [nearHouse, setNearHouse] = useState(false)
+  const [nearArenaPortal, setNearArenaPortal] = useState(false)
   const [isTouchDevice, setIsTouchDevice] = useState(false)
+  const [remotePlayers, setRemotePlayers] = useState<LobbyPresenceEntry[]>([])
   const containerRef = useRef<HTMLDivElement>(null)
 
+  const portalPos = useMemo(() => arenaPortalPosition(), [])
+
   useEffect(() => {
-    setBounds(FIELD_W / 2 - 0.5, FIELD_D / 2 - 0.5)
-    setPosition(0, 0, 4)
-    setCameraDistance(10)
+    setBounds(HALF_BOUND_X, HALF_BOUND_Z)
+    setPosition(0, 0, 0)
+    setCameraDistance(11)
     setCameraPitch(0.7)
     setCameraYaw(0)
   }, [setBounds, setPosition, setCameraDistance, setCameraPitch, setCameraYaw])
@@ -199,6 +143,48 @@ export function LobbyWorld() {
 
   useSceneInput(containerRef)
 
+  // Heartbeat — push the local player's position to the server so other lobby
+  // visitors can see us. Reads position straight from the store on each tick.
+  useEffect(() => {
+    let cancelled = false
+    const tick = async () => {
+      if (cancelled) return
+      const [px, , pz] = useGameStore.getState().position
+      try {
+        await heartbeatLobbyPresence({ x: px, z: pz })
+      } catch {
+        // Network blip — try again next tick.
+      }
+    }
+    void tick()
+    const id = window.setInterval(tick, HEARTBEAT_INTERVAL_MS)
+    return () => {
+      cancelled = true
+      window.clearInterval(id)
+      void leaveLobbyPresence().catch(() => {})
+    }
+  }, [])
+
+  // Poll other players' positions.
+  useEffect(() => {
+    let cancelled = false
+    const tick = async () => {
+      if (cancelled) return
+      try {
+        const entries = await getLobbyPresence()
+        if (!cancelled) setRemotePlayers(entries)
+      } catch {
+        // ignore transient errors
+      }
+    }
+    void tick()
+    const id = window.setInterval(tick, PRESENCE_POLL_INTERVAL_MS)
+    return () => {
+      cancelled = true
+      window.clearInterval(id)
+    }
+  }, [])
+
   return (
     <div
       ref={containerRef}
@@ -207,20 +193,31 @@ export function LobbyWorld() {
         width: '100dvw',
         height: '100dvh',
         overflow: 'hidden',
-        background: '#87CEEB',
+        background: '#A8DCFF',
         touchAction: 'none',
       }}
     >
       <Canvas
-        camera={{ position: [0, 8, 12], fov: 45, near: 0.1, far: 200 }}
+        camera={{ position: [0, 8, 12], fov: 45, near: 0.1, far: 400 }}
         dpr={[1, 1.5]}
         shadows={false}
-        style={{ background: '#87CEEB' }}
+        style={{ background: '#A8DCFF' }}
       >
+        <ambientLight intensity={0.85} />
+        <directionalLight position={[15, 25, 10]} intensity={1.0} />
+        <hemisphereLight args={['#dfefff', '#5b8a6a', 0.4]} />
         <CameraRig />
-        <LobbyGround />
-        <GameHouse onSetNear={setNearHouse} />
-        <Character />
+        <LobbyScene />
+        <LobbyArenaPortal position={portalPos} onSetNear={setNearArenaPortal} />
+        <CharacterGLB gender={gender} />
+        {remotePlayers.map((p) => (
+          <RemoteLobbyPlayer
+            key={p.childId}
+            displayName={p.displayName}
+            gender={p.gender}
+            targetPosition={[p.x, p.z]}
+          />
+        ))}
       </Canvas>
 
       <div
@@ -269,7 +266,7 @@ export function LobbyWorld() {
         ← {t.back}
       </button>
 
-      {nearHouse && (
+      {nearArenaPortal && (
         <div
           style={{
             position: 'absolute',

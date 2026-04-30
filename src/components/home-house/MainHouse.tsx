@@ -17,6 +17,7 @@ import { PlacementSidebar } from './PlacementSidebar'
 import { ShopModal } from './ShopModal'
 import { WardrobeModal } from './WardrobeModal'
 import { HouseInterior } from '@/components/world/HouseInterior'
+import type { CharacterGender } from '@/components/world/CharacterGLB'
 
 const _t = ru.home
 
@@ -36,6 +37,7 @@ export interface MainHouseProps {
   coins: number
   energy: number
   homeLevel: number
+  gender: CharacterGender
 }
 
 // ---- Component --------------------------------------------------------------
@@ -47,6 +49,7 @@ export function MainHouse({
   coins: initialCoins,
   energy: initialEnergy,
   homeLevel,
+  gender,
 }: MainHouseProps) {
   const router = useRouter()
 
@@ -274,6 +277,7 @@ export function MainHouse({
           /* 3D walk-around scene for normal viewing */
           <HouseInterior
             placements={activeRoom?.placements ?? []}
+            gender={gender}
             onExit={handleExitToWorld}
           />
         )}

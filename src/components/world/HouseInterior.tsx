@@ -1,13 +1,15 @@
 'use client'
 // 3D interior scene for /play/home.
-// White grid floor, walls, door, placed furniture, animated 2D character.
-// Walls fade out when they're between the camera and the player so the
-// rotated camera angle never blocks the action.
+// Photo-textured floor, walls, door, placed furniture, animated 3D character
+// (same Meshy biped used in the outdoor /play world). Walls fade out when
+// they're between the camera and the player so the rotated camera angle
+// never blocks the action.
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
+import { useTexture } from '@react-three/drei'
 import * as THREE from 'three'
-import { Character } from './Character'
+import { CharacterGLB, type CharacterGender } from './CharacterGLB'
 import { CameraRig } from './CameraRig'
 import { Joystick } from './Joystick'
 import { RotationJoystick } from './RotationJoystick'
@@ -26,6 +28,7 @@ const WALL_T = 0.18
 
 interface Props {
   placements: RoomPlacementSummary[]
+  gender: CharacterGender
   onExit: () => void
 }
 
@@ -121,34 +124,13 @@ function IndoorScene({
   placements: RoomPlacementSummary[]
   registerWallRef: (id: string, ref: THREE.MeshLambertMaterial | null) => void
 }) {
-  const floorTex = useMemo(() => {
-    const size = 512
-    const canvas = document.createElement('canvas')
-    canvas.width = size
-    canvas.height = size
-    const ctx = canvas.getContext('2d')!
-    ctx.fillStyle = '#ffffff'
-    ctx.fillRect(0, 0, size, size)
-    ctx.strokeStyle = '#bdbdbd'
-    ctx.lineWidth = 2
-    const cells = 8
-    const step = size / cells
-    for (let i = 0; i <= cells; i++) {
-      ctx.beginPath()
-      ctx.moveTo(i * step, 0)
-      ctx.lineTo(i * step, size)
-      ctx.stroke()
-      ctx.beginPath()
-      ctx.moveTo(0, i * step)
-      ctx.lineTo(size, i * step)
-      ctx.stroke()
-    }
-    const tex = new THREE.CanvasTexture(canvas)
-    tex.wrapS = THREE.RepeatWrapping
-    tex.wrapT = THREE.RepeatWrapping
-    tex.repeat.set(1, FLOOR_D / FLOOR_W)
-    return tex
-  }, [])
+  const floorTex = useTexture('/textures/pol-home.png')
+  floorTex.wrapS = THREE.RepeatWrapping
+  floorTex.wrapT = THREE.RepeatWrapping
+  // Tile the photo so it doesn't stretch into a single mega-plank across the room.
+  floorTex.repeat.set(2, Math.max(1, Math.round((2 * FLOOR_D) / FLOOR_W)))
+  floorTex.colorSpace = THREE.SRGBColorSpace
+  floorTex.anisotropy = 8
 
   return (
     <group>
@@ -156,10 +138,10 @@ function IndoorScene({
       <directionalLight position={[5, 10, 5]} intensity={0.55} />
       <hemisphereLight color="#ffffff" groundColor="#f4f0e6" intensity={0.4} />
 
-      {/* Floor */}
+      {/* Floor — uses the photo from /textures/pol-home.png */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
         <planeGeometry args={[FLOOR_W, FLOOR_D]} />
-        <meshLambertMaterial map={floorTex} />
+        <meshStandardMaterial map={floorTex} roughness={0.95} metalness={0} />
       </mesh>
 
       {/* Walls + lintel */}
@@ -272,7 +254,7 @@ function WallFadeController({
 
 // ── Wrapper component ──────────────────────────────────────────────────────
 
-export function HouseInterior({ placements, onExit }: Props) {
+export function HouseInterior({ placements, gender, onExit }: Props) {
   const setPosition = useGameStore((s) => s.setPosition)
   const setBounds = useGameStore((s) => s.setBounds)
   const setCameraDistance = useGameStore((s) => s.setCameraDistance)
@@ -331,7 +313,7 @@ export function HouseInterior({ placements, onExit }: Props) {
         <IndoorScene placements={placements} registerWallRef={registerWallRef} />
         <WallFadeController wallRefs={wallRefs} />
         <DoorTrigger onSetNear={setNearExit} />
-        <Character />
+        <CharacterGLB gender={gender} />
       </Canvas>
 
       {nearExit && (
