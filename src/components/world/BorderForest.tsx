@@ -14,10 +14,15 @@ import * as THREE from 'three'
 
 const FOREST_FLOOR_SRC = '/textures/fon.png'
 
+// Canonical scale + ground-y offset matched to /play/SCENA so the props sit
+// on the ground exactly the way they do in the main scene. The Mattercraft
+// GLBs have their pivot below the visible mesh; the y values below are taken
+// from real instances in mattercraft-scene-data.ts and they must be scaled
+// alongside `baseScale` so the trunk/base lands at y=0 on the forest floor.
 const ASSETS = {
-  Tree_Bigger:  { url: '/scena/Tree_Bigger.glb',  baseScale: 1.6, footprint: 4.5 },
-  Bush_Classik: { url: '/scena/Bush_Classik.glb', baseScale: 1.7, footprint: 2.4 },
-  Grass:        { url: '/scena/Grass.glb',        baseScale: 1.0, footprint: 1.2 },
+  Tree_Bigger:  { url: '/scena/Tree_Bigger.glb',  baseScale: 4.0, baseY: 3.925488, footprint: 5.0 },
+  Bush_Classik: { url: '/scena/Bush_Classik.glb', baseScale: 1.0, baseY: 0.689669, footprint: 1.6 },
+  Grass:        { url: '/scena/Grass.glb',        baseScale: 1.0, baseY: 0.436617, footprint: 1.0 },
 } as const
 
 type AssetKey = keyof typeof ASSETS
@@ -62,7 +67,7 @@ function generateLayout(seed: number, tileSize: number): DecorItem[] {
   const items: DecorItem[] = []
 
   function tryPlace(asset: AssetKey, count: number) {
-    const { footprint, baseScale } = ASSETS[asset]
+    const { footprint, baseScale, baseY } = ASSETS[asset]
     const attempts = 120
     for (let n = 0; n < count; n++) {
       let ok = false
@@ -82,13 +87,16 @@ function generateLayout(seed: number, tileSize: number): DecorItem[] {
         }
         if (collide) continue
         placed.push({ x, z, r: footprint })
-        // Random scale jitter so tiles don't look identical even when rotated.
-        const scaleJitter = 0.85 + rng() * 0.35
+        // Light scale jitter — y offset must scale with it so the prop's base
+        // stays planted on the ground regardless of size variation.
+        const scaleJitter = 0.9 + rng() * 0.25
+        const finalScale = baseScale * scaleJitter
+        const y = baseY * scaleJitter
         items.push({
           asset,
-          position: [x, 0, z],
+          position: [x, y, z],
           rotationY: rng() * Math.PI * 2,
-          scale: scaleJitter * baseScale,
+          scale: finalScale,
         })
         ok = true
       }
