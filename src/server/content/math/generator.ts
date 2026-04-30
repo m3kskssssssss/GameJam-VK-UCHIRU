@@ -320,7 +320,6 @@ function genGrade5(rng: () => number, idx: number): TaskItem {
   const den = pickFrom([3, 5, 7, 9], rng)
   const a = intIn(rng, 1, den)
   const b = intIn(rng, 1, den)
-  const stated = (a + b) % den
   return {
     id: `math-g5-tf-${idx}`,
     type: 'true_false',

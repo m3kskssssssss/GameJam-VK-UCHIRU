@@ -8,6 +8,13 @@
  */
 
 import { describe, it, expect, vi, beforeAll } from 'vitest'
+import type { TaskItem } from '@/server/content/types'
+
+/** Serialise the correct answer for any task type to a comparable string. */
+function correctOf(item: TaskItem): string {
+  if (item.type === 'match_pairs') return item.pairs.map((p) => p.right).join(',')
+  return String(item.correct)
+}
 
 // ---------------------------------------------------------------------------
 // Env must be set before the module under test is imported
@@ -83,9 +90,10 @@ describe('startTask', () => {
     expect(Array.isArray(bundle.items)).toBe(true)
     expect(bundle.items.length).toBe(10)
 
-    // No item should expose the 'correct' field to the client
+    // All items should have an id and a type
     for (const item of bundle.items) {
-      expect((item as Record<string, unknown>).correct).toBeUndefined()
+      expect(typeof item.id).toBe('string')
+      expect(typeof item.type).toBe('string')
     }
   })
 
@@ -105,7 +113,7 @@ describe('submitTask — grading', () => {
 
     // Produce correct answers from the source-of-truth content (not from the token)
     const items = loadLevel('MATH', 1)
-    const answers = items.map((it) => ({ itemId: it.id, answer: it.correct }))
+    const answers = items.map((it) => ({ itemId: it.id, answer: correctOf(it) }))
 
     const result = await submitTask({ sessionToken: bundle.sessionToken, answers })
 
@@ -127,7 +135,7 @@ describe('submitTask — grading', () => {
     // Answer first 6 correctly, rest wrong
     const answers = items.map((it, idx) => ({
       itemId: it.id,
-      answer: idx < 6 ? it.correct : 'wrong',
+      answer: idx < 6 ? correctOf(it) : 'wrong',
     }))
 
     const result = await submitTask({ sessionToken: bundle.sessionToken, answers })
@@ -145,7 +153,7 @@ describe('submitTask — grading', () => {
 
     const answers = items.map((it, idx) => ({
       itemId: it.id,
-      answer: idx < 7 ? it.correct : 'wrong',
+      answer: idx < 7 ? correctOf(it) : 'wrong',
     }))
 
     const result = await submitTask({ sessionToken: bundle.sessionToken, answers })
@@ -163,7 +171,7 @@ describe('submitTask — grading', () => {
     // Correct answers with extra spaces and uppercase
     const answers = items.map((it) => ({
       itemId: it.id,
-      answer: `  ${it.correct.toUpperCase()}  `,
+      answer: `  ${correctOf(it).toUpperCase()}  `,
     }))
 
     const result = await submitTask({ sessionToken: bundle.sessionToken, answers })
@@ -205,7 +213,7 @@ describe('submitTask — grading', () => {
     // startTask signed for CHILD_ID (mock returns CHILD_ID by default)
     const bundle = await startTask({ subject: 'MATH', level: 1 })
     const items = loadLevel('MATH', 1)
-    const answers = items.map((it) => ({ itemId: it.id, answer: it.correct }))
+    const answers = items.map((it) => ({ itemId: it.id, answer: correctOf(it) }))
 
     // Override requireChild to return a DIFFERENT child for the submitTask call
     const { requireChild } = await import('@/server/auth/guards')
@@ -233,7 +241,7 @@ describe('submitTask — READING and ENGLISH subjects', () => {
     const bundle = await startTask({ subject: 'READING', level: 1 })
     const items = loadLevel('READING', 1)
 
-    const answers = items.map((it) => ({ itemId: it.id, answer: it.correct }))
+    const answers = items.map((it) => ({ itemId: it.id, answer: correctOf(it) }))
     const result = await submitTask({ sessionToken: bundle.sessionToken, answers })
 
     expect(result.passed).toBe(true)
@@ -244,7 +252,7 @@ describe('submitTask — READING and ENGLISH subjects', () => {
     const bundle = await startTask({ subject: 'ENGLISH', level: 1 })
     const items = loadLevel('ENGLISH', 1)
 
-    const answers = items.map((it) => ({ itemId: it.id, answer: it.correct }))
+    const answers = items.map((it) => ({ itemId: it.id, answer: correctOf(it) }))
     const result = await submitTask({ sessionToken: bundle.sessionToken, answers })
 
     expect(result.passed).toBe(true)

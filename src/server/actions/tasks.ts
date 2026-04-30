@@ -118,8 +118,13 @@ export async function startTask(input: { subject: string; level: number }): Prom
 
   const items = loadLevel(subject, level)
 
-  // Build token payload with correct answers embedded.
-  const tokenItems: TokenItem[] = items.map((it) => ({ id: it.id, correct: it.correct }))
+  // Build token payload with correct answers serialised for server-side grading.
+  const tokenItems: TokenItem[] = items.map((it) => ({
+    id: it.id,
+    correct: it.type === 'match_pairs'
+      ? JSON.stringify(it.pairs.map((p) => p.right))
+      : String(it.correct),
+  }))
 
   const payload: TaskTokenPayload = {
     childId: child.id,
@@ -134,9 +139,8 @@ export async function startTask(input: { subject: string; level: number }): Prom
     .setExpirationTime('30m')
     .sign(getJwtSecret())
 
-  // Strip correct answers before sending to client.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const clientItems: TaskItemClient[] = items.map(({ correct, ...rest }) => rest)
+  // Full items (including correct) sent to client for instant feedback.
+  const clientItems: TaskItemClient[] = items
 
   return { sessionToken: token, items: clientItems }
 }

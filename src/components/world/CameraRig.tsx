@@ -8,7 +8,7 @@ import * as THREE from 'three'
 import { useGameStore } from '@/hooks/useGameStore'
 
 const POS_LERP = 0.18
-const LOOK_LERP = 0.22
+const _LOOK_LERP = 0.22
 
 const _desired = new THREE.Vector3()
 const _lookAt = new THREE.Vector3()

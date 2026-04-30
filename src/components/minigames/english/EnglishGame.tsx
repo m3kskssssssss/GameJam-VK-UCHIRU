@@ -9,8 +9,6 @@ import { LevelSelect } from '@/components/minigames/shared/LevelSelect'
 import { QuestionRunner } from '@/components/minigames/shared/QuestionRunner'
 import { ResultScreen } from '@/components/minigames/shared/ResultScreen'
 import { MultipleChoiceItem } from '@/components/minigames/math/MultipleChoiceItem'
-import { ArrangeItem } from '@/components/minigames/english/ArrangeItem'
-import { ListenChooseItem } from '@/components/minigames/english/ListenChooseItem'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -42,38 +40,18 @@ function renderItem(
         />
       )
 
-    case 'arrange':
-      // TODO: english.ts has no arrange items yet — add them in Phase 5 content pass
+    case 'text_input':
+    case 'true_false':
+    case 'match_pairs':
+    case 'fill_blank':
       return (
-        <ArrangeItem
-          promptText={item.prompt}
-          words={item.options ?? []}
-          onSubmit={onAnswer}
-          disabled={disabled}
-        />
-      )
-
-    case 'listen_choose':
-      // TODO: english.ts has no listen_choose items yet — add them in Phase 5 content pass
-      return (
-        <ListenChooseItem
-          audioText={item.prompt}
-          options={item.options ?? []}
-          onSelect={onAnswer}
-          disabled={disabled}
-        />
-      )
-
-    case 'numeric_input':
-      // Not used for English — fallback renders prompt as plain text
-      return (
-        <p className="text-[--color-foreground] opacity-60 text-center text-base">
-          Тип задания не поддерживается для Английского.
+        <p className="text-[--color-foreground] opacity-60 text-center text-base p-4">
+          Тип задания появится позже.
         </p>
       )
 
     default: {
-      const _exhaustive: never = item.type
+      const _exhaustive: never = item
       void _exhaustive
       return null
     }
@@ -223,8 +201,7 @@ export function EnglishGame({
   if (!item) return null
 
   // Determine prompt shown in the QuestionRunner header card
-  const runnerPrompt =
-    item.type === 'listen_choose' ? undefined : item.prompt
+  const runnerPrompt = item.prompt
 
   return (
     <QuestionRunner

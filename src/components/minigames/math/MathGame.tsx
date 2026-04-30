@@ -129,29 +129,25 @@ export function MathGame({ initialLevel, completedLevels }: MathGameProps) {
             disabled={disabled}
           />
         )
-      case 'numeric_input':
+      case 'text_input':
         return (
           <NumericInputItem
             onSubmit={handleAnswer}
             disabled={disabled}
           />
         )
-      case 'arrange':
-      case 'listen_choose':
-        // Math content does not use these types; fall back to a safe placeholder
+      case 'true_false':
+      case 'match_pairs':
+      case 'fill_blank':
         return (
-          <p className="text-[--color-foreground] opacity-60">
-            Неподдерживаемый тип вопроса: {item.type}
+          <p className="text-[--color-foreground] opacity-60 text-center">
+            Тип задания появится позже.
           </p>
         )
       default: {
-        // Exhaustive check — TypeScript will flag unhandled TaskItemType values
-        const _unreachable: never = item.type
-        return (
-          <p className="text-[--color-foreground] opacity-60">
-            Неизвестный тип вопроса: {String(_unreachable)}
-          </p>
-        )
+        const _unreachable: never = item
+        void _unreachable
+        return null
       }
     }
   }

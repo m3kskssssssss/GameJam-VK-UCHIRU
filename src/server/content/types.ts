@@ -70,6 +70,10 @@ export type TaskItem =
   | MatchPairsTask
   | FillBlankTask
 
+/** Items as received by the client — identical to TaskItem since the server
+ *  sends full items including `correct` for instant client-side validation. */
+export type TaskItemClient = TaskItem
+
 // ---------------------------------------------------------------------------
 // Answer values returned by the client per task
 // ---------------------------------------------------------------------------

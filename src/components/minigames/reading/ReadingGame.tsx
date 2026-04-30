@@ -205,21 +205,23 @@ export function ReadingGame({ initialLevel, completedLevels }: ReadingGameProps)
           promptText={parsed.question}
         >
           {/* Passage viewer sits inside the answer slot, above choices */}
-          {parsed.passage ? (
-            <div className="flex flex-col gap-4">
-              <PassageViewer text={parsed.passage} />
+          {currentItem.type === 'multiple_choice' && (
+            parsed.passage ? (
+              <div className="flex flex-col gap-4">
+                <PassageViewer text={parsed.passage} />
+                <MultipleChoiceItem
+                  options={currentItem.options}
+                  onSelect={handleAnswer}
+                  disabled={loading}
+                />
+              </div>
+            ) : (
               <MultipleChoiceItem
-                options={currentItem.options ?? []}
+                options={currentItem.options}
                 onSelect={handleAnswer}
                 disabled={loading}
               />
-            </div>
-          ) : (
-            <MultipleChoiceItem
-              options={currentItem.options ?? []}
-              onSelect={handleAnswer}
-              disabled={loading}
-            />
+            )
           )}
         </QuestionRunner>
 
