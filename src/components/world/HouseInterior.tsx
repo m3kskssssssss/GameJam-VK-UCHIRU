@@ -12,7 +12,7 @@ import * as THREE from 'three'
 import { CharacterGLB, type CharacterGender } from './CharacterGLB'
 import { CameraRig } from './CameraRig'
 import { Joystick } from './Joystick'
-import { RotationJoystick } from './RotationJoystick'
+import { ActionButtons } from '@/components/play/ActionButtons'
 import { Furniture3D } from './Furniture3D'
 import { useGameStore } from '@/hooks/useGameStore'
 import { useSceneInput } from '@/hooks/useSceneInput'
@@ -348,12 +348,8 @@ export function HouseInterior({ placements, gender, onExit }: Props) {
         </div>
       )}
 
-      {isTouchDevice && (
-        <>
-          <Joystick />
-          <RotationJoystick />
-        </>
-      )}
+      <ActionButtons />
+      {isTouchDevice && <Joystick />}
     </div>
   )
 }

@@ -21,6 +21,7 @@ import { CharacterGLB, type CharacterGender } from './CharacterGLB'
 import { Joystick } from './Joystick'
 import { LobbyScene } from './LobbyScene'
 import { LOBBY_SCENE_INSTANCES } from './lobby-scene-data'
+import { BorderForest } from './BorderForest'
 import { RemoteLobbyPlayer, type RemoteSnapshot } from './RemoteLobbyPlayer'
 import { ActionButtons } from '@/components/play/ActionButtons'
 import { useGameStore } from '@/hooks/useGameStore'
@@ -291,6 +292,7 @@ export function LobbyWorld({ gender }: LobbyWorldProps) {
         <hemisphereLight args={['#dfefff', '#5b8a6a', 0.4]} />
         <CameraRig />
         <LobbyScene />
+        <BorderForest tileSize={60} />
         <LobbyArenaPortal position={portalPos} onSetNear={setNearArenaPortal} />
         <CharacterGLB gender={gender} />
         {remotePlayers.map((p) => (
@@ -380,12 +382,8 @@ export function LobbyWorld({ gender }: LobbyWorldProps) {
         </div>
       )}
 
-      {isTouchDevice && (
-        <>
-          <Joystick />
-          <ActionButtons />
-        </>
-      )}
+      <ActionButtons />
+      {isTouchDevice && <Joystick />}
     </div>
   )
 }

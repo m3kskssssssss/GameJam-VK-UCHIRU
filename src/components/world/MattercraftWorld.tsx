@@ -10,6 +10,7 @@ import { CameraRig } from './CameraRig'
 import { CharacterGLB, type CharacterGender } from './CharacterGLB'
 import { Joystick } from './Joystick'
 import { MattercraftScene } from './MattercraftScene'
+import { BorderForest } from './BorderForest'
 import { Portals } from './Portals'
 import { useGameStore } from '@/hooks/useGameStore'
 import { useSceneInput } from '@/hooks/useSceneInput'
@@ -90,6 +91,7 @@ export function MattercraftWorld({ initialSummary }: MattercraftWorldProps) {
         <hemisphereLight args={['#dfefff', '#5b8a6a', 0.4]} />
         <CameraRig />
         <MattercraftScene />
+        <BorderForest tileSize={50} />
         <Portals />
         <CharacterGLB gender={gender} />
       </Canvas>
