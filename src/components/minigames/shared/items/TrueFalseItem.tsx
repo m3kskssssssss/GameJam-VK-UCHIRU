@@ -18,22 +18,20 @@ export function TrueFalseItem({ task, disabled, onAnswer }: Props) {
     onAnswer(value, value === task.correct)
   }
 
-  function btnClasses(forValue: boolean): string {
+  function btnStyle(forValue: boolean): React.CSSProperties {
     const isPicked = picked === forValue
     const isCorrectPick = isPicked && forValue === task.correct
     const isWrongPick = isPicked && forValue !== task.correct
 
-    if (isCorrectPick) return 'bg-[#6BCB77] border-[#4CAA56] text-white'
-    if (isWrongPick) return 'bg-[#FF6B6B] border-[#D94F4F] text-white'
+    if (isCorrectPick) return { backgroundColor: '#6BCB77', borderColor: '#4CAA56', color: '#FFFFFF' }
+    if (isWrongPick) return { backgroundColor: '#FF6B6B', borderColor: '#D94F4F', color: '#FFFFFF' }
     if (picked !== null && forValue === task.correct) {
-      return 'bg-[#6BCB77]/40 border-[#6BCB77] text-[--color-foreground]'
+      return { backgroundColor: '#D7F2D9', borderColor: '#6BCB77', color: '#1F2937' }
     }
     if (picked !== null) {
-      return 'bg-[--color-muted] border-[--color-border] text-[--color-foreground] opacity-50'
+      return { backgroundColor: '#F1ECE2', borderColor: '#C9C0AE', color: '#1F2937', opacity: 0.5 }
     }
-    return forValue
-      ? 'bg-[--color-muted] border-[--color-border] text-[--color-foreground] hover:bg-[#6BCB77] hover:text-white hover:border-[#4CAA56]'
-      : 'bg-[--color-muted] border-[--color-border] text-[--color-foreground] hover:bg-[#FF6B6B] hover:text-white hover:border-[#D94F4F]'
+    return { backgroundColor: '#F1ECE2', borderColor: '#C9C0AE', color: '#1F2937' }
   }
 
   return (
@@ -42,14 +40,14 @@ export function TrueFalseItem({ task, disabled, onAnswer }: Props) {
         type="button"
         disabled={disabled || picked !== null}
         onClick={() => handlePick(true)}
-        className={`
+        style={btnStyle(true)}
+        className="
           min-h-[88px] rounded-[0.75rem] border-2 px-4 py-3
           font-extrabold text-2xl
           active:scale-[0.97]
           transition-all duration-150
           disabled:cursor-not-allowed cursor-pointer
-          ${btnClasses(true)}
-        `}
+        "
       >
         ✓ Да
       </button>
@@ -57,14 +55,14 @@ export function TrueFalseItem({ task, disabled, onAnswer }: Props) {
         type="button"
         disabled={disabled || picked !== null}
         onClick={() => handlePick(false)}
-        className={`
+        style={btnStyle(false)}
+        className="
           min-h-[88px] rounded-[0.75rem] border-2 px-4 py-3
           font-extrabold text-2xl
           active:scale-[0.97]
           transition-all duration-150
           disabled:cursor-not-allowed cursor-pointer
-          ${btnClasses(false)}
-        `}
+        "
       >
         ✗ Нет
       </button>

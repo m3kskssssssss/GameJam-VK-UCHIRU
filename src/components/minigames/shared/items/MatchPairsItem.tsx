@@ -74,31 +74,31 @@ export function MatchPairsItem({ task, disabled, onAnswer }: Props) {
 
   const allPaired = pairings.every((p) => p !== null)
 
-  function leftClasses(idx: number): string {
+  function leftStyle(idx: number): React.CSSProperties {
     if (submitted) {
       const isRight = pairings[idx] === task.pairs[idx]?.right
       return isRight
-        ? 'bg-[#6BCB77]/30 border-[#6BCB77] text-[--color-foreground]'
-        : 'bg-[#FF6B6B]/30 border-[#FF6B6B] text-[--color-foreground]'
+        ? { backgroundColor: '#D7F2D9', borderColor: '#6BCB77', color: '#1F2937' }
+        : { backgroundColor: '#FFD9D9', borderColor: '#FF6B6B', color: '#1F2937' }
     }
     if (activeLeft === idx) {
-      return 'bg-[--color-primary] border-[--color-primary] text-white'
+      return { backgroundColor: '#4DA8DA', borderColor: '#3D8BB8', color: '#FFFFFF' }
     }
     if (pairings[idx]) {
-      return 'bg-[--color-accent]/30 border-[--color-accent] text-[--color-foreground]'
+      return { backgroundColor: '#FFE8C7', borderColor: '#FFB347', color: '#1F2937' }
     }
-    return 'bg-[--color-muted] border-[--color-border] text-[--color-foreground] hover:border-[--color-primary]'
+    return { backgroundColor: '#F1ECE2', borderColor: '#C9C0AE', color: '#1F2937' }
   }
 
-  function rightClasses(value: string): string {
+  function rightStyle(value: string): React.CSSProperties {
     const used = usedRights.has(value)
     if (used) {
-      return 'bg-[--color-accent]/30 border-[--color-accent] text-[--color-foreground] opacity-70'
+      return { backgroundColor: '#FFE8C7', borderColor: '#FFB347', color: '#1F2937', opacity: 0.7 }
     }
     if (activeLeft !== null) {
-      return 'bg-[--color-muted] border-[--color-primary] text-[--color-foreground] hover:bg-[--color-primary] hover:text-white'
+      return { backgroundColor: '#FFFFFF', borderColor: '#4DA8DA', color: '#1F2937' }
     }
-    return 'bg-[--color-muted] border-[--color-border] text-[--color-foreground] opacity-60'
+    return { backgroundColor: '#F1ECE2', borderColor: '#C9C0AE', color: '#1F2937', opacity: 0.7 }
   }
 
   return (
@@ -117,13 +117,13 @@ export function MatchPairsItem({ task, disabled, onAnswer }: Props) {
               onClick={() =>
                 pairings[i] !== null && !submitted ? clearPair(i) : pickLeft(i)
               }
-              className={`
+              style={leftStyle(i)}
+              className="
                 min-h-[52px] rounded-[0.75rem] border-2 px-3 py-2
                 text-base font-semibold text-left
                 transition-all duration-150 cursor-pointer
                 disabled:cursor-not-allowed
-                ${leftClasses(i)}
-              `}
+              "
             >
               <span className="block text-xs opacity-60">{i + 1}</span>
               <span>{p.left}</span>
@@ -141,13 +141,13 @@ export function MatchPairsItem({ task, disabled, onAnswer }: Props) {
               type="button"
               disabled={disabled || submitted || activeLeft === null || usedRights.has(value)}
               onClick={() => pickRight(value)}
-              className={`
+              style={rightStyle(value)}
+              className="
                 min-h-[52px] rounded-[0.75rem] border-2 px-3 py-2
                 text-base font-semibold text-center
                 transition-all duration-150 cursor-pointer
                 disabled:cursor-not-allowed
-                ${rightClasses(value)}
-              `}
+              "
             >
               {value}
             </button>

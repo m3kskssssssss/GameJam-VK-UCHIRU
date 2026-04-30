@@ -17,12 +17,18 @@ interface Props {
  * Dispatches a task to the appropriate item component based on its type.
  * Each item component knows the correct answer (sent from the server) and
  * computes correctness locally before bubbling up via onAnswer.
+ *
+ * IMPORTANT: every dispatched item gets `key={task.id}` so React unmounts the
+ * previous instance when the task changes. Without this, internal state like
+ * `picked`, `pairings`, `submitted` would leak from one question to the next
+ * and the lock flags would freeze the next item before the user could touch it.
  */
 export function TaskItemRenderer({ task, disabled, onAnswer }: Props) {
   switch (task.type) {
     case 'multiple_choice':
       return (
         <MultipleChoiceItem
+          key={task.id}
           task={task}
           disabled={disabled}
           onAnswer={(v, c) => onAnswer(v, c)}
@@ -31,6 +37,7 @@ export function TaskItemRenderer({ task, disabled, onAnswer }: Props) {
     case 'text_input':
       return (
         <TextInputItem
+          key={task.id}
           task={task}
           disabled={disabled}
           onAnswer={(v, c) => onAnswer(v, c)}
@@ -39,6 +46,7 @@ export function TaskItemRenderer({ task, disabled, onAnswer }: Props) {
     case 'true_false':
       return (
         <TrueFalseItem
+          key={task.id}
           task={task}
           disabled={disabled}
           onAnswer={(v, c) => onAnswer(v, c)}
@@ -47,6 +55,7 @@ export function TaskItemRenderer({ task, disabled, onAnswer }: Props) {
     case 'match_pairs':
       return (
         <MatchPairsItem
+          key={task.id}
           task={task}
           disabled={disabled}
           onAnswer={(v, c) => onAnswer(v, c)}
@@ -55,6 +64,7 @@ export function TaskItemRenderer({ task, disabled, onAnswer }: Props) {
     case 'fill_blank':
       return (
         <FillBlankItem
+          key={task.id}
           task={task}
           disabled={disabled}
           onAnswer={(v, c) => onAnswer(v, c)}

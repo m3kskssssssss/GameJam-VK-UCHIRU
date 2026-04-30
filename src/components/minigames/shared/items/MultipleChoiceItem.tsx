@@ -28,16 +28,21 @@ export function MultipleChoiceItem({ task, disabled, onAnswer }: Props) {
           const isWrongPick = isPicked && option !== task.correct
           const isCorrectAnswer = picked !== null && option === task.correct
 
-          let stateClasses =
-            'bg-[--color-muted] border-[--color-border] text-[--color-foreground] hover:bg-[--color-primary] hover:text-white hover:border-[--color-primary]'
+          // Inline styles guarantee colours render even when tailwind-merge
+          // strips arbitrary CSS-var classes (TW v4 + tailwind-merge v2 mismatch).
+          let style: React.CSSProperties = {
+            backgroundColor: '#F1ECE2',
+            borderColor: '#C9C0AE',
+            color: '#1F2937',
+          }
           if (isCorrectPick) {
-            stateClasses = 'bg-[#6BCB77] border-[#4CAA56] text-white'
+            style = { backgroundColor: '#6BCB77', borderColor: '#4CAA56', color: '#FFFFFF' }
           } else if (isWrongPick) {
-            stateClasses = 'bg-[#FF6B6B] border-[#D94F4F] text-white'
-          } else if (picked !== null && isCorrectAnswer) {
-            stateClasses = 'bg-[#6BCB77]/40 border-[#6BCB77] text-[--color-foreground]'
+            style = { backgroundColor: '#FF6B6B', borderColor: '#D94F4F', color: '#FFFFFF' }
+          } else if (isCorrectAnswer) {
+            style = { backgroundColor: '#D7F2D9', borderColor: '#6BCB77', color: '#1F2937' }
           } else if (picked !== null) {
-            stateClasses = 'bg-[--color-muted] border-[--color-border] text-[--color-foreground] opacity-50'
+            style = { backgroundColor: '#F1ECE2', borderColor: '#C9C0AE', color: '#1F2937', opacity: 0.5 }
           }
 
           return (
@@ -46,14 +51,14 @@ export function MultipleChoiceItem({ task, disabled, onAnswer }: Props) {
               type="button"
               disabled={disabled || picked !== null}
               onClick={() => handleClick(option)}
-              className={`
+              style={style}
+              className="
                 min-h-[56px] w-full rounded-[0.75rem] border-2 px-4 py-3
                 font-semibold text-lg
                 active:scale-[0.97]
                 transition-all duration-150
                 disabled:cursor-not-allowed cursor-pointer
-                ${stateClasses}
-              `}
+              "
             >
               {option}
             </button>
