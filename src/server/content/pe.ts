@@ -40,6 +40,30 @@ export const PE_EXERCISES: PEExercise[] = [
     illustration: '/images/pe/bends.png',
     instruction: 'Ноги на ширине плеч. Наклоняйся вперёд и в стороны, не сгибая коленей.',
   },
+  {
+    key: 'armcircles',
+    name: 'Круговые движения руками',
+    illustration: '/images/pe/armcircles.png',
+    instruction: 'Разведи руки в стороны. Делай круговые движения вперёд, затем назад.',
+  },
+  {
+    key: 'stretching',
+    name: 'Потягивание',
+    illustration: '/images/pe/stretching.png',
+    instruction: 'Встань на носочки, потянись руками вверх как можно выше. Держи 3 секунды.',
+  },
+  {
+    key: 'hops',
+    name: 'Прыжки на одной ноге',
+    illustration: '/images/pe/hops.png',
+    instruction: 'Прыгай на правой ноге 10 раз, затем на левой 10 раз. Держи равновесие!',
+  },
+  {
+    key: 'sidetwists',
+    name: 'Повороты туловища',
+    illustration: '/images/pe/sidetwists.png',
+    instruction: 'Руки на поясе. Поворачивай туловище вправо и влево, не двигая ногами.',
+  },
 ]
 
 /** Find exercise by key; throws 'EXERCISE_NOT_FOUND' if missing. */

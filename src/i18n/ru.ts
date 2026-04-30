@@ -28,6 +28,7 @@ export const ru = {
     labelGender: 'Пол персонажа',
     optionGenderBoy: 'Мальчик',
     optionGenderGirl: 'Девочка',
+    labelGrade: 'Класс ребёнка',
 
     // Placeholders
     placeholderEmail: 'example@mail.ru',

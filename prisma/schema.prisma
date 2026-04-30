@@ -66,6 +66,7 @@ model Child {
   energy    Int    @default(100)
   homeLevel Int    @default(1)
   gender    Gender @default(BOY)
+  grade     Int    @default(1) // School grade 1-7, set by parent at child creation.
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -36,7 +36,7 @@ export function AddChildForm({ onSuccess }: AddChildFormProps) {
 
   const form = useForm<FormValues>({
     resolver: zodResolver(createChildSchema),
-    defaultValues: { username: '', displayName: '', password: '', gender: 'BOY' },
+    defaultValues: { username: '', displayName: '', password: '', gender: 'BOY', grade: 1 },
   })
 
   function onSubmit(values: FormValues) {
@@ -102,6 +102,36 @@ export function AddChildForm({ onSuccess }: AddChildFormProps) {
                   autoComplete="new-password"
                   {...field}
                 />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="grade"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t.labelGrade}</FormLabel>
+              <FormControl>
+                <div className="grid grid-cols-7 gap-1">
+                  {[1, 2, 3, 4, 5, 6, 7].map((g) => (
+                    <label
+                      key={g}
+                      className={`flex cursor-pointer items-center justify-center rounded-md border py-2 text-sm font-semibold ${field.value === g ? 'border-primary bg-primary/10' : 'border-border'}`}
+                    >
+                      <input
+                        type="radio"
+                        className="sr-only"
+                        value={g}
+                        checked={field.value === g}
+                        onChange={() => field.onChange(g)}
+                      />
+                      <span>{g}</span>
+                    </label>
+                  ))}
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>

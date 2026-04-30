@@ -34,7 +34,30 @@ export type ChildSummary = {
   energy: number
   homeLevel: number
   gender: 'BOY' | 'GIRL'
+  grade: number
   perSubject: PerSubject
+}
+
+// ---------------------------------------------------------------------------
+// Subject-level XP helpers (virtual progress within a single level)
+// ---------------------------------------------------------------------------
+
+/** Virtual XP needed to "fill" a subject level. The child sees a bar of
+ *  current/needed for the active level. Real `level` still increments on each
+ *  passed task — XP_PER_LEVEL is decorative but consistent. */
+export const XP_PER_LEVEL = 100
+
+/**
+ * Compute the visible XP progress within the child's *current* level.
+ * Returned values are clamped to [0, XP_PER_LEVEL].
+ */
+export function xpProgressInLevel(
+  totalXp: number,
+  level: number,
+): { current: number; needed: number } {
+  const consumed = Math.max(0, (level - 1) * XP_PER_LEVEL)
+  const current = Math.min(XP_PER_LEVEL, Math.max(0, totalXp - consumed))
+  return { current, needed: XP_PER_LEVEL }
 }
 
 // ---------------------------------------------------------------------------
@@ -187,7 +210,7 @@ export async function fetchSummary(childId: string): Promise<ChildSummary> {
   const [child, progressRows, peCount] = await Promise.all([
     prisma.child.findUniqueOrThrow({
       where: { id: childId },
-      select: { id: true, displayName: true, coins: true, energy: true, homeLevel: true, gender: true },
+      select: { id: true, displayName: true, coins: true, energy: true, homeLevel: true, gender: true, grade: true },
     }),
     prisma.subjectProgress.findMany({
       where: { childId },
@@ -211,6 +234,7 @@ export async function fetchSummary(childId: string): Promise<ChildSummary> {
     energy: child.energy,
     homeLevel: child.homeLevel,
     gender: child.gender,
+    grade: child.grade,
     perSubject: {
       math: getSubject('MATH'),
       reading: getSubject('READING'),

@@ -116,15 +116,11 @@ export function PEGame({ peSessionsCount }: PEGameProps) {
 
   if (state.phase === 'session') {
     return (
-      // Picker stays mounted underneath so there's no layout jump.
-      <>
-        <ExercisePicker onPick={handlePick} />
-        <CameraSession
-          sessionId={state.sessionId}
-          exercise={state.exercise}
-          onComplete={handleSessionComplete}
-        />
-      </>
+      <CameraSession
+        sessionId={state.sessionId}
+        exercise={state.exercise}
+        onComplete={handleSessionComplete}
+      />
     )
   }
 

@@ -40,10 +40,10 @@ async function uploadBlob(blob: Blob, sessionId: string, slot: '10s' | '60s'): P
   }
 }
 
-// Shared overlay wrapper used by all three inner states
-function Overlay({ children }: { children: React.ReactNode }) {
+// Full-page wrapper used by all three inner states
+function FullPage({ children }: { children: React.ReactNode }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+    <div className="min-h-dvh bg-[--color-background] flex items-center justify-center p-4">
       {children}
     </div>
   )
@@ -137,7 +137,7 @@ export function CameraSession({ sessionId, exercise, onComplete }: CameraSession
 
   if (cameraGranted === null) {
     return (
-      <Overlay>
+      <FullPage>
         <div
           className="w-full max-w-sm rounded-[1rem] bg-[--color-muted] p-8 flex flex-col items-center gap-4"
           style={{ boxShadow: '0 6px 20px rgba(31,41,55,0.24)' }}
@@ -147,13 +147,13 @@ export function CameraSession({ sessionId, exercise, onComplete }: CameraSession
             Запрашиваем доступ к камере...
           </p>
         </div>
-      </Overlay>
+      </FullPage>
     )
   }
 
   if (cameraGranted === false) {
     return (
-      <Overlay>
+      <FullPage>
         <div
           className="w-full max-w-sm rounded-[1rem] bg-[--color-muted] p-8 flex flex-col items-center gap-4"
           style={{ boxShadow: '0 6px 20px rgba(31,41,55,0.24)' }}
@@ -165,13 +165,13 @@ export function CameraSession({ sessionId, exercise, onComplete }: CameraSession
             {noCameraMsg}
           </p>
         </div>
-      </Overlay>
+      </FullPage>
     )
   }
 
   // Camera granted — exercise in progress. NO countdown shown.
   return (
-    <Overlay>
+    <FullPage>
       {/* Hidden video for capture */}
       <video
         ref={videoRef}
@@ -191,10 +191,17 @@ export function CameraSession({ sessionId, exercise, onComplete }: CameraSession
       />
       {/* Visible exercise card */}
       <div
-        className="w-full max-w-sm rounded-[1rem] bg-[--color-muted] flex flex-col overflow-hidden mx-4"
+        className="w-full max-w-sm rounded-[1rem] bg-[--color-muted] flex flex-col overflow-hidden"
         style={{ boxShadow: '0 6px 20px rgba(31,41,55,0.24)' }}
       >
         <div className="relative w-full" style={{ paddingTop: '56.25%' }}>
+          {/* Solid placeholder — visible when image fails to load */}
+          <div
+            className="absolute inset-0 flex items-center justify-center bg-sky-100"
+            aria-hidden="true"
+          >
+            <span className="text-[3rem]">🏃</span>
+          </div>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={exercise.illustration}
@@ -202,26 +209,22 @@ export function CameraSession({ sessionId, exercise, onComplete }: CameraSession
             className="absolute inset-0 w-full h-full object-cover"
             onError={(e) => { ;(e.currentTarget as HTMLImageElement).style.display = 'none' }}
           />
-          <div
-            className="absolute inset-0 flex items-center justify-center"
-            style={{ backgroundColor: '#4DA8DA22' }}
-            aria-hidden="true"
-          >
-            <span style={{ opacity: 0.3, fontSize: '3rem' }}>🏃</span>
-          </div>
         </div>
         <div className="p-6 flex flex-col items-center gap-3">
           <h2
-            className="text-[28px] font-extrabold text-[--color-foreground] text-center animate-pulse"
+            className="text-[22px] font-extrabold text-[--color-foreground] text-center"
             style={{ fontFamily: 'var(--font-sans)' }}
           >
-            Делай упражнение!
+            {exercise.name}
           </h2>
-          <p className="text-[16px] text-[--color-foreground] opacity-60 text-center">
-            Скоро закончим...
+          <p className="text-[15px] text-[--color-foreground] opacity-70 text-center leading-snug">
+            {exercise.instruction}
+          </p>
+          <p className="text-[13px] text-[--color-foreground] opacity-40 text-center animate-pulse mt-1">
+            Выполняй упражнение — скоро закончим!
           </p>
         </div>
       </div>
-    </Overlay>
+    </FullPage>
   )
 }
