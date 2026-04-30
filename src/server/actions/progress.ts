@@ -39,28 +39,6 @@ export type ChildSummary = {
 }
 
 // ---------------------------------------------------------------------------
-// Subject-level XP helpers (virtual progress within a single level)
-// ---------------------------------------------------------------------------
-
-/** Virtual XP needed to "fill" a subject level. The child sees a bar of
- *  current/needed for the active level. Real `level` still increments on each
- *  passed task — XP_PER_LEVEL is decorative but consistent. */
-export const XP_PER_LEVEL = 100
-
-/**
- * Compute the visible XP progress within the child's *current* level.
- * Returned values are clamped to [0, XP_PER_LEVEL].
- */
-export function xpProgressInLevel(
-  totalXp: number,
-  level: number,
-): { current: number; needed: number } {
-  const consumed = Math.max(0, (level - 1) * XP_PER_LEVEL)
-  const current = Math.min(XP_PER_LEVEL, Math.max(0, totalXp - consumed))
-  return { current, needed: XP_PER_LEVEL }
-}
-
-// ---------------------------------------------------------------------------
 // Home-level threshold helper (per GAME_DESIGN.md)
 // Thresholds for completedLevels sum → homeLevel
 // 0-9 → 1, 10-24 → 2, 25-49 → 3, 50+ → 4
