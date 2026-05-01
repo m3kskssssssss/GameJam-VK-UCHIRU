@@ -67,7 +67,7 @@ export function CharacterGLB({ gender }: CharacterGLBProps) {
           const std = m as THREE.MeshStandardMaterial
           if (std.userData?.kqDimmed) return
           std.userData = { ...std.userData, kqDimmed: true }
-          if (std.color) std.color.multiplyScalar(0.89)
+          if (std.color) std.color.multiplyScalar(0.95)
           if (std.emissive) std.emissive.setScalar(0)
           if ('emissiveIntensity' in std) std.emissiveIntensity = 0
         }
