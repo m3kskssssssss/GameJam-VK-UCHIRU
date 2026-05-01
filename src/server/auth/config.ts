@@ -42,31 +42,90 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
+        const rawRole =
+          typeof credentials?.role === 'string' ? credentials.role : 'unknown'
+        const rawId =
+          typeof credentials?.identifier === 'string'
+            ? credentials.identifier
+            : ''
+
         const parsed = credentialsSchema.safeParse(credentials)
-        if (!parsed.success) return null
+        if (!parsed.success) {
+          console.warn('[auth.authorize] zod validation failed', {
+            role: rawRole,
+            identifierLength: rawId.length,
+            issues: parsed.error.issues.map((i) => ({
+              path: i.path.join('.'),
+              code: i.code,
+            })),
+          })
+          return null
+        }
 
         const { role, identifier, password } = parsed.data
 
-        if (role === 'parent') {
-          const parent = await prisma.parent.findUnique({
-            where: { email: identifier },
-            select: { id: true, displayName: true, passwordHash: true, email: true },
-          })
-          if (!parent) return null
+        try {
+          if (role === 'parent') {
+            const parent = await prisma.parent.findUnique({
+              where: { email: identifier },
+              select: { id: true, displayName: true, passwordHash: true, email: true },
+            })
+            if (!parent) {
+              console.warn('[auth.authorize] parent not found', { email: identifier })
+              return null
+            }
 
-          const valid = await verifyPassword(password, parent.passwordHash)
-          if (!valid) return null
+            const valid = await verifyPassword(password, parent.passwordHash)
+            if (!valid) {
+              console.warn('[auth.authorize] parent password mismatch', {
+                parentId: parent.id,
+              })
+              return null
+            }
 
-          return {
-            id: parent.id,
-            name: parent.displayName,
-            email: parent.email,
-            role: 'PARENT' as const,
+            return {
+              id: parent.id,
+              name: parent.displayName,
+              email: parent.email,
+              role: 'PARENT' as const,
+            }
           }
-        }
 
-        if (role === 'child') {
-          const child = await prisma.child.findUnique({
+          if (role === 'child') {
+            const child = await prisma.child.findUnique({
+              where: { username: identifier },
+              select: {
+                id: true,
+                displayName: true,
+                passwordHash: true,
+                parentId: true,
+                username: true,
+              },
+            })
+            if (!child) {
+              console.warn('[auth.authorize] child not found', { username: identifier })
+              return null
+            }
+
+            const validChild = await verifyPassword(password, child.passwordHash)
+            if (!validChild) {
+              console.warn('[auth.authorize] child password mismatch', {
+                childId: child.id,
+              })
+              return null
+            }
+
+            return {
+              id: child.id,
+              name: child.displayName,
+              email: child.username,
+              role: 'CHILD' as const,
+              parentId: child.parentId,
+            }
+          }
+
+          // role === 'relative'
+          const relative = await prisma.relative.findUnique({
             where: { username: identifier },
             select: {
               id: true,
@@ -76,42 +135,36 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
               username: true,
             },
           })
-          if (!child) return null
+          if (!relative) {
+            console.warn('[auth.authorize] relative not found', {
+              username: identifier,
+            })
+            return null
+          }
 
-          const validChild = await verifyPassword(password, child.passwordHash)
-          if (!validChild) return null
+          const validRelative = await verifyPassword(password, relative.passwordHash)
+          if (!validRelative) {
+            console.warn('[auth.authorize] relative password mismatch', {
+              relativeId: relative.id,
+            })
+            return null
+          }
 
           return {
-            id: child.id,
-            name: child.displayName,
-            email: child.username, // NextAuth requires email; use username as surrogate
-            role: 'CHILD' as const,
-            parentId: child.parentId,
+            id: relative.id,
+            name: relative.displayName,
+            email: relative.username,
+            role: 'RELATIVE' as const,
+            parentId: relative.parentId,
           }
-        }
-
-        // role === 'relative'
-        const relative = await prisma.relative.findUnique({
-          where: { username: identifier },
-          select: {
-            id: true,
-            displayName: true,
-            passwordHash: true,
-            parentId: true,
-            username: true,
-          },
-        })
-        if (!relative) return null
-
-        const validRelative = await verifyPassword(password, relative.passwordHash)
-        if (!validRelative) return null
-
-        return {
-          id: relative.id,
-          name: relative.displayName,
-          email: relative.username, // surrogate, same pattern as CHILD
-          role: 'RELATIVE' as const,
-          parentId: relative.parentId,
+        } catch (err) {
+          console.error('[auth.authorize] DB error', {
+            role,
+            error: err instanceof Error
+              ? { name: err.name, message: err.message }
+              : String(err),
+          })
+          return null
         }
       },
     }),
