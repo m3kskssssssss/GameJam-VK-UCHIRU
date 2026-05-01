@@ -62,8 +62,8 @@ export function DialogScene({ npc, childGender }: Props) {
 
   const portraitSlotStyle: React.CSSProperties = {
     position: 'relative',
-    height: isMobile ? 'min(260px, 30vh)' : 'min(520px, 60vh)',
-    width: isMobile ? 'min(190px, 38vw)' : 'min(380px, 38vw)',
+    height: isMobile ? 'min(130px, 18vh)' : 'min(520px, 60vh)',
+    width: isMobile ? 'min(95px, 26vw)' : 'min(380px, 38vw)',
     flexShrink: 0,
     pointerEvents: 'none',
   }
