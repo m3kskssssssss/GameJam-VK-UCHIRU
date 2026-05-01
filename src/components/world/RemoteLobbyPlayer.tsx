@@ -81,6 +81,21 @@ export function RemoteLobbyPlayer({ displayName, gender, snapshot }: Props) {
       if (mesh.isMesh) {
         mesh.castShadow = true
         mesh.receiveShadow = false
+        // Match CharacterGLB: tone down albedo + kill any emissive so the
+        // remote players don't look "lit from within" against the scene.
+        const mat = mesh.material as
+          | THREE.MeshStandardMaterial
+          | THREE.MeshStandardMaterial[]
+        const dim = (m: THREE.Material) => {
+          const std = m as THREE.MeshStandardMaterial
+          if (std.userData?.kqDimmed) return
+          std.userData = { ...std.userData, kqDimmed: true }
+          if (std.color) std.color.multiplyScalar(0.78)
+          if (std.emissive) std.emissive.setScalar(0)
+          if ('emissiveIntensity' in std) std.emissiveIntensity = 0
+        }
+        if (Array.isArray(mat)) mat.forEach(dim)
+        else dim(mat)
       }
     })
     return c

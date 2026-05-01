@@ -30,18 +30,29 @@ interface CharacterGLBProps {
   gender: CharacterGender
 }
 
+// Same exponential follow rate as CameraRig — both the mesh and the camera
+// track the player's logical position with this smoothing, so the character
+// always sits in the same spot of the camera frame instead of jittering by
+// sub-pixels when the variable per-frame dt nudges raw position around.
+const RENDER_FOLLOW_RATE = 10
+
 export function CharacterGLB({ gender }: CharacterGLBProps) {
   const paths = CHAR_PATHS[gender]
   const groupRef = useRef<THREE.Group>(null)
   const characterRef = useRef<THREE.Group>(null)
   const facingYawRef = useRef(0)
+  const renderPosRef = useRef<{ initialised: boolean; x: number; y: number; z: number }>(
+    { initialised: false, x: 0, y: 0, z: 0 },
+  )
 
   const meshGltf = useGLTF(paths.mesh)
   const animGltf = useGLTF(paths.anim)
 
   // Skinned meshes need SkeletonUtils.clone to keep bone hierarchy intact.
   // Tag every mesh as castShadow so the directional light drops the player's
-  // silhouette onto the ground.
+  // silhouette onto the ground. Also tone down the materials a touch — the
+  // GLB exports tend to ship with slightly emissive / over-bright albedos
+  // that make the player look "lit from within" against the lit scene.
   const cloned = useMemo(() => {
     const c = skeletonClone(meshGltf.scene) as THREE.Object3D
     c.traverse((child) => {
@@ -49,6 +60,19 @@ export function CharacterGLB({ gender }: CharacterGLBProps) {
       if (mesh.isMesh) {
         mesh.castShadow = true
         mesh.receiveShadow = false
+        const mat = mesh.material as
+          | THREE.MeshStandardMaterial
+          | THREE.MeshStandardMaterial[]
+        const dim = (m: THREE.Material) => {
+          const std = m as THREE.MeshStandardMaterial
+          if (std.userData?.kqDimmed) return
+          std.userData = { ...std.userData, kqDimmed: true }
+          if (std.color) std.color.multiplyScalar(0.78)
+          if (std.emissive) std.emissive.setScalar(0)
+          if ('emissiveIntensity' in std) std.emissiveIntensity = 0
+        }
+        if (Array.isArray(mat)) mat.forEach(dim)
+        else dim(mat)
       }
     })
     return c
@@ -82,8 +106,24 @@ export function CharacterGLB({ gender }: CharacterGLBProps) {
     const [vx, vz] = s.velocity
     const moving = vx !== 0 || vz !== 0
 
+    // Smooth the visible position with the same rate the camera uses so the
+    // mesh and camera move together. Game logic (proximity to portals,
+    // bounds checks etc.) still uses the raw store position.
+    const renderPos = renderPosRef.current
+    if (!renderPos.initialised) {
+      renderPos.x = px
+      renderPos.y = py
+      renderPos.z = pz
+      renderPos.initialised = true
+    } else {
+      const t = 1 - Math.exp(-RENDER_FOLLOW_RATE * delta)
+      renderPos.x = THREE.MathUtils.lerp(renderPos.x, px, t)
+      // Y follows raw position so jumps don't feel mushy.
+      renderPos.y = py
+      renderPos.z = THREE.MathUtils.lerp(renderPos.z, pz, t)
+    }
     if (groupRef.current) {
-      groupRef.current.position.set(px, py, pz)
+      groupRef.current.position.set(renderPos.x, renderPos.y, renderPos.z)
     }
 
     // Yaw the character toward movement direction (camera-relative input → world).
