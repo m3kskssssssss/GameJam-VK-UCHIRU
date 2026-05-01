@@ -4,6 +4,7 @@ import { useRef, useState } from 'react'
 import { X } from 'lucide-react'
 import { toast } from 'sonner'
 import { submitGrandparentPhoto } from '@/lib/grandparent-upload'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import type { GrandparentTask } from '@/server/content/grandparents'
 import { ru } from '@/i18n/ru'
 
@@ -18,6 +19,7 @@ export function PhotoSubmission({ task, onSuccess, onCancel }: Props) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isBusy, setIsBusy] = useState(false)
+  const isMobile = useIsMobile()
 
   const t = ru.play.dialog.photo
   const hint = task.npc === 'grandma' ? t.hintGrandma : t.hintGrandpa
@@ -68,10 +70,10 @@ export function PhotoSubmission({ task, onSuccess, onCancel }: Props) {
 
   const cardStyle: React.CSSProperties = {
     width: 'calc(100% - 32px)',
-    maxWidth: 520,
+    maxWidth: isMobile ? 280 : 520,
     background: 'rgba(255,255,255,0.98)',
-    borderRadius: '20px 20px 0 0',
-    padding: '20px 22px 32px',
+    borderRadius: isMobile ? '14px 14px 0 0' : '20px 20px 0 0',
+    padding: isMobile ? '12px 14px 18px' : '20px 22px 32px',
     boxShadow: '0 -8px 32px rgba(0,0,0,0.25)',
   }
 
@@ -83,57 +85,57 @@ export function PhotoSubmission({ task, onSuccess, onCancel }: Props) {
   }
 
   const titleStyle: React.CSSProperties = {
-    fontSize: '1.1rem',
+    fontSize: isMobile ? '0.9rem' : '1.1rem',
     fontWeight: 800,
     color: '#1F2937',
     fontFamily: 'Nunito, sans-serif',
   }
 
   const hintStyle: React.CSSProperties = {
-    fontSize: '0.9rem',
+    fontSize: isMobile ? '0.75rem' : '0.9rem',
     color: '#6B7280',
     fontFamily: 'Nunito, sans-serif',
-    marginBottom: 16,
+    marginBottom: isMobile ? 10 : 16,
   }
 
   const previewStyle: React.CSSProperties = {
-    width: 240,
-    height: 240,
+    width: isMobile ? 120 : 240,
+    height: isMobile ? 120 : 240,
     objectFit: 'cover',
-    borderRadius: 12,
+    borderRadius: isMobile ? 8 : 12,
     display: 'block',
-    margin: '0 auto 16px',
+    margin: isMobile ? '0 auto 10px' : '0 auto 16px',
   }
 
   const primaryBtnStyle = (disabled: boolean): React.CSSProperties => ({
     display: 'block',
     width: '100%',
-    padding: '13px 16px',
-    borderRadius: 12,
+    padding: isMobile ? '8px 12px' : '13px 16px',
+    borderRadius: isMobile ? 8 : 12,
     border: 'none',
     background: disabled ? '#D1D5DB' : '#4DA8DA',
     color: '#fff',
     fontWeight: 800,
-    fontSize: '1rem',
+    fontSize: isMobile ? '0.85rem' : '1rem',
     fontFamily: 'Nunito, sans-serif',
     cursor: disabled ? 'not-allowed' : 'pointer',
-    marginTop: 8,
+    marginTop: isMobile ? 4 : 8,
     transition: 'background 120ms ease',
   })
 
   const secondaryBtnStyle: React.CSSProperties = {
     display: 'block',
     width: '100%',
-    padding: '12px 16px',
-    borderRadius: 12,
+    padding: isMobile ? '7px 12px' : '12px 16px',
+    borderRadius: isMobile ? 8 : 12,
     border: '1.5px solid #D1D5DB',
     background: 'transparent',
     color: '#374151',
     fontWeight: 700,
-    fontSize: '1rem',
+    fontSize: isMobile ? '0.85rem' : '1rem',
     fontFamily: 'Nunito, sans-serif',
     cursor: 'pointer',
-    marginTop: 8,
+    marginTop: isMobile ? 4 : 8,
   }
 
   const closeBtnStyle: React.CSSProperties = {

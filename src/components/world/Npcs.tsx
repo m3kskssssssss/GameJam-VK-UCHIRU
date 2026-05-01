@@ -14,7 +14,7 @@ import { useGameStore } from '@/hooks/useGameStore'
 const DISC_RADIUS = 1.4
 const RING_INNER = 1.45
 const RING_OUTER = 1.7
-const LABEL_HEIGHT = 1.4
+const LABEL_HEIGHT = 2.24
 
 interface NpcNodeProps {
   npc: Npc

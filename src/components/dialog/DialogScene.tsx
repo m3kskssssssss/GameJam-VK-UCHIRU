@@ -6,6 +6,7 @@ import { DialogBox } from './DialogBox'
 import { PhotoSubmission } from './PhotoSubmission'
 import { useDialogRunner } from './dialog-runner'
 import { useDialogState } from './dialog-state'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import { getTask } from '@/server/content/grandparents'
 import type { Speaker } from './portrait-paths'
 import type { DialogOption as BoxOption } from './DialogBox'
@@ -17,6 +18,7 @@ interface Props {
 
 export function DialogScene({ npc, childGender }: Props) {
   const { reset } = useDialogState()
+  const isMobile = useIsMobile()
 
   const { currentNode, isPhotoFlow, activeTaskKey, handleOption, onPhotoSuccess, onPhotoCancel } =
     useDialogRunner(npc)
@@ -60,8 +62,8 @@ export function DialogScene({ npc, childGender }: Props) {
 
   const portraitSlotStyle: React.CSSProperties = {
     position: 'relative',
-    height: 'min(520px, 60vh)',
-    width: 'min(380px, 38vw)',
+    height: isMobile ? 'min(260px, 30vh)' : 'min(520px, 60vh)',
+    width: isMobile ? 'min(190px, 38vw)' : 'min(380px, 38vw)',
     flexShrink: 0,
     pointerEvents: 'none',
   }

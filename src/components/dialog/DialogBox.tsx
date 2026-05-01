@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useIsMobile } from '@/hooks/useIsMobile'
 
 export interface DialogOption {
   id: string
@@ -19,6 +20,7 @@ interface Props {
 export function DialogBox({ text, speakerLabel, options, isBusy = false }: Props) {
   const [visible, setVisible] = useState(false)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
+  const isMobile = useIsMobile()
 
   useEffect(() => {
     // Trigger slide-in animation on mount
@@ -28,14 +30,14 @@ export function DialogBox({ text, speakerLabel, options, isBusy = false }: Props
 
   const boxStyle: React.CSSProperties = {
     position: 'absolute',
-    bottom: 24,
+    bottom: isMobile ? 12 : 24,
     left: '50%',
     transform: `translateX(-50%) translateY(${visible ? 0 : 8}px)`,
     width: 'calc(100% - 32px)',
-    maxWidth: 720,
+    maxWidth: isMobile ? 360 : 720,
     background: 'rgba(255,255,255,0.97)',
-    borderRadius: 20,
-    padding: '18px 22px',
+    borderRadius: isMobile ? 14 : 20,
+    padding: isMobile ? '10px 12px' : '18px 22px',
     boxShadow: '0 12px 36px rgba(0,0,0,0.35)',
     opacity: visible ? 1 : 0,
     transition: 'opacity 200ms ease, transform 200ms ease',
@@ -45,16 +47,16 @@ export function DialogBox({ text, speakerLabel, options, isBusy = false }: Props
   const badgeStyle: React.CSSProperties = {
     color: '#4DA8DA',
     fontWeight: 800,
-    fontSize: '0.85rem',
+    fontSize: isMobile ? '0.7rem' : '0.85rem',
     fontFamily: 'Nunito, sans-serif',
     marginBottom: 0,
   }
 
   const textStyle: React.CSSProperties = {
-    fontSize: '1.05rem',
-    lineHeight: 1.45,
+    fontSize: isMobile ? '0.85rem' : '1.05rem',
+    lineHeight: 1.4,
     color: '#1F2937',
-    margin: '8px 0 14px',
+    margin: isMobile ? '4px 0 8px' : '8px 0 14px',
     fontFamily: 'Nunito, sans-serif',
   }
 
@@ -62,42 +64,35 @@ export function DialogBox({ text, speakerLabel, options, isBusy = false }: Props
     const isLeave = opt.variant === 'leave'
     const isHovered = hoveredId === opt.id
 
-    if (isLeave) {
-      return {
-        display: 'block',
-        width: '100%',
-        padding: '12px 16px',
-        borderRadius: 12,
-        border: '1.5px solid #D1D5DB',
-        background: isHovered ? 'rgba(0,0,0,0.04)' : 'transparent',
-        color: '#6B7280',
-        fontWeight: 700,
-        fontSize: '1rem',
-        fontFamily: 'Nunito, sans-serif',
-        cursor: isBusy ? 'not-allowed' : 'pointer',
-        opacity: isBusy ? 0.6 : 1,
-        textAlign: 'left',
-        transition: 'background 120ms ease',
-        marginTop: 6,
-      }
-    }
-
-    return {
+    const base: React.CSSProperties = {
       display: 'block',
       width: '100%',
-      padding: '12px 16px',
-      borderRadius: 12,
-      border: 'none',
-      background: isHovered ? '#E5EDF5' : '#F2F6FA',
-      color: '#1F2937',
-      fontWeight: 700,
-      fontSize: '1rem',
+      padding: isMobile ? '7px 10px' : '12px 16px',
+      borderRadius: isMobile ? 8 : 12,
+      fontWeight: isLeave ? 700 : 700,
+      fontSize: isMobile ? '0.85rem' : '1rem',
       fontFamily: 'Nunito, sans-serif',
       cursor: isBusy ? 'not-allowed' : 'pointer',
       opacity: isBusy ? 0.6 : 1,
       textAlign: 'left',
       transition: 'background 120ms ease',
-      marginTop: 6,
+      marginTop: isMobile ? 4 : 6,
+    }
+
+    if (isLeave) {
+      return {
+        ...base,
+        border: '1.5px solid #D1D5DB',
+        background: isHovered ? 'rgba(0,0,0,0.04)' : 'transparent',
+        color: '#6B7280',
+      }
+    }
+
+    return {
+      ...base,
+      border: 'none',
+      background: isHovered ? '#E5EDF5' : '#F2F6FA',
+      color: '#1F2937',
     }
   }
 
