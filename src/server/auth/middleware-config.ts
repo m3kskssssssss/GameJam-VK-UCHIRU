@@ -4,6 +4,7 @@
 // Session validation happens via the JWT cookie alone.
 import NextAuth from 'next-auth'
 import type { NextAuthConfig } from 'next-auth'
+import { NextResponse } from 'next/server'
 
 const middlewareConfig: NextAuthConfig = {
   providers: [], // Credentials provider is added only in the full config
@@ -19,13 +20,13 @@ const middlewareConfig: NextAuthConfig = {
       if (pathname.startsWith('/auth/')) {
         if (auth?.user) {
           if (role === 'PARENT') {
-            return Response.redirect(new URL('/parent', request.url))
+            return NextResponse.redirect(new URL('/parent', request.url))
           }
           if (role === 'CHILD') {
-            return Response.redirect(new URL('/play', request.url))
+            return NextResponse.redirect(new URL('/play', request.url))
           }
           if (role === 'RELATIVE') {
-            return Response.redirect(new URL('/parent/feed', request.url))
+            return NextResponse.redirect(new URL('/parent/feed', request.url))
           }
           // If role is temporarily unavailable in middleware session shape,
           // do not force-redirect and avoid redirect loops.
@@ -49,7 +50,7 @@ const middlewareConfig: NextAuthConfig = {
             pathname === '/parent/profile' ||
             pathname.startsWith('/parent/profile/')
           if (isFeed || isProfile) return true
-          return Response.redirect(new URL('/parent/feed', request.url))
+          return NextResponse.redirect(new URL('/parent/feed', request.url))
         }
 
         // CHILD or any other role: deny → next-auth sends to /auth/login
