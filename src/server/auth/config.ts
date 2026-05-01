@@ -202,15 +202,4 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
       return session
     },
   },
-
-  cookies: {
-    sessionToken: {
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
-        path: '/',
-      },
-    },
-  },
 })
