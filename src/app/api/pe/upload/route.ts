@@ -11,6 +11,8 @@ const ALLOWED_SLOTS = new Set(['10s', '60s'])
 const ALLOWED_MIME_PREFIX = 'image/'
 
 export async function POST(request: Request): Promise<Response> {
+  console.log('[pe/upload] received POST')
+
   // --- Auth ---
   // requireChild() calls redirect() on auth failure; in a route handler
   // redirect() throws a special error we must not swallow as a 500.
@@ -18,10 +20,18 @@ export async function POST(request: Request): Promise<Response> {
   try {
     child = await requireChild()
   } catch (err) {
-    // Re-throw Next.js redirect/notFound signals so the framework handles them.
-    if (isNextInternalError(err)) throw err
+    // Detect Next.js redirects ourselves (NEXT_REDIRECT digest) and convert
+    // them to a JSON 401 — fetch() in the client follows redirects by
+    // default, so re-throwing would land on /auth/login HTML and the upload
+    // would silently appear to "succeed" with the wrong response.
+    if (isNextInternalError(err)) {
+      console.error('[pe/upload] auth redirect (not signed in as CHILD)')
+      return Response.json({ error: 'NOT_AUTHORIZED_REDIRECT' }, { status: 401 })
+    }
+    console.error('[pe/upload] auth error', err)
     return Response.json({ error: 'NOT_AUTHORIZED' }, { status: 401 })
   }
+  console.log('[pe/upload] authed child=', child.id)
 
   // --- Parse form data ---
   let formData: FormData
@@ -63,11 +73,19 @@ export async function POST(request: Request): Promise<Response> {
   if (session.childId !== child.id) {
     return Response.json({ error: 'ACCESS_DENIED' }, { status: 403 })
   }
-  if (session.completed) {
-    return Response.json({ error: 'SESSION_COMPLETED' }, { status: 409 })
-  }
+  // No `completed` gate: a slow 10 s upload can finish *after* the client's
+  // 60 s upload kicks off `completePESession`, and rejecting it here was
+  // silently dropping the 10 s photo. Ownership is already verified above,
+  // so accepting late uploads is safe.
 
   // --- Upload ---
+  console.log(
+    '[pe/upload] uploading',
+    'session=', session.id,
+    'slot=', slot,
+    'bytes=', fileEntry.size,
+    'type=', fileEntry.type,
+  )
   let uploadResult: { url: string; key: string }
   try {
     const buffer = Buffer.from(await fileEntry.arrayBuffer())
@@ -77,9 +95,13 @@ export async function POST(request: Request): Promise<Response> {
       buffer,
       fileEntry.type,
     )
+    console.log('[pe/upload] upload done', uploadResult.url)
   } catch (err) {
     console.error('[pe/upload] upload failed', err)
-    return Response.json({ error: 'UPLOAD_FAILED' }, { status: 500 })
+    return Response.json({
+      error: 'UPLOAD_FAILED',
+      detail: err instanceof Error ? err.message : String(err),
+    }, { status: 500 })
   }
 
   // --- Persist URL/key on the PESession ---
@@ -93,9 +115,13 @@ export async function POST(request: Request): Promise<Response> {
       where: { id: session.id },
       data: updateData,
     })
+    console.log('[pe/upload] DB updated for', session.id, slot)
   } catch (err) {
     console.error('[pe/upload] DB update failed', err)
-    return Response.json({ error: 'DB_ERROR' }, { status: 500 })
+    return Response.json({
+      error: 'DB_ERROR',
+      detail: err instanceof Error ? err.message : String(err),
+    }, { status: 500 })
   }
 
   return Response.json({ url: uploadResult.url, key: uploadResult.key })

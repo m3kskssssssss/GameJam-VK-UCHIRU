@@ -28,6 +28,7 @@ export function MattercraftWorld({ initialSummary }: MattercraftWorldProps) {
   const setCameraDistance = useGameStore((s) => s.setCameraDistance)
   const setCameraPitch = useGameStore((s) => s.setCameraPitch)
   const setCameraYaw = useGameStore((s) => s.setCameraYaw)
+  const setNearHouse = useGameStore((s) => s.setNearHouse)
   const isMountedRef = useRef(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const [isTouchDevice, setIsTouchDevice] = useState(false)
@@ -42,6 +43,12 @@ export function MattercraftWorld({ initialSummary }: MattercraftWorldProps) {
       energy: initialSummary.energy,
       homeLevel: initialSummary.homeLevel,
     })
+    // Clear leftover nearHouse from a previous /play visit. The Portals'
+    // proximity check only fires `setNearHouse` on near→far transitions; if
+    // the user left the world *while* near a portal, that flag is still set
+    // when they come back, and the "Войти в домик" CTA shows even though
+    // the player has just respawned at origin.
+    setNearHouse(null)
     // Mattercraft scene is ~50×50 units centered at origin. Houses sit on a
     // ring at radius ~20. Bounds are slightly inside the ground image edge.
     setBounds(24, 24)
@@ -60,6 +67,7 @@ export function MattercraftWorld({ initialSummary }: MattercraftWorldProps) {
     setCameraDistance,
     setCameraPitch,
     setCameraYaw,
+    setNearHouse,
   ])
 
   useEffect(() => {

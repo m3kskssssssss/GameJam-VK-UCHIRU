@@ -28,16 +28,23 @@ function isDevShort(): boolean {
 }
 
 async function uploadBlob(blob: Blob, sessionId: string, slot: '10s' | '60s'): Promise<void> {
+  console.log('[CameraSession] upload starting', slot, 'bytes=', blob.size, 'session=', sessionId)
   try {
     const fd = new FormData()
     fd.append('sessionId', sessionId)
     fd.append('slot', slot)
     fd.append('file', new File([blob], `pe-${slot}.jpg`, { type: 'image/jpeg' }))
-    const res = await fetch('/api/pe/upload', { method: 'POST', body: fd })
+    const res = await fetch('/api/pe/upload', {
+      method: 'POST',
+      body: fd,
+      credentials: 'include', // explicit — make sure auth cookie travels
+    })
+    const body = await res.text().catch(() => '')
     if (!res.ok) {
-      const text = await res.text().catch(() => '')
-      console.error('[CameraSession] upload failed', slot, res.status, text)
+      console.error('[CameraSession] upload failed', slot, res.status, body)
+      return
     }
+    console.log('[CameraSession] upload ok', slot, res.status, body.slice(0, 200))
   } catch (err) {
     console.error('[CameraSession] upload error', slot, err)
   }
@@ -219,11 +226,19 @@ export function CameraSession({ sessionId, exercise, onComplete }: CameraSession
       const delay10 = devShort ? DEV_SNAP_10S : SNAP_10S
       const delay60 = devShort ? DEV_SNAP_60S : SNAP_60S
 
+      console.log(
+        '[CameraSession] timers scheduled',
+        'delay10=', delay10, 'delay60=', delay60,
+        'video size=', video!.videoWidth, '×', video!.videoHeight,
+      )
+
       timer10Ref.current = setTimeout(() => {
+        console.log('[CameraSession] timer10 fired')
         void captureAndUpload('10s')
       }, delay10)
 
       timer60Ref.current = setTimeout(() => {
+        console.log('[CameraSession] timer60 fired')
         void captureAndUpload('60s').then(() => {
           if (cancelled || !mountedRef.current) return
           stopStream()
