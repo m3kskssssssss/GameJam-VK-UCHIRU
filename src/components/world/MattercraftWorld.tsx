@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { Hud } from '@/components/play/Hud'
 import { ActionButtons } from '@/components/play/ActionButtons'
+import { AmbientAudio } from '@/components/play/AmbientAudio'
 import { CameraRig } from './CameraRig'
 import { CharacterGLB, type CharacterGender } from './CharacterGLB'
 import { Joystick } from './Joystick'
@@ -13,6 +14,7 @@ import { MattercraftScene } from './MattercraftScene'
 import { BorderForest } from './BorderForest'
 import { SceneLights } from './SceneLights'
 import { Portals } from './Portals'
+import { Npcs } from './Npcs'
 import { useGameStore } from '@/hooks/useGameStore'
 import { useSceneInput } from '@/hooks/useSceneInput'
 import type { ChildSummary } from '@/server/actions/progress'
@@ -29,6 +31,7 @@ export function MattercraftWorld({ initialSummary }: MattercraftWorldProps) {
   const setCameraPitch = useGameStore((s) => s.setCameraPitch)
   const setCameraYaw = useGameStore((s) => s.setCameraYaw)
   const setNearHouse = useGameStore((s) => s.setNearHouse)
+  const setNearNpc = useGameStore((s) => s.setNearNpc)
   const isMountedRef = useRef(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const [isTouchDevice, setIsTouchDevice] = useState(false)
@@ -49,6 +52,7 @@ export function MattercraftWorld({ initialSummary }: MattercraftWorldProps) {
     // when they come back, and the "Войти в домик" CTA shows even though
     // the player has just respawned at origin.
     setNearHouse(null)
+    setNearNpc(null)
     // Mattercraft scene is ~50×50 units centered at origin. Houses sit on a
     // ring at radius ~20. Bounds are slightly inside the ground image edge.
     setBounds(24, 24)
@@ -68,6 +72,7 @@ export function MattercraftWorld({ initialSummary }: MattercraftWorldProps) {
     setCameraPitch,
     setCameraYaw,
     setNearHouse,
+    setNearNpc,
   ])
 
   useEffect(() => {
@@ -103,11 +108,13 @@ export function MattercraftWorld({ initialSummary }: MattercraftWorldProps) {
         <MattercraftScene />
         <BorderForest tileSize={50} />
         <Portals />
+        <Npcs />
         <CharacterGLB gender={gender} />
       </Canvas>
 
       <Hud />
       <ActionButtons />
+      <AmbientAudio src="/village.mp3" />
 
       {isTouchDevice && <Joystick />}
     </div>

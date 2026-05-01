@@ -24,6 +24,9 @@ const middlewareConfig: NextAuthConfig = {
           if (role === 'CHILD') {
             return Response.redirect(new URL('/play', request.url))
           }
+          if (role === 'RELATIVE') {
+            return Response.redirect(new URL('/parent/feed', request.url))
+          }
           // If role is temporarily unavailable in middleware session shape,
           // do not force-redirect and avoid redirect loops.
           return true
@@ -34,7 +37,23 @@ const middlewareConfig: NextAuthConfig = {
       // Parent-only area
       if (pathname.startsWith('/parent')) {
         if (!auth?.user) return false
-        return role ? role === 'PARENT' : true
+
+        // PARENT: full access
+        if (role === 'PARENT') return true
+
+        // RELATIVE: only /parent/feed and /parent/profile (and their sub-paths)
+        if (role === 'RELATIVE') {
+          const isFeed =
+            pathname === '/parent/feed' || pathname.startsWith('/parent/feed/')
+          const isProfile =
+            pathname === '/parent/profile' ||
+            pathname.startsWith('/parent/profile/')
+          if (isFeed || isProfile) return true
+          return Response.redirect(new URL('/parent/feed', request.url))
+        }
+
+        // CHILD or any other role: deny → next-auth sends to /auth/login
+        return false
       }
 
       // Child-only area

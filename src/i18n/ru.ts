@@ -19,6 +19,7 @@ export const ru = {
     // Tab labels
     tabParent: 'Я родитель',
     tabChild: 'Я ребёнок',
+    tabRelative: 'Родственник',
 
     // Field labels
     labelEmail: 'Электронная почта',
@@ -76,6 +77,102 @@ export const ru = {
   },
 
   parent: {
+    // Navigation
+    nav: {
+      children: 'Дети',
+      feed: 'Лента',
+      relatives: 'Родственники',
+      profile: 'Профиль',
+      brandTitle: 'Kid Quest',
+    },
+
+    // Feed
+    feed: {
+      title: 'Лента активности',
+      empty: 'Пока нет записей. Дети ещё не завершили ни одного задания.',
+      searchPlaceholder: 'Поиск по ленте...',
+      filterAllChildren: 'Все дети',
+      likeBtn: 'Нравится',
+      commentBtn: 'Комментарии',
+      commentsDialogTitle: 'Комментарии',
+      commentPlaceholder: 'Написать комментарий...',
+      btnSendComment: 'Отправить',
+      loadMore: 'Загрузить ещё',
+      loading: 'Загрузка...',
+      rewardCoins: 'монет',
+      rewardEnergy: 'энергии',
+      kindPE: 'Физкультура',
+      kindGrandparent: 'Бабушка / Дедушка',
+      kindTask: 'Задание',
+      noComments: 'Ещё нет комментариев. Будьте первым!',
+      commentError: 'Не удалось отправить комментарий',
+      likeError: 'Не удалось обновить лайк',
+    },
+
+    // Relatives
+    relatives: {
+      title: 'Родственники',
+      empty: 'У вас ещё нет родственников. Добавьте первого.',
+      btnAdd: 'Добавить родственника',
+      addTitle: 'Новый родственник',
+      addDescription: 'Создайте аккаунт для родственника. Они смогут просматривать ленту и оставлять комментарии.',
+      labelUsername: 'Логин',
+      labelDisplayName: 'Имя',
+      labelPassword: 'Пароль',
+      placeholderUsername: 'babushka_maria',
+      placeholderDisplayName: 'Бабушка Мария',
+      btnManage: 'Управление',
+      manageTitle: 'Управление',
+      btnResetPassword: 'Сменить пароль',
+      resetPasswordTitle: 'Новый пароль для',
+      labelNewPassword: 'Новый пароль',
+      btnSavePassword: 'Сохранить',
+      btnDelete: 'Удалить родственника',
+      deleteTitle: 'Удалить родственника?',
+      deleteDescription: 'Это действие нельзя отменить. Аккаунт родственника будет удалён.',
+      btnDeleteConfirm: 'Удалить',
+      btnCancel: 'Отмена',
+      addSuccess: 'Родственник добавлен.',
+      resetPasswordSuccess: 'Пароль успешно изменён.',
+      deleteSuccess: 'Родственник удалён.',
+      errorUsernameTaken: 'Это имя пользователя уже занято.',
+      since: 'В системе с',
+    },
+
+    // Profile
+    profile: {
+      title: 'Мой профиль',
+      labelDisplayName: 'Имя',
+      labelEmail: 'Электронная почта',
+      changePasswordTitle: 'Сменить пароль',
+      labelCurrentPassword: 'Текущий пароль',
+      labelNewPassword: 'Новый пароль',
+      btnSave: 'Сохранить',
+      changePasswordSuccess: 'Пароль успешно изменён.',
+      errorInvalidPassword: 'Текущий пароль неверный.',
+      errorGeneric: 'Что-то пошло не так. Попробуйте ещё раз.',
+      placeholderCurrentPassword: '••••••',
+      placeholderNewPassword: 'Минимум 6 символов',
+    },
+
+    // Avatar
+    avatar: {
+      btnChange: 'Изменить фото',
+      uploadSuccess: 'Фото обновлено.',
+      uploadError: 'Не удалось загрузить фото. Попробуйте ещё раз.',
+      uploading: 'Загружаю...',
+    },
+
+    // Grandparent tab
+    grandparentTab: {
+      label: 'Бабушка / Дедушка',
+      empty: 'Заданий от бабушки или дедушки пока нет.',
+      grandmaSection: 'Задания от бабушки',
+      grandpaSection: 'Задания от дедушки',
+      photoAlt: 'Фото выполненного задания',
+      enlargePhoto: 'Увеличить фото',
+    },
+
     // Header
     greeting: 'Здравствуйте',
     btnLogout: 'Выйти',
@@ -159,9 +256,34 @@ export const ru = {
       coins: 'Монеты',
       energy: 'Энергия',
       homeLevelLabel: 'Уровень',
-      btnEnter: 'Войти в домик',
+      btnEnter: 'Войти в дом',
       btnExit: 'Выйти',
+      btnTalkGrandma: 'Поговорить с бабушкой',
+      btnTalkGrandpa: 'Поговорить с дедушкой',
     },
+    dialog: {
+      btnLeave: 'Уйти',
+      speakerChild: 'Ты говоришь',
+      speakerNpcGrandma: 'Бабушка говорит',
+      speakerNpcGrandpa: 'Дедушка говорит',
+      photo: {
+        hintGrandma: 'Прикрепи фото результата — бабушка очень обрадуется!',
+        hintGrandpa: 'Прикрепи фото результата — дедушка очень обрадуется!',
+        btnOpenCamera: 'Открыть камеру / выбрать фото',
+        btnRetake: 'Переснять / Выбрать другое',
+        btnSend: 'Отправить',
+        btnCancel: 'Отмена',
+        sending: 'Отправляю...',
+        errorUpload: 'Не удалось загрузить фото, попробуй ещё раз',
+        successTitle: 'Какой ты молодец! Я так горжусь!',
+        successOption: 'Спасибо!',
+      },
+    },
+  },
+
+  npc: {
+    grandma: 'Бабушка',
+    grandpa: 'Дедушка',
   },
 
   minigame: {

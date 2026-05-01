@@ -25,6 +25,7 @@ import { BorderForest } from './BorderForest'
 import { SceneLights } from './SceneLights'
 import { RemoteLobbyPlayer, type RemoteSnapshot } from './RemoteLobbyPlayer'
 import { ActionButtons } from '@/components/play/ActionButtons'
+import { AmbientAudio } from '@/components/play/AmbientAudio'
 import { useGameStore } from '@/hooks/useGameStore'
 import { useSceneInput } from '@/hooks/useSceneInput'
 import { ru } from '@/i18n/ru'
@@ -390,6 +391,7 @@ export function LobbyWorld({ gender }: LobbyWorldProps) {
       )}
 
       <ActionButtons />
+      <AmbientAudio src="/village.mp3" />
       {isTouchDevice && <Joystick />}
     </div>
   )

@@ -17,6 +17,7 @@ datasource db {
 enum Role {
   PARENT
   CHILD
+  RELATIVE // added in migration add_grandparent_relatives_feed
 }
 
 enum Gender {
@@ -39,6 +40,12 @@ enum ItemCategory {
   PET
 }
 
+// Identifies which grandparent NPC issued the task.
+enum Grandparent {
+  GRANDMA
+  GRANDPA
+}
+
 // ---------------------------------------------------------------------------
 // Models
 // ---------------------------------------------------------------------------
@@ -48,10 +55,15 @@ model Parent {
   email        String   @unique
   passwordHash String
   displayName  String
+  // avatarUrl/avatarKey: optional Vercel Blob reference for parent profile photo.
+  avatarUrl    String?
+  avatarKey    String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  children Child[]
+  children  Child[]
+  relatives Relative[]
+  feedPosts FeedPost[]
 }
 
 model Child {
@@ -68,15 +80,21 @@ model Child {
   gender    Gender @default(BOY)
   grade     Int    @default(1) // School grade 1-7, set by parent at child creation.
 
+  // avatarUrl/avatarKey: optional Vercel Blob reference for child avatar shown on parent dashboard.
+  avatarUrl String?
+  avatarKey String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  progress   SubjectProgress[]
-  attempts   TaskAttempt[]
-  peSessions PESession[]
-  inventory  InventoryItem[]
-  rooms      Room[]
-  appearance CharacterAppearance?
+  progress         SubjectProgress[]
+  attempts         TaskAttempt[]
+  peSessions       PESession[]
+  inventory        InventoryItem[]
+  rooms            Room[]
+  appearance       CharacterAppearance?
+  grandparentTasks GrandparentTaskCompletion[]
+  feedPosts        FeedPost[]
 
   // Index reason: parentId is used in WHERE when a parent loads their children list.
   @@index([parentId])
@@ -134,7 +152,7 @@ model PESession {
 }
 
 model Room {
-  id       String @id @default(cuid())
+  id       String  @id @default(cuid())
   childId  String
   index    Int // 0 = first room, 1 = second room
   unlocked Boolean @default(false)
@@ -147,7 +165,7 @@ model Room {
 }
 
 model RoomPlacement {
-  id       String @id @default(cuid())
+  id       String        @id @default(cuid())
   roomId   String
   itemId   String // references InventoryItem
   x        Int // grid x-coordinate
@@ -184,6 +202,120 @@ model CharacterAppearance {
   bottom  String  @default("bottom_default")
   petKey  String? // set when a pet is purchased
   child   Child   @relation(fields: [childId], references: [id], onDelete: Cascade)
+}
+
+// ---------------------------------------------------------------------------
+// Grandparent tasks (Phase E)
+// ---------------------------------------------------------------------------
+
+// Records a completed grandparent task submission with photo proof.
+// One record per (child, taskKey) — re-submission overwrites via upsert.
+model GrandparentTaskCompletion {
+  id           String      @id @default(cuid())
+  childId      String
+  grandparent  Grandparent
+  taskKey      String
+  taskName     String
+  photoUrl     String
+  photoKey     String
+  coinsEarned  Int
+  energyEarned Int
+  createdAt    DateTime    @default(now())
+  child        Child       @relation(fields: [childId], references: [id], onDelete: Cascade)
+
+  // One submission per task per child (re-submission updates existing row via upsert).
+  @@unique([childId, taskKey])
+  // Index reason: parent dashboard groups by grandparent + child, ordered by createdAt.
+  @@index([childId, grandparent, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Relatives (Phase E) — family members with read-only feed access
+// ---------------------------------------------------------------------------
+
+// A relative (e.g. grandparent account) created by a parent. Has RELATIVE role
+// in JWT. Can log in, see feed, leave comments and likes, but cannot access
+// child management pages (/parent/child/*).
+model Relative {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  displayName  String
+  avatarUrl    String?
+  avatarKey    String?
+  parentId     String
+  parent       Parent   @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+
+  // Index reason: listRelatives queries by parentId; Relative.parentId used in WHERE
+  // when parent manages their relatives list.
+  @@index([parentId])
+}
+
+// ---------------------------------------------------------------------------
+// Feed (Phase E) — activity stream visible to parents and relatives
+// ---------------------------------------------------------------------------
+
+// A feed post is created automatically when a child completes a PE session
+// or a grandparent task, or (in future) other notable actions.
+model FeedPost {
+  id           String   @id @default(cuid())
+  parentId     String
+  childId      String
+  kind         String // 'PE' | 'GRANDPARENT' | 'TASK'
+  title        String
+  photoUrl     String?
+  photoKey     String?
+  rewardCoins  Int      @default(0)
+  rewardEnergy Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  child    Child         @relation(fields: [childId], references: [id], onDelete: Cascade)
+  parent   Parent        @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  comments FeedComment[]
+  likes    FeedLike[]
+
+  // Index reason: feed query — by parentId ordered by createdAt desc (primary feed query).
+  @@index([parentId, createdAt])
+  // Index reason: child-specific filter in feed (parent filtering by one child).
+  @@index([childId, createdAt])
+}
+
+// FeedComment stores authorType + authorId without hard FK to Parent/Relative.
+// This avoids a polymorphic FK problem and simplifies migrations — the caller
+// resolves the author name via the authorName snapshot field.
+model FeedComment {
+  id         String   @id @default(cuid())
+  postId     String
+  authorType String // 'PARENT' | 'RELATIVE'
+  authorId   String // Parent.id or Relative.id — resolved at query time, no FK
+  authorName String // name snapshot at comment creation
+  body       String
+  createdAt  DateTime @default(now())
+
+  post FeedPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  // Index reason: getPostDetail loads comments for a post ordered by createdAt.
+  @@index([postId, createdAt])
+  // Index reason: allows finding all comments by a given author (e.g. to scrub on delete).
+  @@index([authorType, authorId])
+}
+
+// FeedLike uses the same authorType + authorId pattern as FeedComment.
+// The unique constraint prevents double-liking.
+model FeedLike {
+  id         String   @id @default(cuid())
+  postId     String
+  authorType String // 'PARENT' | 'RELATIVE'
+  authorId   String
+  createdAt  DateTime @default(now())
+
+  post FeedPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  // Unique reason: one like per (post, author) — enforces toggleLike semantics.
+  @@unique([postId, authorType, authorId])
+  // Index reason: count likes per post in feed list query.
+  @@index([postId])
 }
 
 // ---------------------------------------------------------------------------
@@ -230,7 +362,7 @@ model LobbyTile {
   matchId     String
   x           Int
   y           Int
-  stompedById String?   // childId of player who claimed it (null = unclaimed)
+  stompedById String? // childId of player who claimed it (null = unclaimed)
   spawnedAt   DateTime  @default(now())
   stompedAt   DateTime?
 

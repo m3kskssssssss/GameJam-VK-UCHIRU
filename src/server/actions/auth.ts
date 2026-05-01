@@ -114,7 +114,7 @@ export async function registerParent(
 // ---------------------------------------------------------------------------
 
 export async function loginAction(input: {
-  role: 'parent' | 'child'
+  role: 'parent' | 'child' | 'relative'
   identifier: string
   password: string
 }): Promise<ActionResult> {
@@ -131,7 +131,13 @@ export async function loginAction(input: {
     return { ok: false, error: t.errors.invalidCredentials }
   }
 
-  redirect(role === 'parent' ? '/parent' : '/play')
+  if (role === 'parent') {
+    redirect('/parent')
+  } else if (role === 'relative') {
+    redirect('/parent/feed')
+  } else {
+    redirect('/play')
+  }
 }
 
 // ---------------------------------------------------------------------------

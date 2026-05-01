@@ -2,11 +2,11 @@
 // HUD DOM overlay for the play world.
 // Renders on top of the R3F canvas; never inside the Canvas.
 
-import { useTransition } from 'react'
+import { useTransition, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { signOutAction } from '@/server/actions/auth-actions'
 import { useGameStore } from '@/hooks/useGameStore'
-import type { HouseSubject } from '@/hooks/useGameStore'
+import type { HouseSubject, NpcKind } from '@/hooks/useGameStore'
 import { ru } from '@/i18n/ru'
 
 const { play: t } = ru
@@ -17,6 +17,11 @@ const { play: t } = ru
 function getHouseRoute(subject: HouseSubject): string {
   if (subject === 'home') return '/play/home'
   return `/play/house/${subject}`
+}
+
+function getNpcTalkLabel(kind: NpcKind): string {
+  if (kind === 'grandma') return t.hud.btnTalkGrandma
+  return t.hud.btnTalkGrandpa
 }
 
 function CoinIcon() {
@@ -74,14 +79,24 @@ export function Hud() {
   const energy = useGameStore((s) => s.energy)
   const homeLevel = useGameStore((s) => s.homeLevel)
   const nearHouse = useGameStore((s) => s.nearHouse)
+  const nearNpc = useGameStore((s) => s.nearNpc)
 
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
+  const [enterHovered, setEnterHovered] = useState(false)
+  const [talkHovered, setTalkHovered] = useState(false)
 
   function handleEnter() {
     if (!nearHouse) return
     startTransition(() => {
       router.push(getHouseRoute(nearHouse))
+    })
+  }
+
+  function handleTalk() {
+    if (!nearNpc) return
+    startTransition(() => {
+      router.push(`/play/talk/${nearNpc}`)
     })
   }
 
@@ -159,7 +174,7 @@ export function Hud() {
         </button>
       </div>
 
-      {/* Bottom-centre: "Enter house" CTA */}
+      {/* Bottom-centre: "Enter house" CTA — nearHouse takes priority over nearNpc */}
       {nearHouse && (
         <div
           style={{
@@ -173,9 +188,40 @@ export function Hud() {
           <button
             onClick={handleEnter}
             disabled={isPending}
-            style={enterBtnStyle}
+            onMouseEnter={() => setEnterHovered(true)}
+            onMouseLeave={() => setEnterHovered(false)}
+            style={{
+              ...enterBtnStyle,
+              transform: enterHovered ? 'scale(1.03)' : 'scale(1)',
+            }}
           >
             {t.hud.btnEnter}
+          </button>
+        </div>
+      )}
+
+      {/* Bottom-centre: "Talk to NPC" CTA — only when not near a house */}
+      {!nearHouse && nearNpc && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '2.5rem',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            pointerEvents: 'auto',
+          }}
+        >
+          <button
+            onClick={handleTalk}
+            disabled={isPending}
+            onMouseEnter={() => setTalkHovered(true)}
+            onMouseLeave={() => setTalkHovered(false)}
+            style={{
+              ...enterBtnStyle,
+              transform: talkHovered ? 'scale(1.03)' : 'scale(1)',
+            }}
+          >
+            {getNpcTalkLabel(nearNpc)}
           </button>
         </div>
       )}
@@ -234,14 +280,16 @@ const lobbyBtnStyle: React.CSSProperties = {
 
 const enterBtnStyle: React.CSSProperties = {
   padding: '1rem 2.5rem',
-  background: '#4DA8DA',
+  background: 'rgba(255,255,255,0.96)',
   border: 'none',
   borderRadius: '0.75rem',
   fontSize: '1.1rem',
   fontWeight: 800,
-  color: '#ffffff',
+  color: '#1F2937',
   fontFamily: 'Nunito, sans-serif',
   cursor: 'pointer',
-  boxShadow: '0 4px 20px rgba(77,168,218,0.5)',
+  boxShadow:
+    '0 8px 24px rgba(31,41,55,0.18), 0 2px 8px rgba(31,41,55,0.10)',
   letterSpacing: '0.01em',
+  transition: 'transform 0.15s ease',
 }

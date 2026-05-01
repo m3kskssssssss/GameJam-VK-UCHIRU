@@ -4,14 +4,14 @@
 
 import type { DefaultSession } from 'next-auth'
 
-type UserRole = 'PARENT' | 'CHILD'
+type UserRole = 'PARENT' | 'CHILD' | 'RELATIVE'
 
 declare module 'next-auth' {
   interface Session {
     user: {
       id: string
       role: UserRole
-      /** Present only for CHILD sessions */
+      /** Present for CHILD and RELATIVE sessions */
       parentId?: string
     } & DefaultSession['user']
   }
@@ -19,7 +19,7 @@ declare module 'next-auth' {
   interface User {
     id: string
     role: UserRole
-    /** Present only for CHILD sessions */
+    /** Present for CHILD and RELATIVE sessions */
     parentId?: string
   }
 }
@@ -30,7 +30,7 @@ declare module 'next-auth/jwt' {
   interface JWT {
     id: string
     role: UserRole
-    /** Present only for CHILD sessions */
+    /** Present for CHILD and RELATIVE sessions */
     parentId?: string
   }
 }

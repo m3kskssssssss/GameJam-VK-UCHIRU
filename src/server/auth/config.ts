@@ -21,6 +21,11 @@ const credentialsSchema = z.discriminatedUnion('role', [
     identifier: z.string().min(1),
     password: z.string().min(1),
   }),
+  z.object({
+    role: z.literal('relative'),
+    identifier: z.string().min(1),
+    password: z.string().min(1),
+  }),
 ])
 
 // ---------------------------------------------------------------------------
@@ -60,8 +65,33 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
           }
         }
 
-        // role === 'child'
-        const child = await prisma.child.findUnique({
+        if (role === 'child') {
+          const child = await prisma.child.findUnique({
+            where: { username: identifier },
+            select: {
+              id: true,
+              displayName: true,
+              passwordHash: true,
+              parentId: true,
+              username: true,
+            },
+          })
+          if (!child) return null
+
+          const validChild = await verifyPassword(password, child.passwordHash)
+          if (!validChild) return null
+
+          return {
+            id: child.id,
+            name: child.displayName,
+            email: child.username, // NextAuth requires email; use username as surrogate
+            role: 'CHILD' as const,
+            parentId: child.parentId,
+          }
+        }
+
+        // role === 'relative'
+        const relative = await prisma.relative.findUnique({
           where: { username: identifier },
           select: {
             id: true,
@@ -71,17 +101,17 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
             username: true,
           },
         })
-        if (!child) return null
+        if (!relative) return null
 
-        const valid = await verifyPassword(password, child.passwordHash)
-        if (!valid) return null
+        const validRelative = await verifyPassword(password, relative.passwordHash)
+        if (!validRelative) return null
 
         return {
-          id: child.id,
-          name: child.displayName,
-          email: child.username, // NextAuth requires email; use username as surrogate
-          role: 'CHILD' as const,
-          parentId: child.parentId,
+          id: relative.id,
+          name: relative.displayName,
+          email: relative.username, // surrogate, same pattern as CHILD
+          role: 'RELATIVE' as const,
+          parentId: relative.parentId,
         }
       },
     }),

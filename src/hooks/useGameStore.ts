@@ -3,7 +3,9 @@
 // Coins/energy are seeded from the server on mount; mutated by mini-games via router.refresh().
 
 import { create } from 'zustand'
+import type { NpcKind } from '@/components/world/npcs-data'
 
+export type { NpcKind }
 export type HouseSubject = 'math' | 'reading' | 'english' | 'pe' | 'home'
 export type FacingDirection = 'down' | 'up' | 'left' | 'right'
 
@@ -39,6 +41,7 @@ interface GameState {
    *  broadcast the local player's orientation to remote clients. */
   playerYaw: number
   nearHouse: HouseSubject | null
+  nearNpc: NpcKind | null
   halfX: number
   halfZ: number
 
@@ -53,6 +56,7 @@ interface GameState {
   // Actions
   setVelocity: (vx: number, vz: number) => void
   setNearHouse: (subject: HouseSubject | null) => void
+  setNearNpc: (value: NpcKind | null) => void
   applyMovement: (dt: number) => void
   setSummary: (summary: { coins: number; energy: number; homeLevel: number }) => void
   setPosition: (x: number, y: number, z: number) => void
@@ -75,6 +79,7 @@ export const useGameStore = create<GameState>()((set) => ({
   facing: 'down',
   playerYaw: 0,
   nearHouse: null,
+  nearNpc: null,
   halfX: 14,
   halfZ: 9,
 
@@ -101,6 +106,8 @@ export const useGameStore = create<GameState>()((set) => ({
   },
 
   setNearHouse: (subject) => set({ nearHouse: subject }),
+
+  setNearNpc: (value) => set({ nearNpc: value }),
 
   applyMovement: (dt) => {
     set((state) => {

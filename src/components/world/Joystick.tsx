@@ -19,6 +19,16 @@ export function Joystick() {
   const origin = useRef<Point>({ x: 0, y: 0 })
 
   const [knobOffset, setKnobOffset] = useState<Point>({ x: 0, y: 0 })
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Detect mobile viewport and update on resize
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)')
+    const update = () => setIsMobile(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [])
 
   const onPointerDown = useCallback((e: PointerEvent) => {
     if (activePointer.current !== null) return
@@ -80,7 +90,7 @@ export function Joystick() {
       style={{
         position: 'absolute',
         bottom: '5rem',
-        left: '2rem',
+        left: isMobile ? 'calc(15% + 8px)' : '2rem',
         width: JOYSTICK_SIZE,
         height: JOYSTICK_SIZE,
         borderRadius: '50%',

@@ -20,6 +20,22 @@ export interface ChildSession {
   parentId: string
 }
 
+export interface RelativeSession {
+  id: string
+  displayName: string
+  parentId: string
+}
+
+export type ViewerKind = 'parent' | 'relative'
+
+export interface FeedViewer {
+  kind: ViewerKind
+  id: string
+  /** For PARENT — own id (they are their own parent context). For RELATIVE — id of the owning parent. */
+  parentId: string
+  displayName: string
+}
+
 // ---------------------------------------------------------------------------
 // Guards
 // ---------------------------------------------------------------------------
@@ -72,4 +88,53 @@ export async function assertOwnsChild(
   if (!child || child.parentId !== parentId) {
     throw new Error('ACCESS_DENIED')
   }
+}
+
+/**
+ * Require a valid RELATIVE session. Redirects to /auth/login otherwise.
+ * Returns lightweight relative info from the session (no DB call).
+ */
+export async function requireRelative(): Promise<RelativeSession> {
+  const session = await auth()
+  if (!session || session.user.role !== 'RELATIVE') {
+    redirect('/auth/login')
+  }
+  return {
+    id: session.user.id,
+    displayName: session.user.name ?? '',
+    parentId: session.user.parentId ?? '',
+  }
+}
+
+/**
+ * Require either a PARENT or RELATIVE session.
+ * Used for shared views such as the activity feed.
+ * Redirects to /auth/login for any other role or unauthenticated visitors.
+ *
+ * For PARENT: parentId is set to the parent's own id.
+ * For RELATIVE: parentId is set to the owning parent's id from the session.
+ */
+export async function requireParentOrRelative(): Promise<FeedViewer> {
+  const session = await auth()
+  const role = session?.user?.role
+
+  if (role === 'PARENT') {
+    return {
+      kind: 'parent',
+      id: session!.user.id,
+      parentId: session!.user.id,
+      displayName: session!.user.name ?? '',
+    }
+  }
+
+  if (role === 'RELATIVE') {
+    return {
+      kind: 'relative',
+      id: session!.user.id,
+      parentId: session!.user.parentId ?? '',
+      displayName: session!.user.name ?? '',
+    }
+  }
+
+  redirect('/auth/login')
 }

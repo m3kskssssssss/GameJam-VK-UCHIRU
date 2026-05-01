@@ -1,7 +1,7 @@
 // ChildCard — summary card shown in the parent's children list.
 // Server component: receives pre-fetched data, renders statically.
 import Link from 'next/link'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ru } from '@/i18n/ru'
@@ -12,7 +12,7 @@ const { parent: p } = ru
 const fmt = new Intl.NumberFormat('ru-RU')
 
 interface ChildCardProps {
-  child: ChildSummary & { username: string }
+  child: ChildSummary & { username: string; avatarUrl?: string | null }
 }
 
 /** Returns the first 1–2 letters of a display name for the avatar fallback. */
@@ -39,6 +39,9 @@ export function ChildCard({ child }: ChildCardProps) {
       {/* Top row: avatar + name + homeLevel badge */}
       <div className="flex items-start gap-4">
         <Avatar className="h-14 w-14 text-lg font-bold bg-primary text-primary-foreground shrink-0">
+          {child.avatarUrl && (
+            <AvatarImage src={child.avatarUrl} alt={child.displayName} />
+          )}
           <AvatarFallback className="bg-primary text-primary-foreground font-extrabold text-lg">
             {initials(child.displayName)}
           </AvatarFallback>

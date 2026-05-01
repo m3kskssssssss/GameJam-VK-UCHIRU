@@ -5,6 +5,7 @@
 import { prisma } from '@/lib/db'
 import { requireChild } from '@/server/auth/guards'
 import { uploadPEPhoto } from '@/lib/blob'
+import { attachPhotoToPost } from '@/server/actions/feed'
 
 const MAX_FILE_BYTES = 4 * 1024 * 1024 // 4 MB
 const ALLOWED_SLOTS = new Set(['10s', '60s'])
@@ -44,6 +45,9 @@ export async function POST(request: Request): Promise<Response> {
   const sessionId = formData.get('sessionId')
   const slot = formData.get('slot')
   const fileEntry = formData.get('file')
+  // feedPostId is optional — provided by clients that received it from completePESession.
+  // When present and slot=60s, the FeedPost's photoUrl is updated after a successful upload.
+  const feedPostIdEntry = formData.get('feedPostId')
 
   // --- Validate inputs ---
   if (typeof sessionId !== 'string' || sessionId.trim() === '') {
@@ -122,6 +126,21 @@ export async function POST(request: Request): Promise<Response> {
       error: 'DB_ERROR',
       detail: err instanceof Error ? err.message : String(err),
     }, { status: 500 })
+  }
+
+  // --- Retroactively attach photo to the FeedPost when slot=60s ---
+  // feedPostId is forwarded by the client from the completePESession response.
+  // If absent (legacy / slot=10s) we skip silently — the post will simply have
+  // no photo, which is acceptable (photo60s is optional).
+  if (slot === '60s' && typeof feedPostIdEntry === 'string' && feedPostIdEntry.trim() !== '') {
+    const feedPostId = feedPostIdEntry.trim()
+    try {
+      await attachPhotoToPost(feedPostId, uploadResult.url, uploadResult.key)
+      console.log('[pe/upload] FeedPost photo attached postId=', feedPostId)
+    } catch (err) {
+      // Non-fatal: the upload succeeded; failing to update the post is a cosmetic issue.
+      console.error('[pe/upload] attachPhotoToPost failed (non-fatal):', err)
+    }
   }
 
   return Response.json({ url: uploadResult.url, key: uploadResult.key })

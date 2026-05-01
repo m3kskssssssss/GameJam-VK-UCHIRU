@@ -232,6 +232,79 @@
 
 ---
 
+## Phase E QA — 02 May 2026
+- typecheck: PASS (0 errors)
+- lint: PASS (only pre-existing warning: LevelSelect.tsx:72 `isLocked` unused)
+- build: PASS (Next.js compiled successfully — 16 routes, all new API routes present; `prisma migrate deploy` step skipped locally because DATABASE_URL is absent, which is expected for local dev — not a code defect)
+- unit tests: skipped (no Vitest unit tests exist for phase E server actions; Playwright E2E deferred to phase Z.2 per plan)
+- smoke audit: see notes below
+- verdict: PHASE E CLEARED — no blockers
+
+### Smoke audit results
+
+**grandparent.ts**
+- submitGrandparentTask: awards (coinsEarned/energyEarned) are set to 0 on upsert.update (re-submission) and to task.rewardCoins/task.rewardEnergy on create. isFirst flag correctly derived from `!existing`. awardChild is called only when isFirst. PASS.
+- listGrandparentCompletions: calls requireParent() then assertOwnsChild(parent.id, childId) before any DB read. PASS.
+
+**feed.ts**
+- listFeed: `where` block always includes `parentId: viewer.parentId` (derived from requireParentOrRelative). Pagination: take capped at Math.min(take ?? 20, 50) — default 20, max 50. Cursor-based via `cursor: { id: cursor }, skip: 1`. PASS.
+- addComment: fetches post.parentId and asserts `post.parentId !== viewer.parentId` throws ACCESS_DENIED. PASS.
+- toggleLike: same post.parentId ownership check. PASS.
+- getPostDetail: post.parentId ownership check present. PASS.
+- attachPhotoToPost: exported as a plain `async function` (not `'use server'` action) — acceptable since it is called only from server-side API routes, not from client. PASS.
+
+**relatives.ts**
+- createRelative: catches Prisma P2002 and rethrows as `USERNAME_TAKEN`. PASS.
+- deleteRelative: silently calls `deleteBlob(relative.avatarUrl).catch(...)` before `prisma.relative.delete`. PASS.
+
+**avatars.ts**
+- setParentAvatar: fetches existing avatarUrl and calls `deleteBlob(...).catch(...)` before update. PASS.
+- setChildAvatar: same pattern. PASS.
+- setRelativeAvatar: same pattern. PASS.
+
+**middleware-config.ts**
+- RELATIVE on /parent/feed or /parent/feed/*: returns true. PASS.
+- RELATIVE on /parent/profile or /parent/profile/*: returns true. PASS.
+- RELATIVE on any other /parent/*: returns `Response.redirect(new URL('/parent/feed', ...))`. PASS.
+- CHILD on /parent/*: falls through to the final `return false` (no matching branch for CHILD in the /parent block). PASS.
+
+**api/grandparent/upload/route.ts**
+- requireChild() wrapped in try/catch; Next.js NEXT_* digest redirects converted to 401. PASS.
+- taskKey validated via getTask(taskKey); 400 if unknown. PASS.
+- File size checked against 4 MB (4 * 1024 * 1024). PASS.
+
+**api/avatar/upload/route.ts**
+- target=parent: viewer.kind !== 'parent' → 403. PASS.
+- target=child:<id>: viewer.kind !== 'parent' → 403; ownership delegated to setChildAvatar → assertOwnsChild. PASS.
+- target=relative:<id> by RELATIVE: targetId !== viewer.id → 403. PASS.
+- target=relative:<id> by PARENT: allowed; ownership delegated to setRelativeAvatar. PASS.
+
+**pe.ts**
+- completePESession: FeedPost created inside prisma.$transaction alongside the PESession update. PASS.
+- PEResult type includes `feedPostId: string`. PASS.
+
+**api/pe/upload/route.ts**
+- feedPostId is optional (read via `formData.get('feedPostId')`; null is acceptable). PASS.
+- For slot='60s' with valid feedPostId: calls `attachPhotoToPost(feedPostId, ...)` inside try/catch with non-fatal catch (console.error only). PASS.
+
+### SQL migration integrity (prisma/migrations/20260502010000_add_grandparent_relatives_feed/migration.sql)
+- `CREATE TYPE "Grandparent" AS ENUM ('GRANDMA', 'GRANDPA')`: present. PASS.
+- `ALTER TYPE "Role" ADD VALUE 'RELATIVE'`: present. PASS.
+- avatarUrl/avatarKey columns on Parent and Child: present. PASS.
+- Relative table with `FOREIGN KEY ("parentId") REFERENCES "Parent"("id") ON DELETE CASCADE`: present. PASS.
+- GrandparentTaskCompletion with `UNIQUE ("childId", "taskKey")` and `FOREIGN KEY ("childId") REFERENCES "Child"("id") ON DELETE CASCADE`: present. PASS.
+- FeedPost with `INDEX ("parentId", "createdAt")`, `INDEX ("childId", "createdAt")`, FK to Child CASCADE and FK to Parent CASCADE: present. PASS.
+- FeedComment with `INDEX ("postId", "createdAt")`, `INDEX ("authorType", "authorId")`, FK to FeedPost CASCADE: present. PASS.
+- FeedLike with `UNIQUE ("postId", "authorType", "authorId")`, `INDEX ("postId")`, FK to FeedPost CASCADE: present. PASS.
+
+### Notes
+- The `@@index([parentId, createdAt])` on FeedPost in the Prisma schema maps to `CREATE INDEX "FeedPost_parentId_createdAt_idx"` in SQL — confirmed present. The spec asked for `@@index([childId, createdAt])` also — present as `"FeedPost_childId_createdAt_idx"`.
+- The spec asked for `@@unique([postId, authorType, authorId])` on FeedLike — confirmed as `"FeedLike_postId_authorType_authorId_key"` unique index.
+- `pnpm build` requires DATABASE_URL for `prisma migrate deploy`; the Next.js compilation itself (`next build`) succeeds cleanly. In CI/Vercel this is expected to succeed because DATABASE_URL is injected. No code change required.
+- One minor observation in avatar/upload route: when a RELATIVE updates their own avatar the DB write is done inline (direct `prisma.relative.update`) rather than calling `setRelativeAvatar`, because `setRelativeAvatar` requires a PARENT session. This is correctly documented in the route and follows the same old-blob-cleanup pattern. Not a bug.
+
+---
+
 ## Фаза 8 — Полировка и готовность к деплою
 
 - [ ] Звуки

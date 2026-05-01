@@ -9,6 +9,7 @@ import { requireChild } from '@/server/auth/guards'
 import { getPEExercise } from '@/server/content/pe'
 import { awardChild, recomputeHomeLevel } from '@/server/actions/progress'
 
+
 // ---------------------------------------------------------------------------
 // Reward constants (per GAME_DESIGN.md — PE: +25 coins, +20 energy, +20 XP)
 // XP skipped — no SubjectProgress row exists for PE.
@@ -37,6 +38,7 @@ export type PEResult = {
   coinsEarned: number
   energyEarned: number
   xpEarned: number
+  feedPostId: string
 }
 
 // ---------------------------------------------------------------------------
@@ -82,9 +84,18 @@ export async function completePESession(input: {
   const child = await requireChild()
   const { sessionId } = parsed.data
 
+  // Load session with exerciseName + existing 60s photo (may already be uploaded
+  // if the upload and complete race each other).
   const session = await prisma.pESession.findUnique({
     where: { id: sessionId },
-    select: { id: true, childId: true, completed: true },
+    select: {
+      id: true,
+      childId: true,
+      completed: true,
+      exerciseName: true,
+      photo60sUrl: true,
+      photo60sKey: true,
+    },
   })
 
   if (!session) throw new Error('NOT_FOUND')
@@ -92,8 +103,15 @@ export async function completePESession(input: {
   if (session.childId !== child.id) throw new Error('ACCESS_DENIED')
   if (session.completed) throw new Error('ALREADY_COMPLETED')
 
-  // Mark complete and record earned amounts in a single transaction.
-  await prisma.$transaction(async (tx) => {
+  // Fetch parentId for the FeedPost (not stored on the session itself).
+  const childRow = await prisma.child.findUnique({
+    where: { id: child.id },
+    select: { parentId: true },
+  })
+  if (!childRow) throw new Error('NOT_FOUND')
+
+  // Mark complete, record earned amounts, and create the FeedPost atomically.
+  const { post } = await prisma.$transaction(async (tx) => {
     await tx.pESession.update({
       where: { id: sessionId },
       data: {
@@ -102,6 +120,25 @@ export async function completePESession(input: {
         energyEarned: PE_ENERGY,
       },
     })
+
+    // Create the feed post. If photo60s is already attached (rare race where
+    // the upload beat completePESession), include it now; otherwise it will be
+    // retroactively attached by /api/pe/upload when slot=60s lands.
+    const post = await tx.feedPost.create({
+      data: {
+        parentId: childRow.parentId,
+        childId: child.id,
+        kind: 'PE',
+        title: `Сделал зарядку: ${session.exerciseName}`,
+        photoUrl: session.photo60sUrl ?? null,
+        photoKey: session.photo60sKey ?? null,
+        rewardCoins: PE_COINS,
+        rewardEnergy: PE_ENERGY,
+      },
+      select: { id: true },
+    })
+
+    return { post }
   })
 
   // Award outside the transaction — awardChild runs its own atomic ops.
@@ -116,5 +153,6 @@ export async function completePESession(input: {
     energyEarned: PE_ENERGY,
     // XP is not tracked via SubjectProgress for PE; report 0 to the client.
     xpEarned: 0,
+    feedPostId: post.id,
   }
 }
