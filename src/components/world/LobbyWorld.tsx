@@ -178,8 +178,9 @@ export function LobbyWorld({ gender }: LobbyWorldProps) {
   useEffect(() => {
     setBounds(HALF_BOUND_X, HALF_BOUND_Z)
     setPosition(0, 0, 0)
-    setCameraDistance(11)
-    setCameraPitch(0.7)
+    // Match the Zelda-ish framing used in /play: ~5m up / ~7m behind.
+    setCameraDistance(8)
+    setCameraPitch(0.55)
     setCameraYaw(0)
   }, [setBounds, setPosition, setCameraDistance, setCameraPitch, setCameraYaw])
 

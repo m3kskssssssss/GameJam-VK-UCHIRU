@@ -46,8 +46,11 @@ export function MattercraftWorld({ initialSummary }: MattercraftWorldProps) {
     // ring at radius ~20. Bounds are slightly inside the ground image edge.
     setBounds(24, 24)
     setPosition(0, 0, 0)
-    setCameraDistance(12)
-    setCameraPitch(0.7)
+    // Closer Zelda-ish camera: distance 8, pitch ~32° — camera sits ~5m up
+    // and ~7m behind the player, instead of the old 12/40° (8.6m / 9.2m)
+    // that felt like a top-down view.
+    setCameraDistance(8)
+    setCameraPitch(0.55)
     setCameraYaw(0)
   }, [
     initialSummary,
