@@ -34,7 +34,10 @@ async function uploadBlob(blob: Blob, sessionId: string, slot: '10s' | '60s'): P
     fd.append('slot', slot)
     fd.append('file', new File([blob], `pe-${slot}.jpg`, { type: 'image/jpeg' }))
     const res = await fetch('/api/pe/upload', { method: 'POST', body: fd })
-    if (!res.ok) console.error('[CameraSession] upload failed', slot, res.status)
+    if (!res.ok) {
+      const text = await res.text().catch(() => '')
+      console.error('[CameraSession] upload failed', slot, res.status, text)
+    }
   } catch (err) {
     console.error('[CameraSession] upload error', slot, err)
   }
@@ -47,6 +50,34 @@ function FullPage({ children }: { children: React.ReactNode }) {
       {children}
     </div>
   )
+}
+
+// Wait until the video element actually has decoded a frame (readyState
+// HAVE_CURRENT_DATA or higher). Browsers may delay this past `loadedmetadata`,
+// so we listen for both events and also poll readyState as a final guard.
+function waitForVideoReady(video: HTMLVideoElement, timeoutMs = 4000): Promise<void> {
+  return new Promise<void>((resolve) => {
+    if (video.readyState >= 2) {
+      resolve()
+      return
+    }
+    let done = false
+    const finish = () => {
+      if (done) return
+      done = true
+      video.removeEventListener('loadeddata', finish)
+      video.removeEventListener('playing', finish)
+      window.clearInterval(pollId)
+      window.clearTimeout(timeoutId)
+      resolve()
+    }
+    video.addEventListener('loadeddata', finish)
+    video.addEventListener('playing', finish)
+    const pollId = window.setInterval(() => {
+      if (video.readyState >= 2) finish()
+    }, 100)
+    const timeoutId = window.setTimeout(finish, timeoutMs)
+  })
 }
 
 export function CameraSession({ sessionId, exercise, onComplete }: CameraSessionProps) {
@@ -64,16 +95,50 @@ export function CameraSession({ sessionId, exercise, onComplete }: CameraSession
   function captureAndUpload(slot: '10s' | '60s'): Promise<void> {
     const video = videoRef.current
     const canvas = canvasRef.current
-    if (!video || !canvas) return Promise.resolve()
+    if (!video || !canvas) {
+      console.warn('[CameraSession] capture skipped — refs missing', slot)
+      return Promise.resolve()
+    }
+    if (video.readyState < 2 || video.videoWidth === 0 || video.videoHeight === 0) {
+      console.warn(
+        '[CameraSession] capture skipped — video not ready',
+        slot,
+        'readyState=', video.readyState,
+        'size=', video.videoWidth, '×', video.videoHeight,
+      )
+      return Promise.resolve()
+    }
     const ctx = canvas.getContext('2d')
     if (!ctx) return Promise.resolve()
-    ctx.drawImage(video, 0, 0, CANVAS_W, CANVAS_H)
+    // Cover-fit: keep the camera aspect, crop to fill the 480×360 canvas.
+    const srcAR = video.videoWidth / video.videoHeight
+    const dstAR = CANVAS_W / CANVAS_H
+    let sx = 0
+    let sy = 0
+    let sw = video.videoWidth
+    let sh = video.videoHeight
+    if (srcAR > dstAR) {
+      sw = video.videoHeight * dstAR
+      sx = (video.videoWidth - sw) / 2
+    } else if (srcAR < dstAR) {
+      sh = video.videoWidth / dstAR
+      sy = (video.videoHeight - sh) / 2
+    }
+    ctx.fillStyle = '#000'
+    ctx.fillRect(0, 0, CANVAS_W, CANVAS_H)
+    ctx.drawImage(video, sx, sy, sw, sh, 0, 0, CANVAS_W, CANVAS_H)
     return new Promise<void>((resolve) => {
       canvas.toBlob(
         (blob) => {
-          if (!blob) { resolve(); return }
-          // Abort upload if the component has already unmounted
-          if (!mountedRef.current) { resolve(); return }
+          if (!blob) {
+            console.warn('[CameraSession] toBlob returned null', slot)
+            resolve()
+            return
+          }
+          // Don't bail on unmount — the upload is the WHOLE point of the
+          // session. Browsers keep in-flight fetches running for a moment
+          // after navigation, so even if the user clicks away the photo
+          // usually still lands on the server.
           void uploadBlob(blob, sessionId, slot).finally(resolve)
         },
         'image/jpeg',
@@ -87,11 +152,13 @@ export function CameraSession({ sessionId, exercise, onComplete }: CameraSession
     streamRef.current = null
   }
 
+  // 1) Acquire the camera. Stream is stashed in a ref; the actual <video>
+  //    wiring happens below in a separate effect that runs AFTER the video
+  //    element is mounted (cameraGranted flips to true → re-render → ref is
+  //    attached → that effect fires).
   useEffect(() => {
-    const devShort = isDevShort()
-    const delay10 = devShort ? DEV_SNAP_10S : SNAP_10S
-    const delay60 = devShort ? DEV_SNAP_60S : SNAP_60S
-    let mounted = true
+    mountedRef.current = true
+    let cancelled = false
 
     async function startCamera() {
       try {
@@ -99,41 +166,78 @@ export function CameraSession({ sessionId, exercise, onComplete }: CameraSession
           video: { facingMode: 'user' },
           audio: false,
         })
-        if (!mounted) { stream.getTracks().forEach((t) => t.stop()); return }
+        if (cancelled) {
+          stream.getTracks().forEach((t) => t.stop())
+          return
+        }
         streamRef.current = stream
-        if (videoRef.current) videoRef.current.srcObject = stream
         setCameraGranted(true)
-
-        // 10 s snap — independent, fire and forget
-        timer10Ref.current = setTimeout(() => { void captureAndUpload('10s') }, delay10)
-
-        // 60 s snap — after upload, stop stream and complete
-        timer60Ref.current = setTimeout(() => {
-          void captureAndUpload('60s').then(() => {
-            if (!mounted) return
-            stopStream()
-            onComplete()
-          })
-        }, delay60)
       } catch (err) {
-        if (!mounted) return
+        if (cancelled) return
         console.warn('[CameraSession] camera unavailable', err)
         setCameraGranted(false)
         setNoCameraMsg('Камера недоступна — упражнение засчитано, но без фото.')
-        setTimeout(() => { if (mounted) onComplete() }, 2_000)
+        setTimeout(() => { if (!cancelled) onComplete() }, 2_000)
       }
     }
 
     void startCamera()
     return () => {
-      mounted = false
+      cancelled = true
       mountedRef.current = false
       if (timer10Ref.current !== null) clearTimeout(timer10Ref.current)
       if (timer60Ref.current !== null) clearTimeout(timer60Ref.current)
       stopStream()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // Runs once on mount
+  }, [])
+
+  // 2) Once cameraGranted flips to true, the video element is in the DOM.
+  //    Attach the stream, wait for a real frame, then schedule the snaps.
+  //    This split is what fixes the silent "no photo" bug — earlier the
+  //    srcObject assignment ran before the video JSX was rendered, so
+  //    drawImage was capturing a 0×0 video and toBlob returned an empty /
+  //    null blob → no upload → null URL on the parent dashboard.
+  useEffect(() => {
+    if (cameraGranted !== true) return
+    const video = videoRef.current
+    const stream = streamRef.current
+    if (!video || !stream) return
+
+    let cancelled = false
+
+    async function go() {
+      video!.srcObject = stream!
+      // Some browsers (notably mobile Safari) need an explicit play() even
+      // with autoPlay set; ignore the rejection that fires if the user
+      // navigates away mid-call.
+      try { await video!.play() } catch { /* ignore */ }
+      await waitForVideoReady(video!)
+      if (cancelled || !mountedRef.current) return
+
+      const devShort = isDevShort()
+      const delay10 = devShort ? DEV_SNAP_10S : SNAP_10S
+      const delay60 = devShort ? DEV_SNAP_60S : SNAP_60S
+
+      timer10Ref.current = setTimeout(() => {
+        void captureAndUpload('10s')
+      }, delay10)
+
+      timer60Ref.current = setTimeout(() => {
+        void captureAndUpload('60s').then(() => {
+          if (cancelled || !mountedRef.current) return
+          stopStream()
+          onComplete()
+        })
+      }, delay60)
+    }
+
+    void go()
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cameraGranted])
 
   if (cameraGranted === null) {
     return (
@@ -172,13 +276,24 @@ export function CameraSession({ sessionId, exercise, onComplete }: CameraSession
   // Camera granted — exercise in progress. NO countdown shown.
   return (
     <FullPage>
-      {/* Hidden video for capture */}
+      {/* Hidden video for capture — positioned offscreen at sensible
+          dimensions so the browser keeps decoding frames. width:1/height:1
+          plus opacity:0 used to make some browsers drop the decode pipeline
+          which silently broke the snapshot. */}
       <video
         ref={videoRef}
         autoPlay
         playsInline
         muted
-        style={{ position: 'absolute', width: 1, height: 1, opacity: 0, pointerEvents: 'none' }}
+        style={{
+          position: 'absolute',
+          left: -10_000,
+          top: -10_000,
+          width: CANVAS_W,
+          height: CANVAS_H,
+          opacity: 0,
+          pointerEvents: 'none',
+        }}
         aria-hidden="true"
       />
       {/* Hidden canvas for snapshot */}
@@ -186,7 +301,15 @@ export function CameraSession({ sessionId, exercise, onComplete }: CameraSession
         ref={canvasRef}
         width={CANVAS_W}
         height={CANVAS_H}
-        style={{ position: 'absolute', width: 1, height: 1, opacity: 0, pointerEvents: 'none' }}
+        style={{
+          position: 'absolute',
+          left: -10_000,
+          top: -10_000,
+          width: CANVAS_W,
+          height: CANVAS_H,
+          opacity: 0,
+          pointerEvents: 'none',
+        }}
         aria-hidden="true"
       />
       {/* Visible exercise card */}
