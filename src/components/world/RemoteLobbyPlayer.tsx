@@ -74,10 +74,17 @@ export function RemoteLobbyPlayer({ displayName, gender, snapshot }: Props) {
   const meshGltf = useGLTF(paths.mesh)
   const animGltf = useGLTF(paths.anim)
 
-  const cloned = useMemo(
-    () => skeletonClone(meshGltf.scene) as THREE.Object3D,
-    [meshGltf.scene],
-  )
+  const cloned = useMemo(() => {
+    const c = skeletonClone(meshGltf.scene) as THREE.Object3D
+    c.traverse((child) => {
+      const mesh = child as THREE.Mesh
+      if (mesh.isMesh) {
+        mesh.castShadow = true
+        mesh.receiveShadow = false
+      }
+    })
+    return c
+  }, [meshGltf.scene])
 
   const { actions } = useAnimations(animGltf.animations, cloned)
 

@@ -49,9 +49,21 @@ function AssetGroup({ asset }: AssetGroupProps) {
 
   // Clone once per instance — drei's <Clone> can't deep-share skinned meshes,
   // but our props are plain meshes so simple Object3D.clone() with shared
-  // geometry/materials is cheapest.
+  // geometry/materials is cheapest. Each clone gets castShadow=true so the
+  // overhead directional light can drop its silhouette onto the ground.
   const clones = useMemo(
-    () => instances.map(() => scene.clone(true)),
+    () =>
+      instances.map(() => {
+        const c = scene.clone(true)
+        c.traverse((child) => {
+          const mesh = child as THREE.Mesh
+          if (mesh.isMesh) {
+            mesh.castShadow = true
+            mesh.receiveShadow = true
+          }
+        })
+        return c
+      }),
     [instances, scene],
   )
 

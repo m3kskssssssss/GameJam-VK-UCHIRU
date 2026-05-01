@@ -22,6 +22,7 @@ import { Joystick } from './Joystick'
 import { LobbyScene } from './LobbyScene'
 import { LOBBY_SCENE_INSTANCES } from './lobby-scene-data'
 import { BorderForest } from './BorderForest'
+import { SceneLights } from './SceneLights'
 import { RemoteLobbyPlayer, type RemoteSnapshot } from './RemoteLobbyPlayer'
 import { ActionButtons } from '@/components/play/ActionButtons'
 import { useGameStore } from '@/hooks/useGameStore'
@@ -186,6 +187,13 @@ export function LobbyWorld({ gender }: LobbyWorldProps) {
     setIsTouchDevice('ontouchstart' in window)
   }, [])
 
+  // Prefetch the routes the lobby buttons can navigate to so the click
+  // doesn't have to wait for RSC payloads to arrive on first press.
+  useEffect(() => {
+    router.prefetch('/play')
+    router.prefetch('/play/lobby/arena')
+  }, [router])
+
   useSceneInput(containerRef)
 
   // Heartbeat — push the local player's position + velocity + facing + flags.
@@ -284,12 +292,10 @@ export function LobbyWorld({ gender }: LobbyWorldProps) {
       <Canvas
         camera={{ position: [0, 8, 12], fov: 45, near: 0.1, far: 400 }}
         dpr={[1, 1.5]}
-        shadows={false}
+        shadows="soft"
         style={{ background: '#A8DCFF' }}
       >
-        <ambientLight intensity={0.85} />
-        <directionalLight position={[15, 25, 10]} intensity={1.0} />
-        <hemisphereLight args={['#dfefff', '#5b8a6a', 0.4]} />
+        <SceneLights size={60} />
         <CameraRig />
         <LobbyScene />
         <BorderForest tileSize={60} />

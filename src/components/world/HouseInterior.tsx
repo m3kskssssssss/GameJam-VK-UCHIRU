@@ -14,6 +14,7 @@ import { CameraRig } from './CameraRig'
 import { Joystick } from './Joystick'
 import { ActionButtons } from '@/components/play/ActionButtons'
 import { Furniture3D } from './Furniture3D'
+import { SceneLights } from './SceneLights'
 import { useGameStore } from '@/hooks/useGameStore'
 import { useSceneInput } from '@/hooks/useSceneInput'
 import type { RoomPlacementSummary } from '@/server/actions/rooms'
@@ -134,12 +135,10 @@ function IndoorScene({
 
   return (
     <group>
-      <ambientLight intensity={0.85} />
-      <directionalLight position={[5, 10, 5]} intensity={0.55} />
-      <hemisphereLight color="#ffffff" groundColor="#f4f0e6" intensity={0.4} />
+      <SceneLights size={Math.max(FLOOR_W, FLOOR_D)} indoor />
 
       {/* Floor — uses the photo from /textures/pol-home.png */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
         <planeGeometry args={[FLOOR_W, FLOOR_D]} />
         <meshStandardMaterial map={floorTex} roughness={0.95} metalness={0} />
       </mesh>
@@ -306,7 +305,7 @@ export function HouseInterior({ placements, gender, onExit }: Props) {
           far: 100,
         }}
         dpr={[1, 1.5]}
-        shadows={false}
+        shadows="soft"
         style={{ background: '#FAEDCD' }}
       >
         <CameraRig headHeight={0.9} />

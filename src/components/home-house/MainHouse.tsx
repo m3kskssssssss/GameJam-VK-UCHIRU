@@ -4,7 +4,7 @@
 // PlacementSidebar, and RoomTabs.
 // All server-action calls are lifted here; children receive plain data + handlers.
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { ru } from '@/i18n/ru'
 import { placeItem, removePlacement, unlockRoom } from '@/server/actions/rooms'
@@ -165,13 +165,22 @@ export function MainHouse({
     [],
   )
 
+  // Navigate immediately — RSC will revalidate the destination on its own,
+  // so the explicit router.refresh() before push() only added latency to a
+  // click that should feel instant.
   const handleExitToWorld = useCallback(() => {
-    router.refresh()
     router.push('/play')
   }, [router])
 
   const handleGoToLobby = useCallback(() => {
     router.push('/play/lobby')
+  }, [router])
+
+  // Prefetch likely destinations so the first-visit navigation isn't gated
+  // on the destination's RSC payload arriving.
+  useEffect(() => {
+    router.prefetch('/play')
+    router.prefetch('/play/lobby')
   }, [router])
 
   // ── Cell tap: place selected item ─────────────────────────────────────────

@@ -123,7 +123,18 @@ interface DecorRendererProps {
 function DecorRenderer({ asset, items }: DecorRendererProps) {
   const { scene } = useGLTF(ASSETS[asset].url)
   const clones = useMemo(
-    () => items.map(() => scene.clone(true)),
+    () =>
+      items.map(() => {
+        const c = scene.clone(true)
+        c.traverse((child) => {
+          const mesh = child as THREE.Mesh
+          if (mesh.isMesh) {
+            mesh.castShadow = true
+            mesh.receiveShadow = true
+          }
+        })
+        return c
+      }),
     [items, scene],
   )
   return (

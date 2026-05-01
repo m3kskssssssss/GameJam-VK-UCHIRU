@@ -63,6 +63,13 @@ export function Arena({ matchId, initialState }: Props) {
     setIsTouchDevice('ontouchstart' in window)
   }, [])
 
+  // Prefetch the lobby route so "Leave" feels instant — without this, the
+  // first click pays the destination's RSC fetch latency on top of the
+  // server-action call we already kicked off.
+  useEffect(() => {
+    router.prefetch('/play/lobby')
+  }, [router])
+
   useSceneInput(containerRef)
 
   // ── Polling — fetch match state ───────────────────────────────────────────
@@ -137,12 +144,11 @@ export function Arena({ matchId, initialState }: Props) {
     }
   }
 
-  async function handleLeave() {
-    try {
-      await leaveMatch({ matchId })
-    } catch {
-      // ignore
-    }
+  function handleLeave() {
+    // Navigate immediately — the leaveMatch call runs in the background so
+    // the click feels instant. If the network drops the leave the row will
+    // age out via the regular cleanup path.
+    void leaveMatch({ matchId }).catch(() => {})
     router.push('/play/lobby')
   }
 
@@ -186,7 +192,7 @@ export function Arena({ matchId, initialState }: Props) {
         <WaitingOverlay
           state={state}
           onStart={() => void handleStart()}
-          onLeave={() => void handleLeave()}
+          onLeave={handleLeave}
         />
       )}
 
@@ -196,7 +202,7 @@ export function Arena({ matchId, initialState }: Props) {
         <FinishedOverlay
           state={state}
           onPlayAgain={() => void handlePlayAgain()}
-          onLeave={() => void handleLeave()}
+          onLeave={handleLeave}
         />
       )}
 

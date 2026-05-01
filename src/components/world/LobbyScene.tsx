@@ -44,7 +44,18 @@ function AssetGroup({ asset }: AssetGroupProps) {
     [asset],
   )
   const clones = useMemo(
-    () => instances.map(() => scene.clone(true)),
+    () =>
+      instances.map(() => {
+        const c = scene.clone(true)
+        c.traverse((child) => {
+          const mesh = child as THREE.Mesh
+          if (mesh.isMesh) {
+            mesh.castShadow = true
+            mesh.receiveShadow = true
+          }
+        })
+        return c
+      }),
     [instances, scene],
   )
 

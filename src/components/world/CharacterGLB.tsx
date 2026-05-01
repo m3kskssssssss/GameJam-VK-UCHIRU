@@ -40,10 +40,19 @@ export function CharacterGLB({ gender }: CharacterGLBProps) {
   const animGltf = useGLTF(paths.anim)
 
   // Skinned meshes need SkeletonUtils.clone to keep bone hierarchy intact.
-  const cloned = useMemo(
-    () => skeletonClone(meshGltf.scene) as THREE.Object3D,
-    [meshGltf.scene],
-  )
+  // Tag every mesh as castShadow so the directional light drops the player's
+  // silhouette onto the ground.
+  const cloned = useMemo(() => {
+    const c = skeletonClone(meshGltf.scene) as THREE.Object3D
+    c.traverse((child) => {
+      const mesh = child as THREE.Mesh
+      if (mesh.isMesh) {
+        mesh.castShadow = true
+        mesh.receiveShadow = false
+      }
+    })
+    return c
+  }, [meshGltf.scene])
 
   const { actions } = useAnimations(animGltf.animations, cloned)
 

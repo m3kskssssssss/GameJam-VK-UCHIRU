@@ -11,6 +11,7 @@ import { CharacterGLB, type CharacterGender } from './CharacterGLB'
 import { Joystick } from './Joystick'
 import { MattercraftScene } from './MattercraftScene'
 import { BorderForest } from './BorderForest'
+import { SceneLights } from './SceneLights'
 import { Portals } from './Portals'
 import { useGameStore } from '@/hooks/useGameStore'
 import { useSceneInput } from '@/hooks/useSceneInput'
@@ -83,12 +84,10 @@ export function MattercraftWorld({ initialSummary }: MattercraftWorldProps) {
           far: 400,
         }}
         dpr={[1, 1.5]}
-        shadows={false}
+        shadows="soft"
         style={{ background: '#A8DCFF' }}
       >
-        <ambientLight intensity={0.85} />
-        <directionalLight position={[15, 25, 10]} intensity={1.0} />
-        <hemisphereLight args={['#dfefff', '#5b8a6a', 0.4]} />
+        <SceneLights size={50} />
         <CameraRig />
         <MattercraftScene />
         <BorderForest tileSize={50} />
