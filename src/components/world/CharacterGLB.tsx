@@ -63,13 +63,21 @@ export function CharacterGLB({ gender }: CharacterGLBProps) {
         const mat = mesh.material as
           | THREE.MeshStandardMaterial
           | THREE.MeshStandardMaterial[]
+        // Soft dim — earlier versions zeroed emissive entirely, which made
+        // the GLB look gloomy because the export ships with a small baked
+        // self-illumination that contributes a lot of perceived brightness.
+        // Keep most of the emissive (only trim it a third) and barely touch
+        // the albedo so the character still reads bright in the lit scene
+        // without the original "glowing-from-within" look.
         const dim = (m: THREE.Material) => {
           const std = m as THREE.MeshStandardMaterial
           if (std.userData?.kqDimmed) return
           std.userData = { ...std.userData, kqDimmed: true }
-          if (std.color) std.color.multiplyScalar(0.99)
-          if (std.emissive) std.emissive.setScalar(0)
-          if ('emissiveIntensity' in std) std.emissiveIntensity = 0
+          if (std.color) std.color.multiplyScalar(0.96)
+          if (std.emissive) std.emissive.multiplyScalar(0.67)
+          if ('emissiveIntensity' in std && typeof std.emissiveIntensity === 'number') {
+            std.emissiveIntensity = std.emissiveIntensity * 0.67
+          }
         }
         if (Array.isArray(mat)) mat.forEach(dim)
         else dim(mat)

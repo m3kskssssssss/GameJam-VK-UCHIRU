@@ -86,13 +86,17 @@ export function RemoteLobbyPlayer({ displayName, gender, snapshot }: Props) {
         const mat = mesh.material as
           | THREE.MeshStandardMaterial
           | THREE.MeshStandardMaterial[]
+        // Match CharacterGLB: keep most of the GLB's baked self-illumination
+        // so remote players don't drop into shadow gloom — just trim a third.
         const dim = (m: THREE.Material) => {
           const std = m as THREE.MeshStandardMaterial
           if (std.userData?.kqDimmed) return
           std.userData = { ...std.userData, kqDimmed: true }
-          if (std.color) std.color.multiplyScalar(0.99)
-          if (std.emissive) std.emissive.setScalar(0)
-          if ('emissiveIntensity' in std) std.emissiveIntensity = 0
+          if (std.color) std.color.multiplyScalar(0.96)
+          if (std.emissive) std.emissive.multiplyScalar(0.67)
+          if ('emissiveIntensity' in std && typeof std.emissiveIntensity === 'number') {
+            std.emissiveIntensity = std.emissiveIntensity * 0.67
+          }
         }
         if (Array.isArray(mat)) mat.forEach(dim)
         else dim(mat)
