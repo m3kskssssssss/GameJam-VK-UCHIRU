@@ -264,8 +264,19 @@ export function MainHouse({
 
         {placementMode ? (
           <>
-            {/* HTML grid for precise placement */}
-            <div style={{ flex: 1, minHeight: 0, display: 'flex', alignItems: 'center' }}>
+            {/* HTML grid for precise placement — flex parent centers the grid
+                horizontally on landscape phones where the box is narrower
+                than the viewport because of the maxHeight cap. */}
+            <div
+              style={{
+                flex: 1,
+                minHeight: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden',
+              }}
+            >
               <RoomGrid
                 room={activeRoom}
                 inventory={inventory}

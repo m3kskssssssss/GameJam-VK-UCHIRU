@@ -62,6 +62,15 @@ export const CATALOG: CatalogItem[] = [
   { key: 'cat',    name: 'Котик',  category: 'PET', priceCoins: 100 },
   { key: 'dog',    name: 'Собака', category: 'PET', priceCoins: 100 },
   { key: 'dragon', name: 'Дракон', category: 'PET', priceCoins: 100 },
+
+  // -------------------------------------------------------------------------
+  // Promo codes — partner subscriptions priced from 1000 coins.
+  // Visual-only ownership for now; redemption flow lives outside the game.
+  // -------------------------------------------------------------------------
+  { key: 'promo_ivi',          name: 'IVI — подписка',     category: 'PROMO', priceCoins: 1000 },
+  { key: 'promo_vk_music',     name: 'VK Music',           category: 'PROMO', priceCoins: 1500 },
+  { key: 'promo_yandex_plus',  name: 'Яндекс Плюс',        category: 'PROMO', priceCoins: 2000 },
+  { key: 'promo_yandex_eda',   name: 'Яндекс Еда',         category: 'PROMO', priceCoins: 2500 },
 ]
 
 export function getCatalogItem(key: string): CatalogItem | undefined {

@@ -43,9 +43,14 @@ export function RoomGrid({
       style={{
         position: 'relative',
         aspectRatio: '4 / 3',
-        maxWidth: 720,
-        margin: '0 auto',
+        // Cap by both parent width AND parent height — without maxHeight the
+        // grid would extrude past the viewport on landscape phones (where
+        // height is the binding constraint, not width). Browsers honour the
+        // smaller of width / aspect-ratio-derived-height when both are set.
         width: '100%',
+        maxWidth: 720,
+        maxHeight: '100%',
+        margin: '0 auto',
       }}
     >
       {/* Empty-state hint when no items placed and not in edit mode */}

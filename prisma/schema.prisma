@@ -38,6 +38,7 @@ enum ItemCategory {
   OUTFIT_TOP
   OUTFIT_BOTTOM
   PET
+  PROMO
 }
 
 // Identifies which grandparent NPC issued the task.

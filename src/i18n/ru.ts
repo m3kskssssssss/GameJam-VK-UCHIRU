@@ -379,6 +379,7 @@ export const ru = {
     tabTop: 'Верх',
     tabBottom: 'Низ',
     tabPets: 'Питомцы',
+    tabPromo: 'Промокоды',
 
     // Modal titles
     shopTitle: 'Магазин',

@@ -27,6 +27,7 @@ import {
 import { ActionButtons } from '@/components/play/ActionButtons'
 import { AmbientAudio } from '@/components/play/AmbientAudio'
 import { QuestBook } from '@/components/play/QuestBook'
+import { GlobalShop } from '@/components/play/GlobalShop'
 import { RewardPopup } from '@/components/play/RewardPopup'
 import { LobbyGamePortalCard } from '@/components/lobby/LobbyGamePortalCard'
 import { useGameStore } from '@/hooks/useGameStore'
@@ -423,8 +424,9 @@ export function LobbyWorld({ gender, initialSummary }: LobbyWorldProps) {
         </div>
       </div>
 
-      {/* Top-right: quest book */}
+      {/* Top-right: quest book + shop, stacked. */}
       <QuestBook rightPx={16} topPx={16} />
+      <GlobalShop rightPx={16} topPx={68} />
 
       {/* Bottom CTA — opens the config card. Styled like /play's "Войти в домик"
           button (white plaque, dark text) for visual consistency. */}

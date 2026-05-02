@@ -9,6 +9,7 @@ import { useGameStore } from '@/hooks/useGameStore'
 import type { HouseSubject, NpcKind } from '@/hooks/useGameStore'
 import { ru } from '@/i18n/ru'
 import { QuestBook } from '@/components/play/QuestBook'
+import { GlobalShop } from '@/components/play/GlobalShop'
 
 const { play: t } = ru
 
@@ -159,9 +160,13 @@ export function Hud() {
           pointerEvents: 'auto',
         }}
       >
-        {/* Quest book — uses its own absolute positioning relative to this column. */}
+        {/* Quest book + Shop — both use absolute positioning relative to a 44×44
+            wrapper so they stack cleanly inside the column. */}
         <div style={{ position: 'relative', width: 44, height: 44 }}>
           <QuestBook rightPx={0} topPx={0} />
+        </div>
+        <div style={{ position: 'relative', width: 44, height: 44 }}>
+          <GlobalShop rightPx={0} topPx={0} />
         </div>
         <button
           onClick={() => router.push('/play/lobby')}

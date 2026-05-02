@@ -6,6 +6,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
+import { useTexture } from '@react-three/drei'
 import * as THREE from 'three'
 import { CharacterGLB, type CharacterGender } from '@/components/world/CharacterGLB'
 import { CameraRig } from '@/components/world/CameraRig'
@@ -221,13 +222,18 @@ const hudLabel: React.CSSProperties = { fontSize: '0.7rem', opacity: 0.7 }
 const hudValue: React.CSSProperties = { fontSize: '1.4rem', fontWeight: 900, lineHeight: 1 }
 
 function ForestGround() {
+  const tex = useTexture('/fon.png')
+  tex.colorSpace = THREE.SRGBColorSpace
+  tex.anisotropy = 8
   return (
     <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
       <planeGeometry args={[30, 30]} />
-      <meshStandardMaterial color="#7CB342" roughness={1} metalness={0} />
+      <meshStandardMaterial map={tex} roughness={1} metalness={0} />
     </mesh>
   )
 }
+
+useTexture.preload('/fon.png')
 
 function Coin({ spec, onCollect }: { spec: CoinSpec; onCollect: (id: number) => void }) {
   const ref = useRef<THREE.Group>(null)

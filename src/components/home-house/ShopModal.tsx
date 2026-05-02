@@ -42,12 +42,12 @@ interface TabDef {
   label: string
 }
 
+// Outfit (hair/top/bottom) tabs are intentionally omitted — clothing is no
+// longer for sale. Promo codes (partner subscriptions) take their slot.
 const TABS: TabDef[] = [
-  { value: 'FURNITURE',     label: t.tabFurniture },
-  { value: 'OUTFIT_HAIR',   label: t.tabHair },
-  { value: 'OUTFIT_TOP',    label: t.tabTop },
-  { value: 'OUTFIT_BOTTOM', label: t.tabBottom },
-  { value: 'PET',           label: t.tabPets },
+  { value: 'FURNITURE', label: t.tabFurniture },
+  { value: 'PET',       label: t.tabPets },
+  { value: 'PROMO',     label: t.tabPromo },
 ]
 
 // ---- Error key → i18n -------------------------------------------------------

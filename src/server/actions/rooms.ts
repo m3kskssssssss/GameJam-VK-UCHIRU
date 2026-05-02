@@ -12,7 +12,7 @@ import { requireChild } from '@/server/auth/guards'
 export interface InventoryItemSummary {
   id: string
   catalogKey: string
-  category: 'FURNITURE' | 'OUTFIT_HAIR' | 'OUTFIT_TOP' | 'OUTFIT_BOTTOM' | 'PET'
+  category: 'FURNITURE' | 'OUTFIT_HAIR' | 'OUTFIT_TOP' | 'OUTFIT_BOTTOM' | 'PET' | 'PROMO'
   isPlaced: boolean
   ownedAt: string // ISO string for client
 }
