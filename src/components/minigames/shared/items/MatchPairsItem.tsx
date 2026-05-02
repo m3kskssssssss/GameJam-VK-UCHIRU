@@ -23,35 +23,51 @@ function shuffleByKey<T>(arr: T[], key: string): T[] {
   return out
 }
 
+interface RightItem {
+  /** Original index in task.pairs — uniquely identifies this right option even
+   *  when two pairs share the same string value. */
+  idx: number
+  value: string
+}
+
 export function MatchPairsItem({ task, disabled, onAnswer }: Props) {
-  const rightOptions = useMemo(
-    () => shuffleByKey(task.pairs.map((p) => p.right), task.id),
+  const rightOptions = useMemo<RightItem[]>(
+    () =>
+      shuffleByKey(
+        task.pairs.map((p, idx) => ({ idx, value: p.right })),
+        task.id,
+      ),
     [task.id, task.pairs],
   )
-  // pairings[leftIdx] = rightOption (string) or null
-  const [pairings, setPairings] = useState<(string | null)[]>(
+
+  // pairings[leftIdx] = the index of a right option in task.pairs, or null.
+  // Storing the index (not the string value) keeps duplicates distinct: if two
+  // pairs share the same right text, each button is still its own pickable slot.
+  const [pairings, setPairings] = useState<(number | null)[]>(
     () => Array.from({ length: task.pairs.length }, () => null),
   )
   const [activeLeft, setActiveLeft] = useState<number | null>(null)
   const [submitted, setSubmitted] = useState(false)
 
-  // Track which right option is already used
-  const usedRights = new Set(pairings.filter((v) => v !== null) as string[])
+  // Track which right-option indices are already used.
+  const usedRightIdx = new Set(pairings.filter((v): v is number => v !== null))
 
   function pickLeft(idx: number) {
     if (disabled || submitted) return
     setActiveLeft(idx === activeLeft ? null : idx)
   }
 
-  function pickRight(value: string) {
+  function pickRight(rightIdx: number) {
     if (disabled || submitted) return
     if (activeLeft === null) return
-    // If this right is already paired, unpair it from its previous left
+    // If this exact right index is already paired, unpair it from its previous
+    // left first. Crucially we compare by index — duplicate right values stay
+    // independent of each other.
     const next = pairings.slice()
     for (let i = 0; i < next.length; i++) {
-      if (next[i] === value) next[i] = null
+      if (next[i] === rightIdx) next[i] = null
     }
-    next[activeLeft] = value
+    next[activeLeft] = rightIdx
     setPairings(next)
     setActiveLeft(null)
   }
@@ -66,7 +82,8 @@ export function MatchPairsItem({ task, disabled, onAnswer }: Props) {
   function submit() {
     if (disabled || submitted) return
     if (pairings.some((p) => p === null)) return
-    const answer = pairings as string[]
+    // Convert indices back to right-string values for the encoded answer.
+    const answer = pairings.map((rightIdx) => task.pairs[rightIdx as number]!.right)
     const isCorrect = task.pairs.every((p, i) => p.right === answer[i])
     setSubmitted(true)
     onAnswer(answer, isCorrect)
@@ -74,9 +91,15 @@ export function MatchPairsItem({ task, disabled, onAnswer }: Props) {
 
   const allPaired = pairings.every((p) => p !== null)
 
+  function leftValueOf(leftIdx: number): string | null {
+    const ri = pairings[leftIdx]
+    if (ri === null || ri === undefined) return null
+    return task.pairs[ri]?.right ?? null
+  }
+
   function leftStyle(idx: number): React.CSSProperties {
     if (submitted) {
-      const isRight = pairings[idx] === task.pairs[idx]?.right
+      const isRight = leftValueOf(idx) === task.pairs[idx]?.right
       return isRight
         ? { backgroundColor: '#D7F2D9', borderColor: '#6BCB77', color: '#1F2937' }
         : { backgroundColor: '#FFD9D9', borderColor: '#FF6B6B', color: '#1F2937' }
@@ -84,14 +107,14 @@ export function MatchPairsItem({ task, disabled, onAnswer }: Props) {
     if (activeLeft === idx) {
       return { backgroundColor: '#4DA8DA', borderColor: '#3D8BB8', color: '#FFFFFF' }
     }
-    if (pairings[idx]) {
+    if (pairings[idx] !== null && pairings[idx] !== undefined) {
       return { backgroundColor: '#FFE8C7', borderColor: '#FFB347', color: '#1F2937' }
     }
     return { backgroundColor: '#F1ECE2', borderColor: '#C9C0AE', color: '#1F2937' }
   }
 
-  function rightStyle(value: string): React.CSSProperties {
-    const used = usedRights.has(value)
+  function rightStyle(item: RightItem): React.CSSProperties {
+    const used = usedRightIdx.has(item.idx)
     if (used) {
       return { backgroundColor: '#FFE8C7', borderColor: '#FFB347', color: '#1F2937', opacity: 0.7 }
     }
@@ -109,39 +132,42 @@ export function MatchPairsItem({ task, disabled, onAnswer }: Props) {
       <div className="grid grid-cols-2 gap-3">
         {/* Left column */}
         <div className="flex flex-col gap-2">
-          {task.pairs.map((p, i) => (
-            <button
-              key={`L-${i}`}
-              type="button"
-              disabled={disabled || submitted}
-              onClick={() =>
-                pairings[i] !== null && !submitted ? clearPair(i) : pickLeft(i)
-              }
-              style={leftStyle(i)}
-              className="
-                min-h-[52px] rounded-[0.75rem] border-2 px-3 py-2
-                text-base font-semibold text-left
-                transition-all duration-150 cursor-pointer
-                disabled:cursor-not-allowed
-              "
-            >
-              <span className="block text-xs opacity-60">{i + 1}</span>
-              <span>{p.left}</span>
-              {pairings[i] && (
-                <span className="block text-xs mt-1 opacity-80">→ {pairings[i]}</span>
-              )}
-            </button>
-          ))}
+          {task.pairs.map((p, i) => {
+            const pairedValue = leftValueOf(i)
+            return (
+              <button
+                key={`L-${i}`}
+                type="button"
+                disabled={disabled || submitted}
+                onClick={() =>
+                  pairings[i] !== null && !submitted ? clearPair(i) : pickLeft(i)
+                }
+                style={leftStyle(i)}
+                className="
+                  min-h-[52px] rounded-[0.75rem] border-2 px-3 py-2
+                  text-base font-semibold text-left
+                  transition-all duration-150 cursor-pointer
+                  disabled:cursor-not-allowed
+                "
+              >
+                <span className="block text-xs opacity-60">{i + 1}</span>
+                <span>{p.left}</span>
+                {pairedValue !== null && (
+                  <span className="block text-xs mt-1 opacity-80">→ {pairedValue}</span>
+                )}
+              </button>
+            )
+          })}
         </div>
         {/* Right column */}
         <div className="flex flex-col gap-2">
-          {rightOptions.map((value) => (
+          {rightOptions.map((item) => (
             <button
-              key={`R-${value}`}
+              key={`R-${item.idx}`}
               type="button"
-              disabled={disabled || submitted || activeLeft === null || usedRights.has(value)}
-              onClick={() => pickRight(value)}
-              style={rightStyle(value)}
+              disabled={disabled || submitted || activeLeft === null || usedRightIdx.has(item.idx)}
+              onClick={() => pickRight(item.idx)}
+              style={rightStyle(item)}
               className="
                 min-h-[52px] rounded-[0.75rem] border-2 px-3 py-2
                 text-base font-semibold text-center
@@ -149,7 +175,7 @@ export function MatchPairsItem({ task, disabled, onAnswer }: Props) {
                 disabled:cursor-not-allowed
               "
             >
-              {value}
+              {item.value}
             </button>
           ))}
         </div>
