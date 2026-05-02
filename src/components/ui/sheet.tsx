@@ -56,16 +56,35 @@ interface SheetContentProps
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
   SheetContentProps
->(({ side = "right", className, children, ...props }, ref) => (
+>(({ side = "right", className, children, style, ...props }, ref) => (
   <SheetPortal>
     <SheetOverlay />
     <SheetPrimitive.Content
       ref={ref}
       className={cn(sheetVariants({ side }), className)}
+      // Safe-area aware paddings — keep at least 1.5rem of breathing room
+      // (matches the original p-6) but expand when running as a PWA on iOS so
+      // headers / titles never tuck under the Dynamic Island. Consumer style
+      // is merged last and can still override individual sides.
+      style={{
+        paddingTop: 'max(env(safe-area-inset-top), 1.5rem)',
+        paddingBottom: 'max(env(safe-area-inset-bottom), 1.5rem)',
+        paddingLeft: 'max(env(safe-area-inset-left), 1.5rem)',
+        paddingRight: 'max(env(safe-area-inset-right), 1.5rem)',
+        ...style,
+      }}
       {...props}
     >
       {children}
-      <SheetPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
+      <SheetPrimitive.Close
+        // Absolutely positioned close button — offset by the same safe-area
+        // insets so it stays clear of the Dynamic Island / notch in PWA mode.
+        style={{
+          top: 'calc(env(safe-area-inset-top) + 1rem)',
+          right: 'calc(env(safe-area-inset-right) + 1rem)',
+        }}
+        className="absolute rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary"
+      >
         <X className="h-4 w-4" />
         <span className="sr-only">Close</span>
       </SheetPrimitive.Close>
