@@ -4,13 +4,26 @@
 // Session validation happens via the JWT cookie alone.
 import NextAuth from 'next-auth'
 import type { NextAuthConfig } from 'next-auth'
+import type { JWT } from 'next-auth/jwt'
 
 const middlewareConfig: NextAuthConfig = {
   providers: [], // Credentials provider is added only in the full config
+  session: { strategy: 'jwt' },
   pages: {
     signIn: '/auth/login',
   },
   callbacks: {
+    // Mirror the full config so role/parentId from the JWT are exposed on
+    // `auth.user` in middleware. Without this the session shape defaults to
+    // { name, email, image } and `role` is always undefined → /parent
+    // redirects an authenticated PARENT back to /auth/login.
+    session({ session, token }) {
+      const jwt = token as JWT
+      if (jwt.id) session.user.id = jwt.id
+      if (jwt.role) session.user.role = jwt.role
+      if (jwt.parentId) session.user.parentId = jwt.parentId
+      return session
+    },
     authorized({ auth, request }) {
       const { pathname } = request.nextUrl
       const role = auth?.user?.role
