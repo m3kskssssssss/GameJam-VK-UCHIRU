@@ -124,7 +124,19 @@ export function AppShell({
       {/* ------------------------------------------------------------------ */}
       {/* Header */}
       {/* ------------------------------------------------------------------ */}
-      <header className="sticky top-0 z-20 bg-background/90 backdrop-blur border-b border-border">
+      <header
+        className="sticky top-0 z-20 bg-background/90 backdrop-blur border-b border-border"
+        style={{
+          // PWA on iOS uses viewport-fit=cover + a translucent status bar, so
+          // the page extends behind the Dynamic Island / notch. Push the
+          // clickable row down by the safe-area inset (and inwards from the
+          // sides for landscape) — the header background still tiles up to
+          // the screen edge so nothing leaks through.
+          paddingTop: 'env(safe-area-inset-top)',
+          paddingLeft: 'env(safe-area-inset-left)',
+          paddingRight: 'env(safe-area-inset-right)',
+        }}
+      >
         <div className="max-w-5xl mx-auto px-4 h-14 flex items-center gap-4">
           {/* Brand */}
           <span className="font-extrabold text-lg shrink-0">{p.nav.brandTitle}</span>
@@ -178,7 +190,17 @@ export function AppShell({
 
               <SheetContent
                 side="top"
-                className="rounded-b-2xl border-b shadow-xl flex flex-col gap-4 pt-6 pb-5 px-5"
+                className="rounded-b-2xl border-b shadow-xl flex flex-col gap-4 pb-5 px-5"
+                style={{
+                  // Match the header — start the sheet content below the
+                  // Dynamic Island / notch when running as a PWA.
+                  paddingTop:
+                    'calc(env(safe-area-inset-top) + 1.5rem)',
+                  paddingLeft:
+                    'calc(env(safe-area-inset-left) + 1.25rem)',
+                  paddingRight:
+                    'calc(env(safe-area-inset-right) + 1.25rem)',
+                }}
               >
                 <SheetHeader className="pr-8">
                   <SheetTitle className="text-base">{p.nav.brandTitle}</SheetTitle>
