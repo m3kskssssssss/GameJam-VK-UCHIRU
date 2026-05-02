@@ -326,6 +326,42 @@ export const ru = {
     controlsHint: 'WASD / стрелки или кнопки внизу',
   },
 
+  lobbyGames: {
+    // Portal config card
+    cardStart: 'Начать',
+    cardOpponent: 'С кем играть',
+    cardSolo: 'Одному',
+    cardAnyone: 'С любым игроком',
+    cardCost: 'Стоимость',
+    cardEnergy: 'энергии',
+    cardClose: 'Закрыть',
+    cardNoEnergy: 'Не хватает энергии — погуляй и подзарядись.',
+    // Result screen
+    resultPassed: 'Победа!',
+    resultParticipated: 'Хорошо сыграл!',
+    resultCoinsEarned: 'Монет получено',
+    resultXpEarned: 'Опыта',
+    resultPlayAgain: 'Сыграть ещё',
+    resultBackToLobby: 'Назад в лобби',
+    // Generic HUD
+    hudOpponent: 'Соперник',
+    hudScore: 'Очки',
+    hudTimeLeft: 'Осталось',
+    hudRound: 'Раунд',
+    // Forest game
+    forestStartHint: 'Беги по лесу и собирай монетки!',
+    // Reaction game
+    reactionStartHint: 'Тапай по зелёным кружкам, не задевай красные.',
+    reactionTapStart: 'Готов? Жми старт!',
+    // Memory game
+    memoryStartHint: 'Запомни последовательность и повтори её.',
+    memoryWatch: 'Смотри…',
+    memoryYourTurn: 'Твой ход!',
+    // Pairs game
+    pairsStartHint: 'Найди все пары карточек.',
+    pairsMoves: 'Ходов',
+  },
+
   home: {
     title: 'Мой дом',
 

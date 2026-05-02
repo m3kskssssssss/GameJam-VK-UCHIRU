@@ -1,15 +1,10 @@
 'use client'
 // 3D lobby scene — uses the GLB-based scene exported from for-lobby/Scene.zcomp
 // (lobbymap.png ground + bushes/trees/grass/doors). Player walks around with
-// the same 3D character used in /play. One of the 4 doors is wrapped in a
-// glowing portal that pushes the player into the multi-player arena.
+// the same 3D character used in /play. Each of the 4 corner doors carries a
+// portal for one of the lobby mini-games (forest / reaction / memory / pairs).
 //
-// Multi-player presence: every ~400ms we POST a heartbeat with our position +
-// world-space velocity + facing yaw + run/jump flags. Every ~500ms we poll
-// the server for everyone else's last snapshot. Remote players are rendered
-// by RemoteLobbyPlayer which extrapolates the snapshot forward in time and
-// lerps the visual transform — so movement looks continuous despite the
-// half-second poll cadence.
+// Multi-player presence is unchanged — heartbeats + poll for nearby children.
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
@@ -20,12 +15,18 @@ import { CameraRig } from './CameraRig'
 import { CharacterGLB, type CharacterGender } from './CharacterGLB'
 import { Joystick } from './Joystick'
 import { LobbyScene } from './LobbyScene'
-import { LOBBY_SCENE_INSTANCES } from './lobby-scene-data'
 import { BorderForest } from './BorderForest'
 import { SceneLights } from './SceneLights'
 import { RemoteLobbyPlayer, type RemoteSnapshot } from './RemoteLobbyPlayer'
+import {
+  LOBBY_GAMES,
+  portalPositionFor,
+  type LobbyGame,
+  type LobbyGameId,
+} from './lobby-games-data'
 import { ActionButtons } from '@/components/play/ActionButtons'
 import { AmbientAudio } from '@/components/play/AmbientAudio'
+import { LobbyGamePortalCard } from '@/components/lobby/LobbyGamePortalCard'
 import { useGameStore } from '@/hooks/useGameStore'
 import { useSceneInput } from '@/hooks/useSceneInput'
 import { ru } from '@/i18n/ru'
@@ -38,46 +39,28 @@ import {
 
 const t = ru.lobby
 
-// Lobby ground is 60×60. Keep player inside the playable inner ~24×24 area
-// so they don't walk past the trees/doors.
+// Lobby ground is 60×60. Keep the player inside the playable inner ~24×24
+// area so they don't walk past the trees/doors.
 const HALF_BOUND_X = 24
 const HALF_BOUND_Z = 24
 
-// Movement constants — must mirror useGameStore so we can reconstruct the
-// player's instantaneous world-space velocity from input direction + yaw.
 const WALK_SPEED = 4
 const RUN_MULTIPLIER = 2
 
-// Heartbeat / poll cadence. 400/500 ms keeps DB writes light while feeling
-// near-real-time once velocity prediction kicks in on the receiver.
 const HEARTBEAT_INTERVAL_MS = 400
 const PRESENCE_POLL_INTERVAL_MS = 500
 
-// Portal is anchored at the first door (NW corner of the map). Position is
-// taken from the extracted scene data; portal sits on the ground a few units
-// in front of the door so the player walks INTO it from the playable area.
-const PORTAL_DOOR = LOBBY_SCENE_INSTANCES.find((i) => i.label === 'Door.glb')!
 const PORTAL_RADIUS = 2.4
 const PORTAL_INNER = 1.05
 const PORTAL_OUTER = 1.55
 
-function arenaPortalPosition(): [number, number, number] {
-  const [dx, , dz] = PORTAL_DOOR.position
-  // Pull the portal a few units back from the door toward the lobby centre so
-  // the kid steps into it while approaching the door.
-  const len = Math.hypot(dx, dz) || 1
-  const nx = dx / len
-  const nz = dz / len
-  const back = 4
-  return [dx - nx * back, 0.05, dz - nz * back]
-}
-
-interface LobbyArenaPortalProps {
+interface GamePortalProps {
+  game: LobbyGame
   position: [number, number, number]
-  onSetNear: (b: boolean) => void
+  onSetNear: (id: LobbyGameId | null) => void
 }
 
-function LobbyArenaPortal({ position, onSetNear }: LobbyArenaPortalProps) {
+function GamePortal({ game, position, onSetNear }: GamePortalProps) {
   const wasNear = useRef(false)
   const ringRef = useRef<THREE.Mesh>(null)
 
@@ -90,7 +73,7 @@ function LobbyArenaPortal({ position, onSetNear }: LobbyArenaPortalProps) {
 
     if (isNear !== wasNear.current) {
       wasNear.current = isNear
-      onSetNear(isNear)
+      onSetNear(isNear ? game.id : null)
     }
 
     if (ringRef.current) {
@@ -104,16 +87,16 @@ function LobbyArenaPortal({ position, onSetNear }: LobbyArenaPortalProps) {
     <group position={position}>
       <mesh ref={ringRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
         <ringGeometry args={[PORTAL_INNER, PORTAL_OUTER, 48]} />
-        <meshBasicMaterial color="#FFD86E" transparent opacity={0.75} side={THREE.DoubleSide} />
+        <meshBasicMaterial color={game.color} transparent opacity={0.78} side={THREE.DoubleSide} />
       </mesh>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.04, 0]}>
         <ringGeometry args={[0.55, 1.05, 48]} />
-        <meshBasicMaterial color="#FFD86E" transparent opacity={0.28} side={THREE.DoubleSide} />
+        <meshBasicMaterial color={game.color} transparent opacity={0.3} side={THREE.DoubleSide} />
       </mesh>
 
-      <Billboard follow position={[0, 1.6, 0]}>
+      <Billboard follow position={[0, 1.7, 0]}>
         <Text
-          fontSize={0.55}
+          fontSize={0.5}
           color="#1F2937"
           anchorX="center"
           anchorY="middle"
@@ -121,7 +104,7 @@ function LobbyArenaPortal({ position, onSetNear }: LobbyArenaPortalProps) {
           outlineColor="#FFFFFF"
           maxWidth={6}
         >
-          {t.enterArena}
+          {game.title}
         </Text>
       </Billboard>
     </group>
@@ -132,7 +115,6 @@ interface LobbyWorldProps {
   gender: CharacterGender
 }
 
-// Per-player snapshot map. Keyed by childId; new snapshots replace the old.
 type RemoteState = {
   childId: string
   displayName: string
@@ -140,8 +122,6 @@ type RemoteState = {
   snapshot: RemoteSnapshot
 }
 
-// Compute the local player's world-space velocity (units/sec) from the
-// store's normalised input direction, camera yaw, and run flag.
 function computeWorldVelocity(): { vx: number; vz: number } {
   const s = useGameStore.getState()
   const [ix, iz] = s.velocity
@@ -164,22 +144,25 @@ export function LobbyWorld({ gender }: LobbyWorldProps) {
   const setCameraDistance = useGameStore((s) => s.setCameraDistance)
   const setCameraPitch = useGameStore((s) => s.setCameraPitch)
   const setCameraYaw = useGameStore((s) => s.setCameraYaw)
-  const [nearArenaPortal, setNearArenaPortal] = useState(false)
+
+  // Which portal the player is currently standing in (proximity), and which
+  // one's config card is open (set on click of the bottom CTA).
+  const [nearGameId, setNearGameId] = useState<LobbyGameId | null>(null)
+  const [openGameId, setOpenGameId] = useState<LobbyGameId | null>(null)
+
   const [isTouchDevice, setIsTouchDevice] = useState(false)
   const [remotePlayers, setRemotePlayers] = useState<RemoteState[]>([])
   const containerRef = useRef<HTMLDivElement>(null)
-
-  // Local-clock offset to the server clock (server t - local t at receive).
-  // Lets us translate server timestamps to local performance.now() so the
-  // remote players' "received at" reference is consistent with our frame loop.
   const clockOffsetRef = useRef<number>(0)
 
-  const portalPos = useMemo(() => arenaPortalPosition(), [])
+  const portals = useMemo(
+    () => LOBBY_GAMES.map((g) => ({ game: g, position: portalPositionFor(g) })),
+    [],
+  )
 
   useEffect(() => {
     setBounds(HALF_BOUND_X, HALF_BOUND_Z)
     setPosition(0, 0, 0)
-    // Match the Zelda-ish framing used in /play: ~5m up / ~7m behind.
     setCameraDistance(8)
     setCameraPitch(0.55)
     setCameraYaw(0)
@@ -189,16 +172,22 @@ export function LobbyWorld({ gender }: LobbyWorldProps) {
     setIsTouchDevice('ontouchstart' in window)
   }, [])
 
-  // Prefetch the routes the lobby buttons can navigate to so the click
-  // doesn't have to wait for RSC payloads to arrive on first press.
+  // Prefetch every game route so opening one feels instant.
   useEffect(() => {
     router.prefetch('/play')
-    router.prefetch('/play/lobby/arena')
+    LOBBY_GAMES.forEach((g) => router.prefetch(g.route))
   }, [router])
 
   useSceneInput(containerRef)
 
-  // Heartbeat — push the local player's position + velocity + facing + flags.
+  // If the player walks away from the portal, close any open card.
+  useEffect(() => {
+    if (openGameId && nearGameId !== openGameId) {
+      setOpenGameId(null)
+    }
+  }, [nearGameId, openGameId])
+
+  // Heartbeat — broadcast position + velocity + facing.
   useEffect(() => {
     let cancelled = false
     const tick = async () => {
@@ -216,10 +205,9 @@ export function LobbyWorld({ gender }: LobbyWorldProps) {
           isRunning: s.isRunning,
           isJumping: !s.isGrounded,
         })
-        // Sync local→server clock offset so we can translate updatedAtMs.
         clockOffsetRef.current = res.serverTimeMs - Date.now()
       } catch {
-        // Network blip — try again next tick.
+        // ignore transient errors
       }
     }
     void tick()
@@ -231,7 +219,7 @@ export function LobbyWorld({ gender }: LobbyWorldProps) {
     }
   }, [])
 
-  // Poll other players' snapshots and turn them into RemoteState entries.
+  // Poll other players' snapshots.
   useEffect(() => {
     let cancelled = false
     const tick = async () => {
@@ -239,14 +227,10 @@ export function LobbyWorld({ gender }: LobbyWorldProps) {
       try {
         const { entries, serverTimeMs } = await getLobbyPresence()
         if (cancelled) return
-        // Refine the clock offset on every poll for stability.
         clockOffsetRef.current = serverTimeMs - Date.now()
-        // Translate each row's server-stamped updatedAtMs to local
-        // performance.now() — that's what RemoteLobbyPlayer extrapolates from.
         const localPerfNow = performance.now()
         const localDateNow = Date.now()
         const next: RemoteState[] = entries.map((e: LobbyPresenceEntry) => {
-          // Server time → local Date.now() → performance.now() reference.
           const localDate = e.updatedAtMs - clockOffsetRef.current
           const ageMs = Math.max(0, localDateNow - localDate)
           const receivedAtMs = localPerfNow - ageMs
@@ -268,7 +252,7 @@ export function LobbyWorld({ gender }: LobbyWorldProps) {
         })
         setRemotePlayers(next)
       } catch {
-        // ignore transient errors
+        // ignore
       }
     }
     void tick()
@@ -278,6 +262,9 @@ export function LobbyWorld({ gender }: LobbyWorldProps) {
       window.clearInterval(id)
     }
   }, [])
+
+  const nearGame = nearGameId ? LOBBY_GAMES.find((g) => g.id === nearGameId) ?? null : null
+  const openGame = openGameId ? LOBBY_GAMES.find((g) => g.id === openGameId) ?? null : null
 
   return (
     <div
@@ -301,7 +288,19 @@ export function LobbyWorld({ gender }: LobbyWorldProps) {
         <CameraRig />
         <LobbyScene />
         <BorderForest tileSize={60} />
-        <LobbyArenaPortal position={portalPos} onSetNear={setNearArenaPortal} />
+        {portals.map(({ game, position }) => (
+          <GamePortal
+            key={game.id}
+            game={game}
+            position={position}
+            onSetNear={(id) =>
+              setNearGameId((prev) => {
+                if (id === null) return prev === game.id ? null : prev
+                return id
+              })
+            }
+          />
+        ))}
         <CharacterGLB gender={gender} />
         {remotePlayers.map((p) => (
           <RemoteLobbyPlayer
@@ -359,7 +358,8 @@ export function LobbyWorld({ gender }: LobbyWorldProps) {
         ← {t.back}
       </button>
 
-      {nearArenaPortal && (
+      {/* Bottom CTA — opens the config card for the portal the player stands on */}
+      {nearGame && !openGame && (
         <div
           style={{
             position: 'absolute',
@@ -370,24 +370,28 @@ export function LobbyWorld({ gender }: LobbyWorldProps) {
           }}
         >
           <button
-            onClick={() => router.push('/play/lobby/arena')}
+            onClick={() => setOpenGameId(nearGame.id)}
             style={{
-              padding: '1rem 2.5rem',
-              background: '#4DA8DA',
+              padding: '1rem 2.2rem',
+              background: nearGame.color,
               border: 'none',
               borderRadius: '0.75rem',
-              fontSize: '1.1rem',
+              fontSize: '1.05rem',
               fontWeight: 800,
-              color: '#fff',
+              color: '#1F2937',
               fontFamily: 'Nunito, sans-serif',
               cursor: 'pointer',
-              boxShadow: '0 4px 20px rgba(77,168,218,0.5)',
+              boxShadow: `0 4px 20px ${nearGame.color}88`,
               letterSpacing: '0.01em',
             }}
           >
-            {t.enterArena}
+            {nearGame.title}
           </button>
         </div>
+      )}
+
+      {openGame && (
+        <LobbyGamePortalCard game={openGame} onClose={() => setOpenGameId(null)} />
       )}
 
       <ActionButtons />
