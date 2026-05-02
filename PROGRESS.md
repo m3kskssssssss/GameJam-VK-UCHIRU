@@ -1,4 +1,4 @@
-# Прогресс — Kid Quest
+# Прогресс — Деревня Знаний
 
 Этот файл ведёт Claude Code. Тут отмечается статус фаз и QA-отчёты.
 
@@ -10,7 +10,7 @@
 - [x] tsconfig с alias @/* → src/*
 - [x] shadcn/ui подключён, components.json
 - [x] Prisma + Parent/Child schema (initial)
-- [x] pnpm dev → "/" с лендингом "Kid Quest"
+- [x] pnpm dev → "/" с лендингом "Деревня Знаний"
 - [x] .env.example, README.md
 - [x] eslint.config.mjs (next/core-web-vitals + next/typescript + no-explicit-any)
 - **QA**: pnpm tsc --noEmit ✅, pnpm lint ✅, pnpm build ✅

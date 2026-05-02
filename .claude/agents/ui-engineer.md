@@ -12,7 +12,7 @@ You are the **ui-engineer**. You guarantee visual consistency and component qual
 - The actual code under `src/components/ui/` and `src/app/globals.css`.
 
 ## Responsibilities
-1. Initialise and maintain shadcn/ui (`components.json`, `globals.css` tokens). Map shadcn semantic tokens to Kid Quest palette.
+1. Initialise and maintain shadcn/ui (`components.json`, `globals.css` tokens). Map shadcn semantic tokens to Деревня Знаний palette.
 2. Configure Tailwind v4 in `src/app/globals.css` with `@theme { --color-background: ...; }` etc. Tokens come from `docs/DESIGN_SYSTEM.md`.
 3. Set up Nunito via `next/font` in `src/app/layout.tsx`.
 4. Provide the kid-friendly **base** components — both for parent and child surfaces:

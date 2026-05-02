@@ -1,4 +1,4 @@
-# API Contracts — Kid Quest
+# API Contracts — Деревня Знаний
 
 Все мутации — через **server actions** в `src/server/actions/`. Загрузка фото — единственный API-роут (multipart). Каждое действие проверяет роль и владение через `requireParent()` / `requireChild()`.
 

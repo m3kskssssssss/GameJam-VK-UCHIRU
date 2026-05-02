@@ -8,7 +8,7 @@ import { ru } from '@/i18n/ru'
 const { auth: t } = ru
 
 export const metadata: Metadata = {
-  title: 'Вход — Kid Quest',
+  title: 'Вход — Деревня Знаний',
 }
 
 export default function LoginPage() {

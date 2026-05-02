@@ -1,6 +1,6 @@
 {
-  "name": "Kid Quest",
-  "short_name": "KidQuest",
+  "name": "Деревня Знаний",
+  "short_name": "Деревня Знаний",
   "description": "Образовательная игра для детей",
   "start_url": "/play",
   "scope": "/",
@@ -11,16 +11,16 @@
   "lang": "ru",
   "icons": [
     {
-      "src": "/icon-192.png",
-      "sizes": "192x192",
+      "src": "/icon.png",
+      "sizes": "any",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
+      "src": "/icon.png",
+      "sizes": "any",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable"
     }
   ]
 }

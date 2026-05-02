@@ -1,9 +1,9 @@
-// Russian string constants for Kid Quest UI
+// Russian string constants for Деревня Знаний UI
 // All keys and comments are in English; values are in Russian
 
 export const ru = {
   landing: {
-    title: 'Kid Quest',
+    title: 'Деревня Знаний',
     subtitle:
       'Образовательная игра для детей — родители видят прогресс, дети получают награды.',
     ctaLogin: 'Войти',
@@ -13,7 +13,7 @@ export const ru = {
 
   auth: {
     // Page titles
-    loginTitle: 'Вход в Kid Quest',
+    loginTitle: 'Вход в Деревню Знаний',
     registerTitle: 'Регистрация родителя',
 
     // Tab labels
@@ -83,7 +83,7 @@ export const ru = {
       feed: 'Лента',
       relatives: 'Родственники',
       profile: 'Профиль',
-      brandTitle: 'Kid Quest',
+      brandTitle: 'Деревня Знаний',
     },
 
     // Feed

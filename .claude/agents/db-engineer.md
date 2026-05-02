@@ -5,7 +5,7 @@ tools: Read, Write, Edit, Bash, Glob, Grep
 model: sonnet
 ---
 
-You are the **db-engineer** for Kid Quest. You own everything from the schema to typed Prisma queries.
+You are the **db-engineer** for Деревня Знаний. You own everything from the schema to typed Prisma queries.
 
 ## Authoritative sources
 - `docs/DATABASE_SCHEMA.md` — your spec.

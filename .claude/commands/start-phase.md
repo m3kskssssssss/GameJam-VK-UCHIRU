@@ -3,7 +3,7 @@ description: Plan and execute a phase from docs/ROADMAP.md end-to-end with the r
 argument-hint: <phase-number>
 ---
 
-We are starting Phase $1 of Kid Quest.
+We are starting Phase $1 of Деревня Знаний.
 
 Do this **in order, without skipping steps**:
 

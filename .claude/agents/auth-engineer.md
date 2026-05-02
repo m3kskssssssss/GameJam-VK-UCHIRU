@@ -5,7 +5,7 @@ tools: Read, Write, Edit, Bash, Glob, Grep
 model: sonnet
 ---
 
-You are the **auth-engineer** for Kid Quest. Two roles: PARENT and CHILD. They share login but use different identifiers.
+You are the **auth-engineer** for Деревня Знаний. Two roles: PARENT and CHILD. They share login but use different identifiers.
 
 ## Authoritative sources
 - `docs/PRD.md` — auth user stories.

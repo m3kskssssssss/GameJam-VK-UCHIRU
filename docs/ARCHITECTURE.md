@@ -1,4 +1,4 @@
-# Архитектура — Kid Quest
+# Архитектура — Деревня Знаний
 
 ## Стек
 
@@ -52,7 +52,7 @@ vitest, @testing-library/react, @testing-library/jest-dom, jsdom,
 src/
 ├── app/
 │   ├── (marketing)/
-│   │   └── page.tsx              # лендинг "Kid Quest"
+│   │   └── page.tsx              # лендинг "Деревня Знаний"
 │   ├── auth/
 │   │   ├── login/page.tsx        # вход (родитель/ребёнок)
 │   │   └── register/page.tsx     # регистрация родителя

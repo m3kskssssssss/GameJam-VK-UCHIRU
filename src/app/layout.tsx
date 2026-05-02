@@ -10,12 +10,17 @@ const nunito = Nunito({
 })
 
 export const metadata: Metadata = {
-  title: 'Kid Quest',
+  title: 'Деревня Знаний',
   description: 'Образовательная игра для детей с родительским контролем',
   manifest: '/manifest.json',
+  icons: {
+    icon: [{ url: '/icon.png', type: 'image/png' }],
+    shortcut: [{ url: '/icon.png', type: 'image/png' }],
+    apple: [{ url: '/icon.png', type: 'image/png' }],
+  },
   appleWebApp: {
     capable: true,
-    title: 'Kid Quest',
+    title: 'Деревня Знаний',
     statusBarStyle: 'black-translucent',
   },
   formatDetection: {
