@@ -8,7 +8,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { Billboard, Text } from '@react-three/drei'
+import { Html } from '@react-three/drei'
 import * as THREE from 'three'
 import { useRouter } from 'next/navigation'
 import { CameraRig } from './CameraRig'
@@ -50,9 +50,15 @@ const RUN_MULTIPLIER = 2
 const HEARTBEAT_INTERVAL_MS = 400
 const PRESENCE_POLL_INTERVAL_MS = 500
 
-const PORTAL_RADIUS = 2.4
-const PORTAL_INNER = 1.05
-const PORTAL_OUTER = 1.55
+// Portal visuals match /play: white semi-transparent disc on the ground,
+// soft halo ring, white plaque label sprite-billboarded above. The proximity
+// trigger radius is the same as /play's TRIGGER_RADIUS so the lobby and play
+// worlds feel identical when walking up to a portal.
+const TRIGGER_RADIUS = 2.0
+const DISC_RADIUS = 1.4
+const RING_INNER = 1.45
+const RING_OUTER = 1.7
+const LABEL_HEIGHT = 2.24
 
 interface GamePortalProps {
   game: LobbyGame
@@ -62,51 +68,64 @@ interface GamePortalProps {
 
 function GamePortal({ game, position, onSetNear }: GamePortalProps) {
   const wasNear = useRef(false)
-  const ringRef = useRef<THREE.Mesh>(null)
+  const discRef = useRef<THREE.Mesh>(null)
 
   useFrame(() => {
     const [px, , pz] = useGameStore.getState().position
     const dx = px - position[0]
     const dz = pz - position[2]
     const distSq = dx * dx + dz * dz
-    const isNear = distSq < PORTAL_RADIUS * PORTAL_RADIUS
+    const isNear = distSq < TRIGGER_RADIUS * TRIGGER_RADIUS
 
     if (isNear !== wasNear.current) {
       wasNear.current = isNear
       onSetNear(isNear ? game.id : null)
     }
 
-    if (ringRef.current) {
+    if (discRef.current) {
       const tnow = performance.now() / 1000
-      const pulse = 1 + Math.sin(tnow * 2.4) * 0.08
-      ringRef.current.scale.setScalar(pulse)
+      const pulse = 1 + Math.sin(tnow * 2.4) * 0.05
+      discRef.current.scale.setScalar(pulse)
     }
   })
 
   return (
     <group position={position}>
-      <mesh ref={ringRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
-        <ringGeometry args={[PORTAL_INNER, PORTAL_OUTER, 48]} />
-        <meshBasicMaterial color={game.color} transparent opacity={0.78} side={THREE.DoubleSide} />
-      </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.04, 0]}>
-        <ringGeometry args={[0.55, 1.05, 48]} />
-        <meshBasicMaterial color={game.color} transparent opacity={0.3} side={THREE.DoubleSide} />
+      {/* White semi-transparent disc flat on XZ plane */}
+      <mesh ref={discRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
+        <circleGeometry args={[DISC_RADIUS, 48]} />
+        <meshBasicMaterial color="#FFFFFF" transparent opacity={0.55} side={THREE.DoubleSide} />
       </mesh>
 
-      <Billboard follow position={[0, 1.7, 0]}>
-        <Text
-          fontSize={0.5}
-          color="#1F2937"
-          anchorX="center"
-          anchorY="middle"
-          outlineWidth={0.05}
-          outlineColor="#FFFFFF"
-          maxWidth={6}
+      {/* Soft halo ring around the disc */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.015, 0]}>
+        <ringGeometry args={[RING_INNER, RING_OUTER, 48]} />
+        <meshBasicMaterial color="#FFFFFF" transparent opacity={0.18} side={THREE.DoubleSide} />
+      </mesh>
+
+      {/* Html label — always faces camera, styled as a white rounded plaque */}
+      <Html
+        center
+        distanceFactor={8}
+        sprite
+        position={[0, LABEL_HEIGHT, 0]}
+        style={{ pointerEvents: 'none' }}
+      >
+        <div
+          style={{
+            borderRadius: 14,
+            background: 'rgba(255,255,255,0.95)',
+            boxShadow: '0 8px 24px rgba(31,41,55,0.18), 0 2px 8px rgba(31,41,55,0.10)',
+            padding: '8px 18px',
+            font: '800 16px/1.1 Nunito, sans-serif',
+            color: '#1F2937',
+            whiteSpace: 'nowrap',
+            pointerEvents: 'none',
+          }}
         >
           {game.title}
-        </Text>
-      </Billboard>
+        </div>
+      </Html>
     </group>
   )
 }
@@ -331,9 +350,6 @@ export function LobbyWorld({ gender }: LobbyWorldProps) {
         <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#1F2937' }}>
           {t.title}
         </div>
-        <div style={{ fontSize: '0.72rem', color: '#6b7280', marginTop: 2 }}>
-          {t.subtitle}
-        </div>
       </div>
 
       <button
@@ -358,12 +374,13 @@ export function LobbyWorld({ gender }: LobbyWorldProps) {
         ← {t.back}
       </button>
 
-      {/* Bottom CTA — opens the config card for the portal the player stands on */}
+      {/* Bottom CTA — opens the config card. Styled like /play's "Войти в домик"
+          button (white plaque, dark text) for visual consistency. */}
       {nearGame && !openGame && (
         <div
           style={{
             position: 'absolute',
-            bottom: '5.5rem',
+            bottom: '2.5rem',
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 30,
@@ -372,17 +389,19 @@ export function LobbyWorld({ gender }: LobbyWorldProps) {
           <button
             onClick={() => setOpenGameId(nearGame.id)}
             style={{
-              padding: '1rem 2.2rem',
-              background: nearGame.color,
+              padding: '1rem 2.5rem',
+              background: 'rgba(255,255,255,0.96)',
               border: 'none',
               borderRadius: '0.75rem',
-              fontSize: '1.05rem',
+              fontSize: '1.1rem',
               fontWeight: 800,
               color: '#1F2937',
               fontFamily: 'Nunito, sans-serif',
               cursor: 'pointer',
-              boxShadow: `0 4px 20px ${nearGame.color}88`,
+              boxShadow:
+                '0 8px 24px rgba(31,41,55,0.18), 0 2px 8px rgba(31,41,55,0.10)',
               letterSpacing: '0.01em',
+              transition: 'transform 0.15s ease',
             }}
           >
             {nearGame.title}

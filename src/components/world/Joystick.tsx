@@ -90,7 +90,7 @@ export function Joystick() {
       style={{
         position: 'absolute',
         bottom: '5rem',
-        left: isMobile ? 'calc(15% + 8px)' : '2rem',
+        left: isMobile ? 'calc(15% + 36px)' : '2rem',
         width: JOYSTICK_SIZE,
         height: JOYSTICK_SIZE,
         borderRadius: '50%',
