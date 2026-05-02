@@ -72,13 +72,6 @@ function startOfLocalDay(): Date {
   return d
 }
 
-const TALK_KINDS: ReadonlyArray<TalkEventKind> = [
-  'talk_grandma_chitchat',
-  'talk_grandma_lore',
-  'talk_grandpa_chitchat',
-  'talk_grandpa_lore',
-]
-
 const TalkKindSchema = z.enum([
   'talk_grandma_chitchat',
   'talk_grandma_lore',
@@ -272,7 +265,3 @@ export async function recordLobbyGamePlayed(): Promise<void> {
     data: { questFlags: next as unknown as Prisma.InputJsonValue },
   })
 }
-
-// keep the constant referenced so dead-code elimination doesn't drop it (and
-// makes typo-safe lookups available to consumers if needed in the future)
-export const ALL_TALK_KINDS = TALK_KINDS
