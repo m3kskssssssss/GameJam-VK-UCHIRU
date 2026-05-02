@@ -49,6 +49,9 @@ export type FeedPostListItem = {
   likesCount: number
   commentsCount: number
   isLikedByMe: boolean
+  // Most-recent comments preloaded so the inline comment thread renders without
+  // an extra round-trip when the feed first loads.
+  initialComments: FeedCommentItem[]
 }
 
 export type FeedCommentItem = {
@@ -104,6 +107,21 @@ export async function listFeed(input: {
     include: {
       child: { select: { id: true, displayName: true, gender: true, avatarUrl: true } },
       _count: { select: { likes: true, comments: true } },
+      // Preload up to the 20 most-recent comments per post so inline comment
+      // threads render without a second round-trip. Reversed below to display
+      // oldest→newest.
+      comments: {
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+        select: {
+          id: true,
+          authorType: true,
+          authorId: true,
+          authorName: true,
+          body: true,
+          createdAt: true,
+        },
+      },
     },
   })
 
@@ -135,6 +153,17 @@ export async function listFeed(input: {
     likesCount: row._count.likes,
     commentsCount: row._count.comments,
     isLikedByMe: likedSet.has(row.id),
+    initialComments: row.comments
+      .slice()
+      .reverse()
+      .map((c) => ({
+        id: c.id,
+        authorType: c.authorType as 'PARENT' | 'RELATIVE',
+        authorId: c.authorId,
+        authorName: c.authorName,
+        body: c.body,
+        createdAt: c.createdAt,
+      })),
   }))
 
   const nextCursor = hasMore ? visibleRows[visibleRows.length - 1].id : null
@@ -189,6 +218,19 @@ export async function getPostDetail(input: {
     select: { id: true },
   })
 
+  // Reverse so oldest comments are first (chronological order for UI).
+  const comments: FeedCommentItem[] = row.comments
+    .slice()
+    .reverse()
+    .map((c) => ({
+      id: c.id,
+      authorType: c.authorType as 'PARENT' | 'RELATIVE',
+      authorId: c.authorId,
+      authorName: c.authorName,
+      body: c.body,
+      createdAt: c.createdAt,
+    }))
+
   const post: FeedPostListItem = {
     id: row.id,
     childId: row.child.id,
@@ -204,20 +246,8 @@ export async function getPostDetail(input: {
     likesCount: row._count.likes,
     commentsCount: row._count.comments,
     isLikedByMe: myLike !== null,
+    initialComments: comments,
   }
-
-  // Reverse so oldest comments are first (chronological order for UI).
-  const comments: FeedCommentItem[] = row.comments
-    .slice()
-    .reverse()
-    .map((c) => ({
-      id: c.id,
-      authorType: c.authorType as 'PARENT' | 'RELATIVE',
-      authorId: c.authorId,
-      authorName: c.authorName,
-      body: c.body,
-      createdAt: c.createdAt,
-    }))
 
   return { post, comments }
 }

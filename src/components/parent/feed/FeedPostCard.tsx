@@ -1,13 +1,13 @@
 'use client'
 // FeedPostCard — single post card in the activity feed.
-// Handles optimistic like toggle and opens comment dialog.
+// Handles optimistic like toggle and renders inline comments below.
 import { useState, useTransition } from 'react'
 import { Heart, MessageCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { FeedCommentDialog } from '@/components/parent/feed/FeedCommentDialog'
+import { FeedComments } from '@/components/parent/feed/FeedComments'
 import { toggleLike } from '@/server/actions/feed'
 import type { FeedPostListItem } from '@/server/actions/feed'
 import { ru } from '@/i18n/ru'
@@ -58,11 +58,10 @@ interface FeedPostCardProps {
 export function FeedPostCard({ post: initialPost }: FeedPostCardProps) {
   const [liked, setLiked] = useState(initialPost.isLikedByMe)
   const [likesCount, setLikesCount] = useState(initialPost.likesCount)
-  const [commentOpen, setCommentOpen] = useState(false)
+  const [commentsCount, setCommentsCount] = useState(initialPost.commentsCount)
   const [isPending, startTransition] = useTransition()
 
   function handleLike() {
-    // Optimistic update
     const prevLiked = liked
     const prevCount = likesCount
     setLiked(!prevLiked)
@@ -74,7 +73,6 @@ export function FeedPostCard({ post: initialPost }: FeedPostCardProps) {
         setLiked(result.liked)
         setLikesCount(result.likesCount)
       } catch {
-        // Revert optimistic
         setLiked(prevLiked)
         setLikesCount(prevCount)
         toast.error(p.feed.likeError)
@@ -145,7 +143,7 @@ export function FeedPostCard({ post: initialPost }: FeedPostCardProps) {
         </div>
       )}
 
-      {/* Actions: like + comments */}
+      {/* Like + comment-count summary */}
       <div className="flex items-center gap-3 pt-1">
         <Button
           variant="ghost"
@@ -163,29 +161,23 @@ export function FeedPostCard({ post: initialPost }: FeedPostCardProps) {
           <span className="text-xs tabular-nums">{numFmt.format(likesCount)}</span>
         </Button>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          className="gap-1.5 px-2"
-          onClick={() => setCommentOpen(true)}
+        <div
+          className="inline-flex items-center gap-1.5 px-2 text-muted-foreground"
           aria-label={p.feed.commentBtn}
         >
           <MessageCircle className="h-4 w-4" aria-hidden="true" />
           <span className="text-xs tabular-nums">
-            {numFmt.format(initialPost.commentsCount)}
+            {numFmt.format(commentsCount)}
           </span>
-        </Button>
+        </div>
       </div>
 
-      {/* Comment dialog — lazy-mounted */}
-      {commentOpen && (
-        <FeedCommentDialog
-          postId={initialPost.id}
-          open={commentOpen}
-          onClose={() => setCommentOpen(false)}
-          initialCommentsCount={initialPost.commentsCount}
-        />
-      )}
+      {/* Inline comments — always rendered below the post */}
+      <FeedComments
+        postId={initialPost.id}
+        initialComments={initialPost.initialComments}
+        onCommentAdded={() => setCommentsCount((c) => c + 1)}
+      />
     </article>
   )
 }

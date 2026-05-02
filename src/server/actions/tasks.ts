@@ -93,6 +93,16 @@ const BASE_REWARDS: Record<SubjectKey, Reward> = {
   PE:      { coins: 25, energy: 20, xp: 20 },
 }
 
+// Russian subject titles used in feed post titles like "Математика — уровень 3
+// пройден". "Уровень" is masculine so the participle "пройден" works for any
+// child gender — no need to read child.gender just for grammar.
+const SUBJECT_TITLES_RU: Record<SubjectKey, string> = {
+  MATH: 'Математика',
+  READING: 'Чтение',
+  ENGLISH: 'Английский',
+  PE: 'Физкультура',
+}
+
 const PERFECT_BONUS: Record<SubjectKey, Reward> = {
   MATH:    { coins: 10, energy: 5,  xp: 20 },
   READING: { coins: 10, energy: 5,  xp: 20 },
@@ -292,6 +302,27 @@ export async function submitTask(input: {
 
   // Recompute homeLevel after progress change.
   await recomputeHomeLevel(child.id)
+
+  // Publish a feed post so the parent (and relatives) see the level-pass event
+  // alongside PE photos and grandparent submissions. Skip PE here — those go
+  // through /api/pe/upload which already creates the FeedPost with a photo.
+  if (passed && subject !== 'PE' && child.parentId) {
+    try {
+      await prisma.feedPost.create({
+        data: {
+          parentId: child.parentId,
+          childId: child.id,
+          kind: 'TASK',
+          title: `${SUBJECT_TITLES_RU[subject]} — уровень ${payload.level} пройден`,
+          rewardCoins: coinsEarned,
+          rewardEnergy: energyEarned,
+        },
+      })
+    } catch (err) {
+      // Don't fail the player's submission if the feed write fails.
+      console.error('[tasks] feed post creation failed:', err)
+    }
+  }
 
   return {
     passed,
