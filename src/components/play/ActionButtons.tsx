@@ -7,6 +7,12 @@ import { useGameStore } from '@/hooks/useGameStore'
 
 const SIZE = 68
 
+// Plain semi-transparent white look for both buttons. Active state stays
+// white but slightly brighter + scale-down — never coloured.
+const BG_IDLE = 'rgba(255,255,255,0.38)'
+const BG_ACTIVE = 'rgba(255,255,255,0.62)'
+const BORDER = '2px solid rgba(255,255,255,0.65)'
+
 interface ButtonProps {
   label: string
   hint: string
@@ -16,7 +22,6 @@ interface ButtonProps {
   onPointerDown?: (e: React.PointerEvent) => void
   onPointerUp?: (e: React.PointerEvent) => void
   onPointerCancel?: (e: React.PointerEvent) => void
-  background?: string
 }
 
 function ActionButton({
@@ -28,7 +33,6 @@ function ActionButton({
   onPointerDown,
   onPointerUp,
   onPointerCancel,
-  background,
 }: ButtonProps) {
   return (
     <button
@@ -45,13 +49,11 @@ function ActionButton({
         width: SIZE,
         height: SIZE,
         borderRadius: '50%',
-        background:
-          background ??
-          (active ? 'rgba(255,200,80,0.85)' : 'rgba(255,255,255,0.7)'),
-        border: '2px solid rgba(255,255,255,0.95)',
+        background: active ? BG_ACTIVE : BG_IDLE,
+        border: BORDER,
         boxShadow: active
-          ? '0 0 16px rgba(255,200,80,0.7)'
-          : '0 4px 10px rgba(0,0,0,0.25)',
+          ? '0 2px 6px rgba(0,0,0,0.18)'
+          : '0 4px 10px rgba(0,0,0,0.18)',
         color: '#1F2937',
         fontSize: 28,
         fontWeight: 700,
@@ -62,8 +64,10 @@ function ActionButton({
         touchAction: 'none',
         cursor: 'pointer',
         zIndex: 10,
-        transition: 'transform 0.1s ease',
+        transition: 'transform 0.1s ease, background 0.12s ease',
         transform: active ? 'scale(0.94)' : 'scale(1)',
+        backdropFilter: 'blur(2px)',
+        WebkitBackdropFilter: 'blur(2px)',
       }}
     >
       {label}
@@ -117,7 +121,6 @@ export function ActionButtons() {
 
   return (
     <>
-      {/* Jump (tap) — top of the cluster */}
       <ActionButton
         label="↑"
         hint="Прыжок"
@@ -126,7 +129,6 @@ export function ActionButtons() {
         active={jumpFlash}
         onPointerDown={handleJumpDown}
       />
-      {/* Run (hold) — below jump */}
       <ActionButton
         label="⚡"
         hint="Бег"
@@ -136,7 +138,6 @@ export function ActionButtons() {
         onPointerDown={handleRunDown}
         onPointerUp={handleRunUp}
         onPointerCancel={handleRunUp}
-        background={isRunning ? 'rgba(255,180,80,0.9)' : 'rgba(255,255,255,0.7)'}
       />
     </>
   )

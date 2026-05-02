@@ -69,27 +69,36 @@ function NavLink({
   label,
   currentPath,
   onClick,
+  inSheet = false,
 }: {
   href: string
   label: string
   currentPath: string
   onClick?: () => void
+  inSheet?: boolean
 }) {
   // For /parent exactly match; for others prefix match
   const isActive =
     href === '/parent' ? currentPath === '/parent' : currentPath.startsWith(href)
 
-  return (
-    <Link
-      href={href}
-      onClick={onClick}
-      className={[
+  // Inside the mobile sheet we want a tile look (no underline). Desktop keeps
+  // the underline-on-active styling unchanged.
+  const className = inSheet
+    ? [
+        'block w-full text-base font-semibold transition-colors rounded-lg px-3 py-2.5',
+        isActive
+          ? 'bg-primary/10 text-primary'
+          : 'text-foreground hover:bg-muted',
+      ].join(' ')
+    : [
         'text-sm font-medium transition-colors px-1 py-0.5',
         isActive
           ? 'text-primary font-bold border-b-2 border-primary'
           : 'text-muted-foreground hover:text-foreground',
-      ].join(' ')}
-    >
+      ].join(' ')
+
+  return (
+    <Link href={href} onClick={onClick} className={className}>
       {label}
     </Link>
   )
@@ -167,14 +176,17 @@ export function AppShell({
                 </Button>
               </SheetTrigger>
 
-              <SheetContent side="left" className="w-72 flex flex-col gap-6">
-                <SheetHeader>
-                  <SheetTitle>{p.nav.brandTitle}</SheetTitle>
+              <SheetContent
+                side="top"
+                className="rounded-b-2xl border-b shadow-xl flex flex-col gap-4 pt-6 pb-5 px-5"
+              >
+                <SheetHeader className="pr-8">
+                  <SheetTitle className="text-base">{p.nav.brandTitle}</SheetTitle>
                 </SheetHeader>
 
                 <nav
                   aria-label="Мобильная навигация"
-                  className="flex flex-col gap-2"
+                  className="flex flex-col gap-1"
                 >
                   {visibleItems.map((item) => (
                     <NavLink
@@ -183,11 +195,12 @@ export function AppShell({
                       label={item.label}
                       currentPath={pathname}
                       onClick={() => setSheetOpen(false)}
+                      inSheet
                     />
                   ))}
                 </nav>
 
-                <div className="mt-auto">
+                <div className="pt-1">
                   <LogoutButton />
                 </div>
               </SheetContent>

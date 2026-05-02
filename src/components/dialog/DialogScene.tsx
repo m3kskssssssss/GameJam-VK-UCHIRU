@@ -6,7 +6,6 @@ import { DialogBox } from './DialogBox'
 import { PhotoSubmission } from './PhotoSubmission'
 import { useDialogRunner } from './dialog-runner'
 import { useDialogState } from './dialog-state'
-import { useIsMobile } from '@/hooks/useIsMobile'
 import { getTask } from '@/server/content/grandparents'
 import type { Speaker } from './portrait-paths'
 import type { DialogOption as BoxOption } from './DialogBox'
@@ -14,16 +13,20 @@ import type { DialogOption as BoxOption } from './DialogBox'
 interface Props {
   npc: 'grandma' | 'grandpa'
   childGender: 'BOY' | 'GIRL'
+  completedTaskKeys: string[]
 }
 
-export function DialogScene({ npc, childGender }: Props) {
+// Task-menu options follow the convention `menu_task_<taskKey>`. Anything
+// matching that prefix is rendered as a task tile in the 2-col grid.
+const TASK_OPTION_PREFIX = 'menu_task_'
+
+export function DialogScene({ npc, childGender, completedTaskKeys }: Props) {
   const { reset } = useDialogState()
-  const isMobile = useIsMobile()
+  const completedSet = new Set(completedTaskKeys)
 
   const { currentNode, isPhotoFlow, activeTaskKey, handleOption, onPhotoSuccess, onPhotoCancel } =
     useDialogRunner(npc)
 
-  // Reset Zustand store on mount/unmount (kept for backward compat with any future consumers)
   useEffect(() => {
     reset()
     return () => {
@@ -34,12 +37,22 @@ export function DialogScene({ npc, childGender }: Props) {
   const childSpeaker: Speaker = childGender === 'BOY' ? 'boy' : 'girl'
   const npcSpeaker: Speaker = npc
 
-  const boxOptions: BoxOption[] = currentNode.options.map((opt) => ({
-    id: opt.id,
-    label: opt.label,
-    variant: opt.action === 'close' ? 'leave' : 'default',
-    onPick: () => handleOption(opt),
-  }))
+  const boxOptions: BoxOption[] = currentNode.options.map((opt) => {
+    const isTaskOption = opt.id.startsWith(TASK_OPTION_PREFIX)
+    const taskKey = isTaskOption ? opt.id.slice(TASK_OPTION_PREFIX.length) : null
+
+    let variant: BoxOption['variant'] = 'default'
+    if (opt.action === 'close') variant = 'leave'
+    else if (isTaskOption) variant = 'task'
+
+    return {
+      id: opt.id,
+      label: opt.label,
+      variant,
+      completed: taskKey !== null && completedSet.has(taskKey),
+      onPick: () => handleOption(opt),
+    }
+  })
 
   const overlayStyle: React.CSSProperties = {
     position: 'fixed',
@@ -48,11 +61,17 @@ export function DialogScene({ npc, childGender }: Props) {
     background: 'rgba(15,23,42,0.78)',
     backdropFilter: 'blur(2px)',
     WebkitBackdropFilter: 'blur(2px)',
+    // Keep all children clear of the iOS Dynamic Island / notch in landscape.
+    paddingLeft: 'env(safe-area-inset-left)',
+    paddingRight: 'env(safe-area-inset-right)',
+    paddingTop: 'env(safe-area-inset-top)',
+    paddingBottom: 'env(safe-area-inset-bottom)',
+    boxSizing: 'border-box',
   }
 
   const stageStyle: React.CSSProperties = {
     position: 'absolute',
-    inset: 0,
+    inset: 'env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)',
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'flex-end',
@@ -60,10 +79,12 @@ export function DialogScene({ npc, childGender }: Props) {
     pointerEvents: 'none',
   }
 
+  // Fluid portrait slot — same proportions on every device. On a 932×430
+  // landscape phone this is ~205×215; on a 1920×1080 desktop ~360×520.
   const portraitSlotStyle: React.CSSProperties = {
     position: 'relative',
-    height: isMobile ? 'min(130px, 18vh)' : 'min(520px, 60vh)',
-    width: isMobile ? 'min(95px, 26vw)' : 'min(380px, 38vw)',
+    height: 'clamp(180px, 55vh, 520px)',
+    width: 'clamp(110px, 22vw, 360px)',
     flexShrink: 0,
     pointerEvents: 'none',
   }
@@ -72,7 +93,6 @@ export function DialogScene({ npc, childGender }: Props) {
 
   return (
     <div style={overlayStyle}>
-      {/* Portrait layer */}
       <div style={stageStyle}>
         <div style={portraitSlotStyle}>
           <Portrait
@@ -90,7 +110,6 @@ export function DialogScene({ npc, childGender }: Props) {
         </div>
       </div>
 
-      {/* Dialog box */}
       <DialogBox
         text={currentNode.text}
         speakerLabel={currentNode.speakerLabel}
@@ -98,7 +117,6 @@ export function DialogScene({ npc, childGender }: Props) {
         isBusy={isPhotoFlow}
       />
 
-      {/* Photo submission overlay — rendered on top when active */}
       {isPhotoFlow && activeTask && (
         <PhotoSubmission
           task={activeTask}

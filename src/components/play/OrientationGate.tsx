@@ -44,7 +44,30 @@ export function OrientationGate({ children }: { children: React.ReactNode }) {
     if (!isImmersiveRoute) return
 
     const html = document.documentElement
-    html.classList.add('kq-immersive')
+    const body = document.body
+
+    // Mobile-Safari URL bar trick — give the page slightly more height than
+    // the viewport, scroll a few px down so the browser collapses its chrome,
+    // then lock down to the visual viewport. Safe for desktop (no-op).
+    const prevBodyMinHeight = body.style.minHeight
+    body.style.minHeight = 'calc(100dvh + 80px)'
+
+    let lockTimeoutId: number | null = null
+    const scrollAndLock = () => {
+      try {
+        window.scrollTo(0, 80)
+      } catch {
+        // ignore — fallback for environments without scroll
+      }
+      lockTimeoutId = window.setTimeout(() => {
+        body.style.minHeight = prevBodyMinHeight
+        html.classList.add('kq-immersive')
+        lockTimeoutId = null
+      }, 80)
+    }
+
+    // Run on next frame so the new body height is applied before scroll.
+    const rafId = window.requestAnimationFrame(scrollAndLock)
 
     function preventGesture(e: Event) {
       e.preventDefault()
@@ -62,6 +85,9 @@ export function OrientationGate({ children }: { children: React.ReactNode }) {
     document.addEventListener('touchmove', preventTouchMove, { passive: false })
 
     return () => {
+      window.cancelAnimationFrame(rafId)
+      if (lockTimeoutId !== null) window.clearTimeout(lockTimeoutId)
+      body.style.minHeight = prevBodyMinHeight
       html.classList.remove('kq-immersive')
       document.removeEventListener('gesturestart', preventGesture)
       document.removeEventListener('gesturechange', preventGesture)

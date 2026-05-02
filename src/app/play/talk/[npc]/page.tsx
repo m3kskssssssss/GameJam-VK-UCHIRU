@@ -31,5 +31,21 @@ export default async function TalkPage({
     notFound()
   }
 
-  return <DialogScene npc={npc} childGender={record.gender} />
+  const completions = await prisma.grandparentTaskCompletion.findMany({
+    where: {
+      childId: child.id,
+      grandparent: npc === 'grandma' ? 'GRANDMA' : 'GRANDPA',
+    },
+    select: { taskKey: true },
+  })
+
+  const completedTaskKeys = completions.map((c) => c.taskKey)
+
+  return (
+    <DialogScene
+      npc={npc}
+      childGender={record.gender}
+      completedTaskKeys={completedTaskKeys}
+    />
+  )
 }
