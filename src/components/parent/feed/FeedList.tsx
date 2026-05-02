@@ -60,14 +60,24 @@ export function FeedList({
   const sentinelRef = useRef<HTMLDivElement>(null)
   // Guard against double-fetching (IntersectionObserver fires twice sometimes)
   const fetchingRef = useRef(false)
+  // The first useEffect run for [search, childId] happens at mount, when the
+  // server has already supplied initialPosts/initialCursor. Refetching there
+  // would race with the IntersectionObserver and produce duplicate rows in
+  // the rendered feed, so we skip it.
+  const isFirstFilterRun = useRef(true)
 
   // ---------------------------------------------------------------------------
   // Reset + refetch when filters change
   // ---------------------------------------------------------------------------
 
   useEffect(() => {
+    if (isFirstFilterRun.current) {
+      isFirstFilterRun.current = false
+      return
+    }
+
     setPosts([])
-    setNextCursor(undefined as unknown as string | null)
+    setNextCursor(null)
     fetchingRef.current = false
 
     startTransition(async () => {
@@ -86,7 +96,10 @@ export function FeedList({
   // ---------------------------------------------------------------------------
 
   const loadMore = useCallback(() => {
-    if (fetchingRef.current || nextCursor === null) return
+    // `!nextCursor` covers both null (no more pages) and any transitional
+    // empty value during a reset — without it the observer would fire a
+    // cursor-less listFeed call that re-appends the first page.
+    if (fetchingRef.current || !nextCursor) return
     fetchingRef.current = true
 
     startTransition(async () => {
