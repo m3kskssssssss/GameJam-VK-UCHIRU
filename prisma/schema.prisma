@@ -89,6 +89,10 @@ model Child {
   // without a new migration each time we add a quest type.
   questFlags Json @default("{}")
 
+  // True after the child has watched (or skipped) the welcome intro video.
+  // /play redirects new children to /play/intro until this flips to true.
+  hasSeenIntro Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
