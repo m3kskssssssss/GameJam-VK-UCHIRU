@@ -33,8 +33,11 @@ export function DialogBox({ text, speakerLabel, options, isBusy = false }: Props
     bottom: isMobile ? 6 : 24,
     left: '50%',
     transform: `translateX(-50%) translateY(${visible ? 0 : 8}px)`,
-    width: 'calc(100% - 24px)',
-    maxWidth: isMobile ? 240 : 720,
+    // On mobile keep the box well clear of the portrait slots on either side
+    // (each portrait slot is ~26vw / 95px). Width tracks the central gap so
+    // it can never grow into the portraits.
+    width: isMobile ? 'min(180px, calc(100vw - 220px))' : 'calc(100% - 24px)',
+    maxWidth: isMobile ? 180 : 720,
     maxHeight: isMobile ? '60vh' : 'none',
     overflowY: isMobile ? 'auto' : 'visible',
     background: 'rgba(255,255,255,0.97)',

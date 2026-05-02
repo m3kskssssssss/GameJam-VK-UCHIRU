@@ -55,12 +55,9 @@ export function DialogScene({ npc, childGender }: Props) {
     inset: 0,
     display: 'flex',
     flexDirection: 'row',
-    // On mobile the dialog box sits at the bottom across most of the width —
-    // pin portraits to the top corners so they don't get hidden behind it.
-    alignItems: isMobile ? 'flex-start' : 'flex-end',
+    alignItems: 'flex-end',
     justifyContent: 'space-between',
     pointerEvents: 'none',
-    padding: isMobile ? '8px 4px 0' : 0,
   }
 
   const portraitSlotStyle: React.CSSProperties = {
