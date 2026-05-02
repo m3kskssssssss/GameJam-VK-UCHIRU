@@ -10,7 +10,7 @@ import { ru } from '@/i18n/ru'
 
 interface Props {
   task: GrandparentTask
-  onSuccess: () => void
+  onSuccess: (reward: { coinsEarned: number; energyEarned: number }) => void
   onCancel: () => void
 }
 
@@ -48,9 +48,12 @@ export function PhotoSubmission({ task, onSuccess, onCancel }: Props) {
     if (!selectedFile) return
     setIsBusy(true)
     try {
-      await submitGrandparentPhoto(task.key, selectedFile)
+      const result = await submitGrandparentPhoto(task.key, selectedFile)
       if (previewUrl) URL.revokeObjectURL(previewUrl)
-      onSuccess()
+      onSuccess({
+        coinsEarned: result.coinsEarned,
+        energyEarned: result.energyEarned,
+      })
     } catch {
       toast.error(t.errorUpload)
     } finally {

@@ -9,6 +9,7 @@ import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { requireChild } from '@/server/auth/guards'
 import { addCoins } from '@/server/actions/progress'
+import { recordLobbyGamePlayed } from '@/server/actions/quests'
 import { LOBBY_GAMES, type LobbyGameId } from '@/components/world/lobby-games-data'
 
 const PRESENCE_STALE_MS = 8_000
@@ -105,7 +106,13 @@ export async function finishLobbyGame(input: {
   const coins = game.coinsParticipation + (won ? game.coinsVictory : 0)
   const xp = game.xpParticipation + (won ? game.xpVictory : 0)
 
-  await Promise.all([addCoins(child.id, coins), addLobbyXp(child.id, xp)])
+  await Promise.all([
+    addCoins(child.id, coins),
+    addLobbyXp(child.id, xp),
+    // Bump the main-quest "play 2 games" counter. Failure is non-blocking —
+    // a missed increment will be picked up next round.
+    recordLobbyGamePlayed().catch(() => {}),
+  ])
 
   const updated = await prisma.child.findUniqueOrThrow({
     where: { id: child.id },

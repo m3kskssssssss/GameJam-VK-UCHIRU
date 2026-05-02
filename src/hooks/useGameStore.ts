@@ -29,6 +29,14 @@ function wrapAngle(a: number): number {
   return m - Math.PI
 }
 
+/** Transient "task done" overlay payload shown on top of the world after
+ *  finishing a grandparent task / quest step. Cleared when the popup dismisses. */
+export interface PendingReward {
+  title: string
+  coinsEarned: number
+  energyEarned: number
+}
+
 interface GameState {
   position: [number, number, number]
   velocity: [number, number]
@@ -53,6 +61,8 @@ interface GameState {
   energy: number
   homeLevel: number
 
+  pendingReward: PendingReward | null
+
   // Actions
   setVelocity: (vx: number, vz: number) => void
   setNearHouse: (subject: HouseSubject | null) => void
@@ -68,6 +78,7 @@ interface GameState {
   jump: () => void
   setRunning: (on: boolean) => void
   setPlayerYaw: (yaw: number) => void
+  setPendingReward: (reward: PendingReward | null) => void
 }
 
 export const useGameStore = create<GameState>()((set) => ({
@@ -90,6 +101,8 @@ export const useGameStore = create<GameState>()((set) => ({
   coins: 0,
   energy: 0,
   homeLevel: 1,
+
+  pendingReward: null,
 
   setVelocity: (vx, vz) => {
     set((state) => {
@@ -194,4 +207,6 @@ export const useGameStore = create<GameState>()((set) => ({
   // Mutate without React subscriptions — components that need playerYaw read
   // it via getState(). Avoids re-renders on every animation frame.
   setPlayerYaw: (yaw) => set({ playerYaw: wrapAngle(yaw) }),
+
+  setPendingReward: (reward) => set({ pendingReward: reward }),
 }))

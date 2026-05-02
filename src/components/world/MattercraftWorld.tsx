@@ -7,6 +7,7 @@ import { Canvas } from '@react-three/fiber'
 import { Hud } from '@/components/play/Hud'
 import { ActionButtons } from '@/components/play/ActionButtons'
 import { AmbientAudio } from '@/components/play/AmbientAudio'
+import { RewardPopup } from '@/components/play/RewardPopup'
 import { CameraRig } from './CameraRig'
 import { CharacterGLB, type CharacterGender } from './CharacterGLB'
 import { Joystick } from './Joystick'
@@ -115,6 +116,7 @@ export function MattercraftWorld({ initialSummary }: MattercraftWorldProps) {
       <Hud />
       <ActionButtons />
       <AmbientAudio src="/village.mp3" />
+      <RewardPopup />
 
       {isTouchDevice && <Joystick />}
     </div>

@@ -26,10 +26,13 @@ import {
 } from './lobby-games-data'
 import { ActionButtons } from '@/components/play/ActionButtons'
 import { AmbientAudio } from '@/components/play/AmbientAudio'
+import { QuestBook } from '@/components/play/QuestBook'
+import { RewardPopup } from '@/components/play/RewardPopup'
 import { LobbyGamePortalCard } from '@/components/lobby/LobbyGamePortalCard'
 import { useGameStore } from '@/hooks/useGameStore'
 import { useSceneInput } from '@/hooks/useSceneInput'
 import { ru } from '@/i18n/ru'
+import type { ChildSummary } from '@/server/actions/progress'
 import {
   heartbeatLobbyPresence,
   getLobbyPresence,
@@ -132,6 +135,7 @@ function GamePortal({ game, position, onSetNear }: GamePortalProps) {
 
 interface LobbyWorldProps {
   gender: CharacterGender
+  initialSummary: ChildSummary
 }
 
 type RemoteState = {
@@ -156,13 +160,17 @@ function computeWorldVelocity(): { vx: number; vz: number } {
   return { vx: dx * speed, vz: dz * speed }
 }
 
-export function LobbyWorld({ gender }: LobbyWorldProps) {
+export function LobbyWorld({ gender, initialSummary }: LobbyWorldProps) {
   const router = useRouter()
+  const coins = useGameStore((s) => s.coins)
+  const energy = useGameStore((s) => s.energy)
+  const homeLevel = useGameStore((s) => s.homeLevel)
   const setPosition = useGameStore((s) => s.setPosition)
   const setBounds = useGameStore((s) => s.setBounds)
   const setCameraDistance = useGameStore((s) => s.setCameraDistance)
   const setCameraPitch = useGameStore((s) => s.setCameraPitch)
   const setCameraYaw = useGameStore((s) => s.setCameraYaw)
+  const setSummary = useGameStore((s) => s.setSummary)
 
   // Which portal the player is currently standing in (proximity), and which
   // one's config card is open (set on click of the bottom CTA).
@@ -185,7 +193,23 @@ export function LobbyWorld({ gender }: LobbyWorldProps) {
     setCameraDistance(8)
     setCameraPitch(0.55)
     setCameraYaw(0)
-  }, [setBounds, setPosition, setCameraDistance, setCameraPitch, setCameraYaw])
+    // Hydrate currency / energy / home-level from the server so the lobby HUD
+    // shows the same numbers as /play. Without this, opening /play/lobby
+    // directly (or via a refresh) leaves the store at its default 0/0/1.
+    setSummary({
+      coins: initialSummary.coins,
+      energy: initialSummary.energy,
+      homeLevel: initialSummary.homeLevel,
+    })
+  }, [
+    setBounds,
+    setPosition,
+    setCameraDistance,
+    setCameraPitch,
+    setCameraYaw,
+    setSummary,
+    initialSummary,
+  ])
 
   useEffect(() => {
     setIsTouchDevice('ontouchstart' in window)
@@ -331,6 +355,7 @@ export function LobbyWorld({ gender }: LobbyWorldProps) {
         ))}
       </Canvas>
 
+      {/* Top-centre title plaque */}
       <div
         style={{
           position: 'absolute',
@@ -352,27 +377,54 @@ export function LobbyWorld({ gender }: LobbyWorldProps) {
         </div>
       </div>
 
-      <button
-        onClick={() => router.push('/play')}
+      {/* Top-left: back + currency pills (mirrors the /play HUD so the player
+          doesn't lose track of coins / energy when they cross over). */}
+      <div
         style={{
           position: 'absolute',
           top: '1rem',
           left: '1rem',
-          background: 'rgba(255,255,255,0.9)',
-          border: '1.5px solid rgba(0,0,0,0.08)',
-          borderRadius: '0.7rem',
-          padding: '0.45rem 1rem',
-          fontSize: '0.85rem',
-          fontWeight: 700,
-          color: '#1F2937',
-          fontFamily: 'Nunito, sans-serif',
-          cursor: 'pointer',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.5rem',
+          alignItems: 'flex-start',
           zIndex: 20,
+          pointerEvents: 'auto',
         }}
       >
-        ← {t.back}
-      </button>
+        <button
+          onClick={() => router.push('/play')}
+          style={{
+            background: 'rgba(255,255,255,0.9)',
+            border: '1.5px solid rgba(0,0,0,0.08)',
+            borderRadius: '0.7rem',
+            padding: '0.45rem 1rem',
+            fontSize: '0.85rem',
+            fontWeight: 700,
+            color: '#1F2937',
+            fontFamily: 'Nunito, sans-serif',
+            cursor: 'pointer',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          }}
+        >
+          ← {t.back}
+        </button>
+
+        <div style={pillStyle}>
+          <CoinIcon />
+          <span style={pillTextStyle}>{coins}</span>
+        </div>
+        <div style={pillStyle}>
+          <EnergyIcon />
+          <span style={pillTextStyle}>{energy}</span>
+        </div>
+        <div style={{ ...pillStyle, background: 'rgba(77,168,218,0.85)' }}>
+          <span style={pillTextStyle}>Дом ур. {homeLevel}</span>
+        </div>
+      </div>
+
+      {/* Top-right: quest book */}
+      <QuestBook rightPx={16} topPx={16} />
 
       {/* Bottom CTA — opens the config card. Styled like /play's "Войти в домик"
           button (white plaque, dark text) for visual consistency. */}
@@ -415,7 +467,66 @@ export function LobbyWorld({ gender }: LobbyWorldProps) {
 
       <ActionButtons />
       <AmbientAudio src="/village.mp3" />
+      <RewardPopup />
       {isTouchDevice && <Joystick />}
     </div>
+  )
+}
+
+// ---- HUD pill styles + icons (mirrors /play's Hud.tsx) ---------------------
+
+const pillStyle: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.4rem',
+  padding: '0.3rem 0.75rem',
+  background: 'rgba(255,255,255,0.85)',
+  borderRadius: '9999px',
+  boxShadow: '0 2px 8px rgba(31,41,55,0.15)',
+  backdropFilter: 'blur(4px)',
+}
+
+const pillTextStyle: React.CSSProperties = {
+  fontSize: '0.95rem',
+  fontWeight: 700,
+  color: '#1F2937',
+  fontFamily: 'Nunito, sans-serif',
+}
+
+function CoinIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <circle cx="10" cy="10" r="9" fill="#FFB347" stroke="#FB8C00" strokeWidth="1.5" />
+      <text
+        x="10"
+        y="14"
+        textAnchor="middle"
+        fill="#fff"
+        fontSize="10"
+        fontWeight="bold"
+        fontFamily="Nunito, sans-serif"
+      >
+        ₽
+      </text>
+    </svg>
+  )
+}
+
+function EnergyIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <circle cx="10" cy="10" r="9" fill="#6BCB77" stroke="#43A047" strokeWidth="1.5" />
+      <text
+        x="10"
+        y="14"
+        textAnchor="middle"
+        fill="#fff"
+        fontSize="12"
+        fontWeight="bold"
+        fontFamily="Nunito, sans-serif"
+      >
+        ⚡
+      </text>
+    </svg>
   )
 }

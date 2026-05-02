@@ -8,6 +8,7 @@ import { signOutAction } from '@/server/actions/auth-actions'
 import { useGameStore } from '@/hooks/useGameStore'
 import type { HouseSubject, NpcKind } from '@/hooks/useGameStore'
 import { ru } from '@/i18n/ru'
+import { QuestBook } from '@/components/play/QuestBook'
 
 const { play: t } = ru
 
@@ -145,7 +146,7 @@ export function Hud() {
         </div>
       </div>
 
-      {/* Top-right: lobby + logout */}
+      {/* Top-right: quest book + lobby + logout */}
       <div
         style={{
           position: 'absolute',
@@ -158,6 +159,10 @@ export function Hud() {
           pointerEvents: 'auto',
         }}
       >
+        {/* Quest book — uses its own absolute positioning relative to this column. */}
+        <div style={{ position: 'relative', width: 44, height: 44 }}>
+          <QuestBook rightPx={0} topPx={0} />
+        </div>
         <button
           onClick={() => router.push('/play/lobby')}
           disabled={isPending}

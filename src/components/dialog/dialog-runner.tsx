@@ -8,6 +8,21 @@ import { useRouter } from 'next/navigation'
 import { getBundle, getTask } from '@/server/content/grandparents'
 import type { DialogNode, DialogOption } from '@/server/content/grandparents'
 import type { Grandparent } from '@/server/content/grandparents'
+import { recordTalkEvent } from '@/server/actions/quests'
+import type { TalkEventKind } from '@/server/actions/quests'
+import { useGameStore } from '@/hooks/useGameStore'
+
+// Map a (npc, nextNodeId) pair to a quest-trackable talk kind. Returns null
+// for nodes that don't unlock an initial-quest step.
+function inferTalkKind(npc: Grandparent, nextNodeId: string): TalkEventKind | null {
+  if (nextNodeId === 'chitchat') {
+    return npc === 'grandma' ? 'talk_grandma_chitchat' : 'talk_grandpa_chitchat'
+  }
+  if (nextNodeId === 'lore_1') {
+    return npc === 'grandma' ? 'talk_grandma_lore' : 'talk_grandpa_lore'
+  }
+  return null
+}
 
 // The success node shown after a photo is submitted successfully.
 // Generated in memory — not part of the bundle's node graph.
@@ -34,7 +49,7 @@ interface RunnerResult {
   isPhotoFlow: boolean
   activeTaskKey: string | null
   handleOption: (option: DialogOption) => void
-  onPhotoSuccess: () => void
+  onPhotoSuccess: (reward: { coinsEarned: number; energyEarned: number }) => void
   onPhotoCancel: () => void
 }
 
@@ -77,15 +92,39 @@ export function useDialogRunner(npc: Grandparent): RunnerResult {
       if (!next) return
       setOverrideNode(null)
       setCurrentNodeId(next)
+
+      // Quest tracking: tag the initial-quest steps when the child enters
+      // the chitchat / lore branches. Fire-and-forget; failures don't block
+      // the dialog flow.
+      const talkKind = inferTalkKind(npc, next)
+      if (talkKind) {
+        void recordTalkEvent({ kind: talkKind }).catch(() => {})
+      }
     },
-    [router]
+    [router, npc]
   )
 
-  const onPhotoSuccess = useCallback(() => {
-    setIsPhotoFlow(false)
-    setActiveTaskKey(null)
-    setOverrideNode(makeSuccessNode(speakerLabel))
-  }, [speakerLabel])
+  const onPhotoSuccess = useCallback(
+    (reward: { coinsEarned: number; energyEarned: number }) => {
+      setIsPhotoFlow(false)
+      // Stash a pending-reward payload that the world overlay reads when
+      // the dialog closes — gives the player the "Молодец! Задание
+      // выполнено" celebration over the 3D scene.
+      if (activeTaskKey) {
+        const task = getTask(activeTaskKey)
+        if (task) {
+          useGameStore.getState().setPendingReward({
+            title: task.title,
+            coinsEarned: reward.coinsEarned,
+            energyEarned: reward.energyEarned,
+          })
+        }
+      }
+      setActiveTaskKey(null)
+      setOverrideNode(makeSuccessNode(speakerLabel))
+    },
+    [speakerLabel, activeTaskKey],
+  )
 
   const onPhotoCancel = useCallback(() => {
     setIsPhotoFlow(false)

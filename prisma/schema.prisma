@@ -84,6 +84,11 @@ model Child {
   avatarUrl String?
   avatarKey String?
 
+  // Quest progression flags (talk events, lobby-plays counter, initial-quest
+  // completion stamp, etc.). Stored as JSON so we can extend the schema
+  // without a new migration each time we add a quest type.
+  questFlags Json @default("{}")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
