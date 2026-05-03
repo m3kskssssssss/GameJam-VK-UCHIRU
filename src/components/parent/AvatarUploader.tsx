@@ -49,7 +49,8 @@ export function AvatarUploader({
 }: AvatarUploaderProps) {
   const [currentUrl, setCurrentUrl] = useState<string | null>(initialUrl)
   const [isUploading, setIsUploading] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
+  const galleryInputRef = useRef<HTMLInputElement>(null)
 
   // Build the target string expected by /api/avatar/upload
   // Format: 'parent' | 'child:<id>' | 'relative:<id>'
@@ -89,8 +90,9 @@ export function AvatarUploader({
       toast.error(p.avatar.uploadError)
     } finally {
       setIsUploading(false)
-      // Reset the input so the same file can be re-selected after an error
-      if (inputRef.current) inputRef.current.value = ''
+      // Reset both inputs so the same file can be re-selected after an error
+      if (cameraInputRef.current) cameraInputRef.current.value = ''
+      if (galleryInputRef.current) galleryInputRef.current.value = ''
     }
   }
 
@@ -103,9 +105,10 @@ export function AvatarUploader({
         </AvatarFallback>
       </Avatar>
 
-      {/* Hidden file input */}
+      {/* Two hidden file inputs: camera-forced and gallery-only.
+          Avatars are not PE — users may attach an existing photo. */}
       <input
-        ref={inputRef}
+        ref={cameraInputRef}
         type="file"
         accept="image/*"
         capture="environment"
@@ -114,16 +117,36 @@ export function AvatarUploader({
         onChange={handleFileChange}
         tabIndex={-1}
       />
+      <input
+        ref={galleryInputRef}
+        type="file"
+        accept="image/*"
+        className="sr-only"
+        aria-hidden="true"
+        onChange={handleFileChange}
+        tabIndex={-1}
+      />
 
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        disabled={isUploading}
-        onClick={() => inputRef.current?.click()}
-      >
-        {isUploading ? p.avatar.uploading : p.avatar.btnChange}
-      </Button>
+      <div className="flex flex-wrap items-center justify-center gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={isUploading}
+          onClick={() => cameraInputRef.current?.click()}
+        >
+          {isUploading ? p.avatar.uploading : p.avatar.btnTakePhoto}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={isUploading}
+          onClick={() => galleryInputRef.current?.click()}
+        >
+          {p.avatar.btnFromGallery}
+        </Button>
+      </div>
     </div>
   )
 }

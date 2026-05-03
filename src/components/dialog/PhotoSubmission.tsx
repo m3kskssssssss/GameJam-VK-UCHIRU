@@ -15,33 +15,44 @@ interface Props {
 }
 
 export function PhotoSubmission({ task, onSuccess, onCancel }: Props) {
-  const inputRef = useRef<HTMLInputElement>(null)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
+  const galleryInputRef = useRef<HTMLInputElement>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  // Remember which source produced the preview so "retake" can re-open it
+  const [lastSource, setLastSource] = useState<'camera' | 'gallery'>('camera')
   const [isBusy, setIsBusy] = useState(false)
   const isMobile = useIsMobile()
 
   const t = ru.play.dialog.photo
   const hint = task.npc === 'grandma' ? t.hintGrandma : t.hintGrandpa
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    if (previewUrl) URL.revokeObjectURL(previewUrl)
-    const url = URL.createObjectURL(file)
-    setPreviewUrl(url)
-    setSelectedFile(file)
+  function handleFileChange(source: 'camera' | 'gallery') {
+    return (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0]
+      if (!file) return
+      if (previewUrl) URL.revokeObjectURL(previewUrl)
+      const url = URL.createObjectURL(file)
+      setPreviewUrl(url)
+      setSelectedFile(file)
+      setLastSource(source)
+    }
   }
 
-  function handleRetake() {
+  function clearPreview() {
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl)
       setPreviewUrl(null)
     }
     setSelectedFile(null)
-    // Reset the input so the same file can be re-selected if needed
-    if (inputRef.current) inputRef.current.value = ''
-    inputRef.current?.click()
+    if (cameraInputRef.current) cameraInputRef.current.value = ''
+    if (galleryInputRef.current) galleryInputRef.current.value = ''
+  }
+
+  function reopenLastSource() {
+    clearPreview()
+    if (lastSource === 'camera') cameraInputRef.current?.click()
+    else galleryInputRef.current?.click()
   }
 
   async function handleSubmit() {
@@ -170,14 +181,25 @@ export function PhotoSubmission({ task, onSuccess, onCancel }: Props) {
         </div>
         <p style={hintStyle}>{hint}</p>
 
-        {/* Hidden native file input */}
+        {/* Two hidden native file inputs:
+            - cameraInputRef forces the device camera (capture attribute)
+            - galleryInputRef opens the gallery / file picker
+            We keep them separate so the user can pick clearly between
+            "take a photo now" and "attach a ready-made one". */}
         <input
-          ref={inputRef}
+          ref={cameraInputRef}
           type="file"
           accept="image/*"
           capture="environment"
           style={{ display: 'none' }}
-          onChange={handleFileChange}
+          onChange={handleFileChange('camera')}
+        />
+        <input
+          ref={galleryInputRef}
+          type="file"
+          accept="image/*"
+          style={{ display: 'none' }}
+          onChange={handleFileChange('gallery')}
         />
 
         {previewUrl ? (
@@ -194,18 +216,26 @@ export function PhotoSubmission({ task, onSuccess, onCancel }: Props) {
             <button
               style={secondaryBtnStyle}
               disabled={isBusy}
-              onClick={handleRetake}
+              onClick={reopenLastSource}
             >
-              {t.btnRetake}
+              {lastSource === 'camera' ? t.btnRetake : t.btnPickAnother}
             </button>
           </>
         ) : (
-          <button
-            style={primaryBtnStyle(false)}
-            onClick={() => inputRef.current?.click()}
-          >
-            {t.btnOpenCamera}
-          </button>
+          <>
+            <button
+              style={primaryBtnStyle(false)}
+              onClick={() => cameraInputRef.current?.click()}
+            >
+              {t.btnTakePhoto}
+            </button>
+            <button
+              style={secondaryBtnStyle}
+              onClick={() => galleryInputRef.current?.click()}
+            >
+              {t.btnFromGallery}
+            </button>
+          </>
         )}
       </div>
     </div>

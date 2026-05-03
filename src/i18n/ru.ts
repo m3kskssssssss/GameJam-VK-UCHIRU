@@ -158,6 +158,8 @@ export const ru = {
     // Avatar
     avatar: {
       btnChange: 'Изменить фото',
+      btnTakePhoto: 'Сделать фото',
+      btnFromGallery: 'Выбрать из галереи',
       uploadSuccess: 'Фото обновлено.',
       uploadError: 'Не удалось загрузить фото. Попробуйте ещё раз.',
       uploading: 'Загружаю...',
@@ -269,8 +271,10 @@ export const ru = {
       photo: {
         hintGrandma: 'Прикрепи фото результата — бабушка очень обрадуется!',
         hintGrandpa: 'Прикрепи фото результата — дедушка очень обрадуется!',
-        btnOpenCamera: 'Открыть камеру / выбрать фото',
-        btnRetake: 'Переснять / Выбрать другое',
+        btnTakePhoto: 'Сделать фото',
+        btnFromGallery: 'Выбрать из галереи',
+        btnRetake: 'Переснять',
+        btnPickAnother: 'Выбрать другое',
         btnSend: 'Отправить',
         btnCancel: 'Отмена',
         sending: 'Отправляю...',
