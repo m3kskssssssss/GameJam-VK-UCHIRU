@@ -2,6 +2,7 @@
 // Server component: receives pre-fetched data as props.
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
+import { CoinIcon } from '@/components/ui/icons'
 import { ru } from '@/i18n/ru'
 import type { TaskAttemptRecord } from '@/server/actions/children'
 
@@ -73,8 +74,8 @@ function AttemptRow({ attempt }: { attempt: TaskAttemptRecord }) {
         <span className="font-semibold">
           {p.attemptScore}: <strong>{scoreLabel}</strong>
         </span>
-        <span className="text-muted-foreground">
-          +{numFmt.format(attempt.coinsEarned)} {p.attemptCoins}
+        <span className="text-muted-foreground inline-flex items-center gap-1">
+          +{numFmt.format(attempt.coinsEarned)} <CoinIcon size={14} />
         </span>
       </div>
     </article>

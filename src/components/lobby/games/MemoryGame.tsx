@@ -4,7 +4,7 @@
 // the number of completed rounds; 5+ counts as a win.
 
 import { useEffect, useRef, useState } from 'react'
-import { Coins } from 'lucide-react'
+import { CoinIcon } from '@/components/ui/icons'
 import { gameById } from '@/components/world/lobby-games-data'
 import { LobbyResultScreen } from './LobbyResultScreen'
 import { ru } from '@/i18n/ru'
@@ -155,7 +155,7 @@ export function MemoryGame({ opponentName }: MemoryGameProps) {
             label={t.hudScore}
             value={
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                <Coins size={18} color="#FB923C" /> {completedRounds}
+                <CoinIcon size={18} /> {completedRounds}
               </span>
             }
           />

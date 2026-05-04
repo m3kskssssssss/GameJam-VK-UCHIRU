@@ -1,6 +1,7 @@
 // PESessionsList — feed of physical education sessions for the parent dashboard.
 // Server component: receives pre-fetched data as props.
 import { PEPhoto } from '@/components/parent/PEPhoto'
+import { CoinIcon } from '@/components/ui/icons'
 import { ru } from '@/i18n/ru'
 import type { PESessionRecord } from '@/server/actions/children'
 
@@ -55,8 +56,8 @@ function PESessionCard({ session }: { session: PESessionRecord }) {
             {dateFmt.format(session.createdAt)}
           </time>
         </div>
-        <div className="text-sm text-muted-foreground shrink-0">
-          +{numFmt.format(session.coinsEarned)} монет
+        <div className="text-sm text-muted-foreground shrink-0 inline-flex items-center gap-1">
+          +{numFmt.format(session.coinsEarned)} <CoinIcon size={14} />
         </div>
       </div>
 

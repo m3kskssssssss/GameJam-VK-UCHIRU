@@ -1,6 +1,7 @@
 'use client'
 
-import { Trophy, RotateCcw, Coins, Zap } from 'lucide-react'
+import { Trophy, RotateCcw } from 'lucide-react'
+import { CoinIcon, EnergyIcon } from '@/components/ui/icons'
 
 // ---------------------------------------------------------------------------
 // Props
@@ -94,11 +95,11 @@ export function ResultScreen({
         {showRewards && (
           <div className="flex flex-wrap justify-center gap-2">
             <Pill colour="#FFB347">
-              <Coins size={18} />
+              <CoinIcon size={18} />
               +{coinsEarned}
             </Pill>
             <Pill colour="#6BCB77">
-              <Zap size={18} />
+              <EnergyIcon size={18} />
               +{energyEarned}
             </Pill>
             <Pill colour="#4DA8DA">

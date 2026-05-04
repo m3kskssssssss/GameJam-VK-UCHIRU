@@ -1,0 +1,37 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: kidquest
+      POSTGRES_PASSWORD: kidquest
+      POSTGRES_DB: kidquest
+    ports:
+      - "5432:5432"
+    volumes:
+      - kidquest_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kidquest -d kidquest"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "postgresql://kidquest:kidquest@postgres:5432/kidquest"
+      NEXTAUTH_URL: "http://localhost:3000"
+      AUTH_SECRET: "${AUTH_SECRET:-dev-secret-please-change-me-min-32-bytes-long-string}"
+      BLOB_READ_WRITE_TOKEN: "${BLOB_READ_WRITE_TOKEN:-}"
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+
+volumes:
+  kidquest_postgres_data:

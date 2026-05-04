@@ -5,7 +5,8 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Trophy, Coins, Zap, RotateCcw, Home } from 'lucide-react'
+import { Trophy, Zap, RotateCcw, Home } from 'lucide-react'
+import { CoinIcon } from '@/components/ui/icons'
 import { finishLobbyGame } from '@/server/actions/lobby-games'
 import type { LobbyGameId } from '@/components/world/lobby-games-data'
 import { ru } from '@/i18n/ru'
@@ -117,7 +118,7 @@ export function LobbyResultScreen({
             }}
           >
             <Pill colour="#FB923C">
-              <Coins size={16} /> +{reward.coins}
+              <CoinIcon size={16} /> +{reward.coins}
             </Pill>
             <Pill colour="#4DA8DA">
               <Zap size={16} /> +{reward.xp} XP

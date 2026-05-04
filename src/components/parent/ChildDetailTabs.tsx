@@ -18,6 +18,7 @@ import {
 import { SubjectSummaryCard } from '@/components/parent/SubjectSummaryCard'
 import { AttemptsList } from '@/components/parent/AttemptsList'
 import { PESessionsList } from '@/components/parent/PESessionsList'
+import { CoinIcon, EnergyIcon } from '@/components/ui/icons'
 import { ru } from '@/i18n/ru'
 import type { ChildDetail, TaskAttemptRecord, PESessionRecord } from '@/server/actions/children'
 
@@ -117,13 +118,13 @@ function GrandparentTab({
               </p>
               <div className="flex flex-wrap gap-1.5 mt-1">
                 {c.coinsEarned > 0 && (
-                  <span className="text-xs bg-background border border-border rounded-full px-2 py-0.5">
-                    🪙 {numFmt.format(c.coinsEarned)}
+                  <span className="inline-flex items-center gap-1 text-xs bg-background border border-border rounded-full px-2 py-0.5">
+                    <CoinIcon size={12} /> {numFmt.format(c.coinsEarned)}
                   </span>
                 )}
                 {c.energyEarned > 0 && (
-                  <span className="text-xs bg-background border border-border rounded-full px-2 py-0.5">
-                    ⚡ {numFmt.format(c.energyEarned)}
+                  <span className="inline-flex items-center gap-1 text-xs bg-background border border-border rounded-full px-2 py-0.5">
+                    <EnergyIcon size={12} /> {numFmt.format(c.energyEarned)}
                   </span>
                 )}
               </div>

@@ -3,7 +3,7 @@
 // symbols). Score = 30 - moves (clamped to 0). Win at moves <= 16.
 
 import { useEffect, useMemo, useState } from 'react'
-import { Coins } from 'lucide-react'
+import { CoinIcon } from '@/components/ui/icons'
 import { gameById } from '@/components/world/lobby-games-data'
 import { LobbyResultScreen } from './LobbyResultScreen'
 import { ru } from '@/i18n/ru'
@@ -147,7 +147,7 @@ export function PairsGame({ opponentName }: PairsGameProps) {
             label={t.hudScore}
             value={
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                <Coins size={18} color="#FB923C" /> {score}
+                <CoinIcon size={18} /> {score}
               </span>
             }
           />

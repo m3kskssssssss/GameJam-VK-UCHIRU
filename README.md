@@ -174,6 +174,36 @@ pnpm dev
 # открыть http://localhost:3000
 ```
 
+### Запуск через Docker
+
+Самый быстрый способ поднять проект «как в проде» — `docker compose up`. Поднимет два контейнера: Postgres 16 и приложение Next.js.
+
+```bash
+# 1) (опционально) сгенерировать AUTH_SECRET и положить рядом
+echo "AUTH_SECRET=$(openssl rand -base64 32)" > .env
+
+# 2) Собрать и запустить
+docker compose up --build
+# открыть http://localhost:3000
+```
+
+Что происходит под капотом:
+- `Dockerfile` — multi-stage сборка (deps → build → runner) на `node:20-alpine`, итоговый образ запускает Next.js standalone-сервер от непривилегированного пользователя.
+- `docker/entrypoint.sh` — при старте контейнера накатывает Prisma-миграции (`prisma migrate deploy`), потом запускает приложение.
+- `docker-compose.yml` — поднимает Postgres с healthcheck, подключает `DATABASE_URL=postgresql://kidquest:kidquest@postgres:5432/kidquest`, монтирует постоянный volume `kidquest_postgres_data`.
+
+Полезные команды:
+```bash
+docker compose up -d              # фоном
+docker compose logs -f app        # логи приложения
+docker compose exec app sh        # шелл в контейнере
+docker compose exec app ./node_modules/.bin/prisma db seed   # засеять каталог
+docker compose down               # остановить (volume сохраняется)
+docker compose down -v            # полностью снести вместе с БД
+```
+
+Переменные `AUTH_SECRET` и `BLOB_READ_WRITE_TOKEN` можно положить в `.env` рядом с `docker-compose.yml` — compose их подхватит. Без `BLOB_READ_WRITE_TOKEN` фото физкультуры будут падать в локальный fallback (см. `src/lib/blob.ts`).
+
 ### Полезные команды
 ```bash
 pnpm dev                       # локальная разработка

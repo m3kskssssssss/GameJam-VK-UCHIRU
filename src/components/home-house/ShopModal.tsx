@@ -20,6 +20,7 @@ import type { InventoryItemSummary } from '@/server/actions/rooms'
 import { buyItem } from '@/server/actions/shop'
 import type { BuyResult } from '@/server/actions/shop'
 import { ru } from '@/i18n/ru'
+import { CoinIcon, EnergyIcon } from '@/components/ui/icons'
 import { ShopItemCard } from './ShopItemCard'
 
 const t = ru.home
@@ -68,12 +69,12 @@ function CurrencyPill({
   icon,
   value,
 }: {
-  icon: string
+  icon: React.ReactNode
   value: number
 }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-sm font-bold text-foreground">
-      <span>{icon}</span>
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-sm font-bold text-foreground">
+      {icon}
       <span>{value}</span>
     </span>
   )
@@ -166,8 +167,8 @@ export function ShopModal({
 
           {/* Currency pills */}
           <div className="flex gap-2 pt-2">
-            <CurrencyPill icon="🪙" value={coins} />
-            <CurrencyPill icon="⚡" value={energy} />
+            <CurrencyPill icon={<CoinIcon size={16} />} value={coins} />
+            <CurrencyPill icon={<EnergyIcon size={16} />} value={energy} />
           </div>
         </DialogHeader>
 

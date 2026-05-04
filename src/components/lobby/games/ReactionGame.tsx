@@ -3,7 +3,7 @@
 // green ones to score, red ones cost a point. Win at 10+ score.
 
 import { useEffect, useRef, useState } from 'react'
-import { Coins } from 'lucide-react'
+import { CoinIcon } from '@/components/ui/icons'
 import { gameById } from '@/components/world/lobby-games-data'
 import { LobbyResultScreen } from './LobbyResultScreen'
 import { ru } from '@/i18n/ru'
@@ -216,7 +216,7 @@ function Header({
           label={t.hudScore}
           value={
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-              <Coins size={18} color="#FB923C" /> {score}
+              <CoinIcon size={18} /> {score}
             </span>
           }
         />

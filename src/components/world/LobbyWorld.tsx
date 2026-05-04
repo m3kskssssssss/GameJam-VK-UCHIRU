@@ -33,6 +33,7 @@ import { LobbyGamePortalCard } from '@/components/lobby/LobbyGamePortalCard'
 import { useGameStore } from '@/hooks/useGameStore'
 import { useSceneInput } from '@/hooks/useSceneInput'
 import { ru } from '@/i18n/ru'
+import { CoinIcon, EnergyIcon } from '@/components/ui/icons'
 import type { ChildSummary } from '@/server/actions/progress'
 import {
   heartbeatLobbyPresence,
@@ -412,11 +413,11 @@ export function LobbyWorld({ gender, initialSummary }: LobbyWorldProps) {
         </button>
 
         <div style={pillStyle}>
-          <CoinIcon />
+          <CoinIcon size={20} />
           <span style={pillTextStyle}>{coins}</span>
         </div>
         <div style={pillStyle}>
-          <EnergyIcon />
+          <EnergyIcon size={20} />
           <span style={pillTextStyle}>{energy}</span>
         </div>
         <div style={{ ...pillStyle, background: 'rgba(77,168,218,0.85)' }}>
@@ -495,40 +496,3 @@ const pillTextStyle: React.CSSProperties = {
   fontFamily: 'Nunito, sans-serif',
 }
 
-function CoinIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <circle cx="10" cy="10" r="9" fill="#FFB347" stroke="#FB8C00" strokeWidth="1.5" />
-      <text
-        x="10"
-        y="14"
-        textAnchor="middle"
-        fill="#fff"
-        fontSize="10"
-        fontWeight="bold"
-        fontFamily="Nunito, sans-serif"
-      >
-        ₽
-      </text>
-    </svg>
-  )
-}
-
-function EnergyIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <circle cx="10" cy="10" r="9" fill="#6BCB77" stroke="#43A047" strokeWidth="1.5" />
-      <text
-        x="10"
-        y="14"
-        textAnchor="middle"
-        fill="#fff"
-        fontSize="12"
-        fontWeight="bold"
-        fontFamily="Nunito, sans-serif"
-      >
-        ⚡
-      </text>
-    </svg>
-  )
-}

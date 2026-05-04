@@ -4,6 +4,7 @@
 // If room 1 is locked the tab shows a CTA to unlock it instead.
 
 import { ru } from '@/i18n/ru'
+import { CoinIcon } from '@/components/ui/icons'
 import type { RoomSummary } from '@/server/actions/rooms'
 
 const t = ru.home
@@ -105,12 +106,15 @@ export function RoomTabs({
             {' '}
             <span
               style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.2rem',
                 fontSize: '0.7rem',
                 opacity: 0.75,
                 marginLeft: '0.25rem',
               }}
             >
-              (200🪙)
+              (200 <CoinIcon size={11} />)
             </span>
           </button>
         )

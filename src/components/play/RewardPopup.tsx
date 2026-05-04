@@ -6,6 +6,7 @@
 
 import { useEffect } from 'react'
 import { useGameStore } from '@/hooks/useGameStore'
+import { CoinIcon, EnergyIcon } from '@/components/ui/icons'
 
 const AUTO_DISMISS_MS = 5_000
 
@@ -118,12 +119,12 @@ export function RewardPopup() {
           >
             {reward.coinsEarned > 0 && (
               <RewardPill colour="#FFB347">
-                <span aria-hidden="true">🪙</span>+{reward.coinsEarned}
+                <CoinIcon size={16} />+{reward.coinsEarned}
               </RewardPill>
             )}
             {reward.energyEarned > 0 && (
               <RewardPill colour="#6BCB77">
-                <span aria-hidden="true">⚡</span>+{reward.energyEarned}
+                <EnergyIcon size={16} />+{reward.energyEarned}
               </RewardPill>
             )}
           </div>

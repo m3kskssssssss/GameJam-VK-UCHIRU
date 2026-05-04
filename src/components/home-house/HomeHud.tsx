@@ -4,32 +4,9 @@
 
 import { Shirt, ShoppingBag, Hammer, Check, ArrowLeft, Users } from 'lucide-react'
 import { ru } from '@/i18n/ru'
+import { CoinIcon, EnergyIcon } from '@/components/ui/icons'
 
 const t = ru.home
-
-// ---- Icon helpers (inline SVG, same approach as play/Hud) --------------------
-
-function CoinIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <circle cx="10" cy="10" r="9" fill="#FFB347" stroke="#FB8C00" strokeWidth="1.5" />
-      <text x="10" y="14" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="bold" fontFamily="Nunito, sans-serif">
-        ₽
-      </text>
-    </svg>
-  )
-}
-
-function EnergyIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <circle cx="10" cy="10" r="9" fill="#6BCB77" stroke="#43A047" strokeWidth="1.5" />
-      <text x="10" y="14" textAnchor="middle" fill="#fff" fontSize="12" fontWeight="bold" fontFamily="Nunito, sans-serif">
-        ⚡
-      </text>
-    </svg>
-  )
-}
 
 // ---- Props ------------------------------------------------------------------
 

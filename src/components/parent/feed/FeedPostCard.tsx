@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { FeedComments } from '@/components/parent/feed/FeedComments'
+import { CoinIcon, EnergyIcon } from '@/components/ui/icons'
 import { toggleLike } from '@/server/actions/feed'
 import type { FeedPostListItem } from '@/server/actions/feed'
 import { ru } from '@/i18n/ru'
@@ -130,13 +131,13 @@ export function FeedPostCard({ post: initialPost }: FeedPostCardProps) {
         <div className="flex flex-wrap gap-2">
           {initialPost.rewardCoins > 0 && (
             <span className="inline-flex items-center gap-1 text-xs bg-muted rounded-full px-2 py-0.5">
-              <span aria-hidden="true">🪙</span>
+              <CoinIcon size={14} />
               {numFmt.format(initialPost.rewardCoins)} {p.feed.rewardCoins}
             </span>
           )}
           {initialPost.rewardEnergy > 0 && (
             <span className="inline-flex items-center gap-1 text-xs bg-muted rounded-full px-2 py-0.5">
-              <span aria-hidden="true">⚡</span>
+              <EnergyIcon size={14} />
               {numFmt.format(initialPost.rewardEnergy)} {p.feed.rewardEnergy}
             </span>
           )}

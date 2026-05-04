@@ -1,10 +1,12 @@
 // Child detail page — shows per-child progress, XP chart, subject tabs.
 // Server component: all data fetched server-side; only charts and tabs are client.
+import type { ReactNode } from 'react'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { CoinIcon, EnergyIcon } from '@/components/ui/icons'
 import { XpChart } from '@/components/parent/XpChart'
 import { ChildDetailTabs } from '@/components/parent/ChildDetailTabs'
 import { DeleteChildDialog } from '@/components/parent/DeleteChildDialog'
@@ -111,9 +113,9 @@ export default async function ChildDetailPage({ params }: PageProps) {
 
           {/* Stats row */}
           <dl className="grid grid-cols-3 gap-2 text-center">
-            <StatCell label={p.childCoins} value={numFmt.format(child.coins)} emoji="🪙" />
-            <StatCell label={p.childEnergy} value={numFmt.format(child.energy)} emoji="⚡" />
-            <StatCell label={p.totalXpLabel} value={numFmt.format(totalXp)} emoji="✨" />
+            <StatCell label={p.childCoins} value={numFmt.format(child.coins)} icon={<CoinIcon size={16} />} />
+            <StatCell label={p.childEnergy} value={numFmt.format(child.energy)} icon={<EnergyIcon size={16} />} />
+            <StatCell label={p.totalXpLabel} value={numFmt.format(totalXp)} icon={<Sparkles size={16} className="text-amber-500" aria-hidden="true" />} />
           </dl>
         </div>
       </section>
@@ -149,16 +151,20 @@ export default async function ChildDetailPage({ params }: PageProps) {
 function StatCell({
   label,
   value,
-  emoji,
+  icon,
 }: {
   label: string
   value: string
-  emoji: string
+  icon: ReactNode
 }) {
   return (
     <div className="rounded-lg bg-muted py-2 px-1">
-      <div className="text-base font-bold">
-        <span aria-hidden="true">{emoji}</span> {value}
+      <div
+        className="text-base font-bold inline-flex items-center justify-center gap-1.5"
+        aria-label={`${label}: ${value}`}
+      >
+        {icon}
+        <span>{value}</span>
       </div>
       <div className="text-xs text-muted-foreground mt-0.5">{label}</div>
     </div>

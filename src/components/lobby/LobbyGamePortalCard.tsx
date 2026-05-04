@@ -6,13 +6,14 @@
 
 import { useEffect, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Coins, Zap, X, Play } from 'lucide-react'
+import { X, Play } from 'lucide-react'
 import {
   startLobbyGame,
   listOnlineFriends,
   type OnlineFriend,
 } from '@/server/actions/lobby-games'
 import { type LobbyGame } from '@/components/world/lobby-games-data'
+import { CoinIcon, EnergyIcon } from '@/components/ui/icons'
 import { ru } from '@/i18n/ru'
 
 const t = ru.lobbyGames
@@ -159,10 +160,10 @@ export function LobbyGamePortalCard({ game, onClose }: LobbyGamePortalCardProps)
         }}
       >
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-          <Zap size={16} color="#F59E0B" /> {t.cardCost}: −{game.energyCost}
+          <EnergyIcon size={16} /> {t.cardCost}: −{game.energyCost}
         </span>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#9CA3AF' }}>
-          <Coins size={16} color="#FB923C" /> +{game.coinsParticipation} … +
+          <CoinIcon size={16} /> +{game.coinsParticipation} … +
           {game.coinsParticipation + game.coinsVictory}
         </span>
       </div>

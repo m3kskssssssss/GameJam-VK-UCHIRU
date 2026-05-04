@@ -10,6 +10,7 @@ import type { HouseSubject, NpcKind } from '@/hooks/useGameStore'
 import { ru } from '@/i18n/ru'
 import { QuestBook } from '@/components/play/QuestBook'
 import { GlobalShop } from '@/components/play/GlobalShop'
+import { CoinIcon, EnergyIcon } from '@/components/ui/icons'
 
 const { play: t } = ru
 
@@ -24,56 +25,6 @@ function getHouseRoute(subject: HouseSubject): string {
 function getNpcTalkLabel(kind: NpcKind): string {
   if (kind === 'grandma') return t.hud.btnTalkGrandma
   return t.hud.btnTalkGrandpa
-}
-
-function CoinIcon() {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 20 20"
-      fill="none"
-      aria-hidden="true"
-    >
-      <circle cx="10" cy="10" r="9" fill="#FFB347" stroke="#FB8C00" strokeWidth="1.5" />
-      <text
-        x="10"
-        y="14"
-        textAnchor="middle"
-        fill="#fff"
-        fontSize="10"
-        fontWeight="bold"
-        fontFamily="Nunito, sans-serif"
-      >
-        ₽
-      </text>
-    </svg>
-  )
-}
-
-function EnergyIcon() {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 20 20"
-      fill="none"
-      aria-hidden="true"
-    >
-      <circle cx="10" cy="10" r="9" fill="#6BCB77" stroke="#43A047" strokeWidth="1.5" />
-      <text
-        x="10"
-        y="14"
-        textAnchor="middle"
-        fill="#fff"
-        fontSize="12"
-        fontWeight="bold"
-        fontFamily="Nunito, sans-serif"
-      >
-        ⚡
-      </text>
-    </svg>
-  )
 }
 
 export function Hud() {
@@ -131,13 +82,13 @@ export function Hud() {
       >
         {/* Coins */}
         <div style={pillStyle}>
-          <CoinIcon />
+          <CoinIcon size={20} />
           <span style={pillTextStyle}>{coins}</span>
         </div>
 
         {/* Energy */}
         <div style={pillStyle}>
-          <EnergyIcon />
+          <EnergyIcon size={20} />
           <span style={pillTextStyle}>{energy}</span>
         </div>
 

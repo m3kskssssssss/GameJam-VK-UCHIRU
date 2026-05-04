@@ -1,0 +1,43 @@
+**/.git
+**/.gitignore
+**/.next
+**/node_modules
+**/.env
+**/.env.local
+**/.env.development.local
+**/.env.production.local
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/.pnpm-debug.log*
+**/.vercel
+**/.vscode
+**/.idea
+**/*.log
+
+# Dev / playwright artefacts
+test-results/
+playwright-report/
+playwright/.cache/
+coverage/
+
+# Local PE photo uploads (never bake into image)
+public/uploads/
+
+# Tracked but irrelevant for the production image
+docs/
+PROGRESS.md
+progresNEW.md
+PRESENTATION.md
+PROMPT.md
+Preview.mp4
+village.mp3
+emotions2d/
+for-home/
+for-lobby/
+scripts/
+README.md
+*.md
+
+# Generated TS build info
+*.tsbuildinfo

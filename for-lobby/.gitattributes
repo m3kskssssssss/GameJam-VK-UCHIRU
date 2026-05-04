@@ -1,8 +1,0 @@
-*.ts text eol=lf
-*.js text eol=lf
-*.html text eol=lf
-*.txt text eol=lf
-*.zcomp text eol=lf
-*.md text eol=lf
-*.json text eol=lf
-*.gltf text eol=lf

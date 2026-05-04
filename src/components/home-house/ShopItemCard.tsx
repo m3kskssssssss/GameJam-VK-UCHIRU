@@ -1,6 +1,7 @@
 'use client'
 
 import type { CatalogItem } from '@/server/content/catalog'
+import { CoinIcon, EnergyIcon } from '@/components/ui/icons'
 import { ru } from '@/i18n/ru'
 
 const t = ru.home
@@ -42,10 +43,15 @@ export function ShopItemCard({
 
       {/* Price row */}
       {!isFree && (
-        <p className="text-xs text-muted-foreground">
-          {t.pricePrefix}: {item.priceCoins} монет
+        <p className="text-xs text-muted-foreground inline-flex items-center gap-1 flex-wrap">
+          <span>{t.pricePrefix}:</span>
+          <span className="inline-flex items-center gap-1">
+            {item.priceCoins} <CoinIcon size={12} />
+          </span>
           {(item.priceEnergy ?? 0) > 0 && (
-            <span className="ml-1">+{item.priceEnergy} ⚡</span>
+            <span className="inline-flex items-center gap-1">
+              + {item.priceEnergy} <EnergyIcon size={12} />
+            </span>
           )}
         </p>
       )}
