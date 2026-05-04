@@ -12,6 +12,8 @@ export interface ShopItemCardProps {
   canAfford: boolean
   loading: boolean
   onBuy: () => void
+  comingSoon?: boolean
+  subtitle?: string
 }
 
 export function ShopItemCard({
@@ -20,26 +22,37 @@ export function ShopItemCard({
   canAfford,
   loading,
   onBuy,
+  comingSoon = false,
+  subtitle,
 }: ShopItemCardProps) {
   const isFree = item.freeOnSpawn === true
-  const buttonDisabled = isFree || isOwned || !canAfford || loading
+  const buttonDisabled = comingSoon || isFree || isOwned || !canAfford || loading
 
   return (
     <div
       className="flex flex-col justify-between rounded-xl border border-border bg-card p-3 gap-2"
       style={{ minHeight: '120px' }}
     >
-      {/* Name + free badge */}
+      {/* Name + badge (free / coming soon) */}
       <div className="flex items-start justify-between gap-1">
         <span className="font-bold text-sm leading-snug text-foreground">
           {item.name}
         </span>
-        {isFree && (
+        {comingSoon ? (
+          <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+            Скоро
+          </span>
+        ) : isFree ? (
           <span className="shrink-0 rounded-full bg-[var(--color-success,#22c55e)] px-2 py-0.5 text-[10px] font-bold text-white">
             Бесплатно
           </span>
-        )}
+        ) : null}
       </div>
+
+      {/* Subtitle (e.g. "Мягкая игрушка" for pets) */}
+      {subtitle && (
+        <p className="text-xs text-muted-foreground italic">{subtitle}</p>
+      )}
 
       {/* Price row */}
       {!isFree && (
@@ -56,8 +69,8 @@ export function ShopItemCard({
         </p>
       )}
 
-      {/* Insufficient funds notice */}
-      {!isFree && !isOwned && !canAfford && (
+      {/* Insufficient funds notice (hidden when coming soon — badge already conveys state) */}
+      {!comingSoon && !isFree && !isOwned && !canAfford && (
         <p className="text-xs text-destructive">{t.errorInsufficientFunds}</p>
       )}
 
@@ -66,7 +79,9 @@ export function ShopItemCard({
         onClick={onBuy}
         disabled={buttonDisabled}
         aria-label={
-          isFree
+          comingSoon
+            ? 'Скоро в продаже'
+            : isFree
             ? 'Уже у тебя'
             : isOwned
             ? t.btnOwned
@@ -80,7 +95,9 @@ export function ShopItemCard({
           'disabled:cursor-not-allowed',
           // height — at least 56px touch target
           'min-h-[56px]',
-          isOwned
+          comingSoon
+            ? 'bg-muted text-muted-foreground opacity-70'
+            : isOwned
             ? 'bg-[var(--color-success,#22c55e)] text-white opacity-80'
             : isFree
             ? 'bg-muted text-muted-foreground'
@@ -91,7 +108,9 @@ export function ShopItemCard({
             : 'bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95',
         ].join(' ')}
       >
-        {loading
+        {comingSoon
+          ? t.btnBuy
+          : loading
           ? '...'
           : isFree
           ? 'Уже у тебя'

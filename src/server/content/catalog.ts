@@ -59,9 +59,9 @@ export const CATALOG: CatalogItem[] = [
   // -------------------------------------------------------------------------
   // Pets — 3 at 100 coins each (GAME_DESIGN line 82)
   // -------------------------------------------------------------------------
-  { key: 'cat',    name: 'Котик',  category: 'PET', priceCoins: 100 },
-  { key: 'dog',    name: 'Собака', category: 'PET', priceCoins: 100 },
-  { key: 'dragon', name: 'Дракон', category: 'PET', priceCoins: 100 },
+  { key: 'cat',    name: 'Котик',  category: 'PET', priceCoins: 2500 },
+  { key: 'dog',    name: 'Собака', category: 'PET', priceCoins: 3000 },
+  { key: 'dragon', name: 'Дракон', category: 'PET', priceCoins: 3500 },
 
   // -------------------------------------------------------------------------
   // Promo codes — partner subscriptions priced from 1000 coins.

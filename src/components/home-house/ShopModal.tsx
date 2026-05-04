@@ -101,6 +101,10 @@ function TabPanel({
 }: TabPanelProps) {
   const items = listCatalogByCategory(category)
 
+  // Pets and promo codes are not yet purchasable — display as "Скоро".
+  const comingSoon = category === 'PET' || category === 'PROMO'
+  const subtitle = category === 'PET' ? 'Мягкая игрушка' : undefined
+
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
       {items.map((item) => {
@@ -119,6 +123,8 @@ function TabPanel({
             canAfford={canAfford}
             loading={loadingKey === item.key}
             onBuy={() => onBuy(item.key)}
+            comingSoon={comingSoon}
+            subtitle={subtitle}
           />
         )
       })}
